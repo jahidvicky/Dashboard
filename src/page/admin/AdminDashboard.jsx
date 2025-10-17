@@ -50,7 +50,7 @@ export default function AdminDashboard() {
         </nav>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content  Form dashboard */}
       <div className="flex-1 ml-64 flex flex-col pt-20">
         <main className="flex-1 p-6 pt-10">
           <Outlet />
