@@ -132,11 +132,11 @@ const AdminOrderDetails = () => {
                   {item.policy.coverage} | Status: {item.policy.status}
                   <p>Policy Price: ${item.price}</p>
                   <p>
-                <strong>Insurance Company:</strong> {item.policy?.companyName || "N/A"}
-              </p>
+                    <strong>Insurance Company:</strong> {item.policy?.companyName || "N/A"}
+                  </p>
                 </p>
               )}
-              
+
             </div>
           </motion.div>
         ))}
@@ -163,7 +163,7 @@ const AdminOrderDetails = () => {
 
             const fileUrl =
               prescription?.fileURL?.startsWith("http") ||
-              prescription?.fileURL?.startsWith("https")
+                prescription?.fileURL?.startsWith("https")
                 ? prescription.fileURL
                 : `${IMAGE_URL}${prescription?.fileName}`;
 
@@ -209,7 +209,7 @@ const AdminOrderDetails = () => {
                       className="inline-block px-3 py-1 font-bold text-sm text-white bg-blue-600 rounded hover:bg-blue-700 transition"
                     >
                       View
-                    </a> 
+                    </a>
                   </div>
                 )}
               </motion.div>

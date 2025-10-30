@@ -278,14 +278,12 @@ const Products = () => {
                 });
                 Swal.fire("Success", "Product added successfully!", "success");
             }
-
             fetchVendorProducts();
             setOpen(false);
         } catch (err) {
             Swal.fire("Error", err.response?.data?.message || "Operation failed", "error");
         }
     };
-
 
     const handleSendApproval = async (productId) => {
         try {
@@ -566,7 +564,6 @@ const Products = () => {
                                         </select>
                                     </div>
                                 )}
-
 
                                 <input
                                     type="text"
