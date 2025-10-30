@@ -157,17 +157,17 @@ const VendorProductDiscount = () => {
         <div className="p-5">
             <h2 className="text-2xl font-semibold mb-4">Vendor Products Discount</h2>
 
-            <table className="hidden md:block relative overflow-y-auto max-h-[560px] w-full mt-6 border rounded-lg">
+            <table className="hidden md:block relative overflow-y-auto max-h-[560px] w-full mt-6 border rounded-lg text-center">
                 <thead className="sticky top-0 z-10 bg-black text-white font-semibold">
                     <tr>
-                        <th className="px-4 py-2 text-center">Name</th>
-                        <th className="px-4 py-2 text-center">Price</th>
-                        <th className="px-4 py-2 text-center">Sale Price</th>
-                        <th className="px-4 py-2 text-center">Discounted Price</th>
-                        <th className="px-4 py-2 text-center">Discount Type</th>
-                        <th className="px-4 py-2 text-center">Discount</th>
-                        <th className="px-4 py-2 text-center">Image</th>
-                        <th className="px-4 py-2 text-center">Action</th>
+                        <th className="px-4 py-2 w-[15%]">Name</th>
+                        <th className="px-4 py-2 w-[8%]">Price</th>
+                        <th className="px-4 py-2 w-[10%]">Sale Price</th>
+                        <th className="px-4 py-2 w-[10%]">Discounted Price</th>
+                        <th className="px-4 py-2 w-[14%]">Discount Type</th>
+                        <th className="px-4 py-2 w-[8%]">Discount</th>
+                        <th className="px-4 py-2 w-[10%]">Image</th>
+                        <th className="px-4 py-2 w-[18%]">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -235,7 +235,7 @@ const VendorProductDiscount = () => {
                         <button
                             key={page}
                             onClick={() => handlePageClick(page)}
-                            className={`px-3 py-1 rounded border ${currentPage === page
+                            className={`px-3 py-1 rounded border hover:cursor-pointer ${currentPage === page
                                 ? "bg-black text-white border-black"
                                 : "bg-white border-gray-400 hover:bg-gray-100"
                                 }`}

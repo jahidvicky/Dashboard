@@ -192,7 +192,7 @@ const Subcategory = () => {
           <button
             key={idx}
             onClick={() => setCurrentPage(idx + 1)}
-            className={`px-3 py-1 rounded ${currentPage === idx + 1
+            className={`px-3 py-1 rounded hover:cursor-pointer ${currentPage === idx + 1
               ? "bg-blue-500 text-white"
               : "bg-gray-200 hover:bg-gray-300"
               }`}

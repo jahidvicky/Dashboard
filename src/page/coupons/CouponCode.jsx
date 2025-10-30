@@ -133,53 +133,6 @@ const CouponCode = () => {
       </div>
 
       {/* Table */}
-      {/* <div className="border rounded overflow-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-7 bg-black text-white py-2 px-4 font-semibold min-w-[600px]">
-          <div>S.NO</div>
-          <div>Name</div>
-          <div>Code</div>
-          <div>Discount</div>
-          <div>Min Purchase</div>
-          <div>Validity</div>
-          <div className="text-center">Action</div>
-        </div>
-        {currentCoupons.map((c, i) => (
-          <div
-            key={c._id}
-            className="grid grid-cols-1 sm:grid-cols-7 items-center border-b py-2 px-4 min-w-[600px]"
-          >
-            <div>{indexOfFirst + i + 1}</div>
-            <div>{c.applicableFor}</div>
-            <div>{c.coupon}</div>
-            <div>
-              {c.discountType === "percentage"
-                ? `${c.discountValue}%`
-                : `$${c.discountValue}`}
-            </div>
-            <div>${c.minPurchase}</div>
-            <div>
-              {new Date(c.startDate).toLocaleDateString()} -{" "}
-              {new Date(c.expiryDate).toLocaleDateString()}
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleUpdateClick(c)}
-                className="bg-blue-500 px-3 py-1 rounded text-white flex items-center gap-1 whitespace-nowrap hover:cursor-pointer"
-              >
-                <RiEdit2Fill /> <span>Edit</span>
-              </button>
-              <button
-                onClick={() => handleDelete(c._id)}
-                className="bg-red-500 px-3 py-1 rounded text-white flex items-center gap-1 whitespace-nowrap hover:cursor-pointer"
-              >
-                <MdDelete /> <span>Delete</span>
-              </button>
-            </div>
-          </div>
-        ))}
-      </div> */}
-
       <div className="overflow-auto border rounded max-h-[70vh]">
         <table className="w-full border-collapse min-w-[600px]">
           {/* Table Head */}
@@ -240,7 +193,7 @@ const CouponCode = () => {
         {[...Array(totalPages)].map((_, i) => (
           <button
             key={i}
-            className={`px-3 py-1 border rounded ${currentPage === i + 1 ? "bg-blue-500 text-white" : ""
+            className={`px-3 py-1 border rounded hover:cursor-pointer ${currentPage === i + 1 ? "bg-blue-500 text-white" : ""
               }`}
             onClick={() => handlePageChange(i + 1)}
           >

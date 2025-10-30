@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { IoIosCloseCircle } from "react-icons/io";
-import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 import API from '../../API/Api'
 import { MdDelete } from "react-icons/md";
 import { RiEdit2Fill } from "react-icons/ri";
@@ -55,22 +55,42 @@ function FAQ() {
       ...prev,
       [e.target.name]: e.target.value,
     }));
-  };
+  }
 
   const handleDelete = async (id) => {
-    try {
-      await API.delete(`/deletefaq/${id}`, {
-        headers: {
-          "Content-Type": "application/json",
-          // "Authorization": `Bearer ${admintoken}`, // if needed
-        },
-      });
-      toast.success("FAQ deleted successfully");
-      fetchallfaq(); // refresh list after deletion
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to delete FAQ");
-    }
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to undo this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await API.delete(`/deletefaq/${id}`);
+          fetchallfaq();
+
+          Swal.fire({
+            title: "Deleted!",
+            text: "FAQ deleted successfully!",
+            icon: "success",
+            timer: 2000,
+            // showConfirmButton: false,
+            confirmButtonText: "OK"
+          });
+        } catch (error) {
+          console.error(error);
+          Swal.fire({
+            title: "Error!",
+            text: "Something went wrong while deleting.",
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+        }
+      }
+    });
   };
 
   const fetchallfaq = async () => {
@@ -94,20 +114,29 @@ function FAQ() {
     try {
       if (modalType === "add") {
         await API.post("/createfaq", formData);
-        toast.success("FAQ created successfully");
+        Swal.fire({
+          title: "Success!",
+          text: "FAQ created successfully",
+          icon: "success",
+          confirmButtonText: "OK"
+        });
       } else {
         await API.put(`/updatefaq/${formData.id}`, {
           title: formData.title,
           description: formData.description,
           category: formData.category,
         });
-        toast.success("FAQ updated successfully");
+        Swal.fire({
+          title: "Success!",
+          text: "FAQ updated successfully",
+          icon: "success",
+          confirmButtonText: "OK"
+        });
       }
       setFormData({ title: "", description: "", category: "" });
       setShowModal(false);
       fetchallfaq();
     } catch (err) {
-      toast.error(err);
       console.log(err);
     }
   };
@@ -197,7 +226,7 @@ function FAQ() {
         {[...Array(totalPages)].map((_, i) => (
           <button
             key={i}
-            className={`px-3 py-1 border rounded ${currentPage === i + 1 ? "bg-blue-500 text-white" : ""
+            className={`px-3 py-1 border rounded hover:cursor-pointer ${currentPage === i + 1 ? "bg-blue-500 text-white" : ""
               }`}
             onClick={() => handlePageChange(i + 1)}
           >

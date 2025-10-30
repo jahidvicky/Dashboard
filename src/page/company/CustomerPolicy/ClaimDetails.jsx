@@ -15,14 +15,15 @@ const ClaimDetails = () => {
     const fetchClaim = async () => {
       try {
         const res = await API.get(`/claims/${claimId}`);
+        console.log(res.data);
+
         setClaim(res.data);
 
         //  Filter cartItems to only the claimed product
-        const claimedProduct = res.data?.orderId?.cartItems?.filter(
+        const claimedProduct = res.data?.orderId?.cartItems.filter(
           (item) => String(item._id) === String(res.data.productId)
         );
         setCartItems(claimedProduct || []);
-        console.log("prodc", claimedProduct);
       } catch (err) {
         console.error("Failed to load claim", err);
       }
@@ -36,8 +37,8 @@ const ClaimDetails = () => {
     claim.status === "Approved"
       ? "text-green-600"
       : claim.status === "Pending"
-      ? "text-yellow-600"
-      : "text-red-600";
+        ? "text-yellow-600"
+        : "text-red-600";
 
   return (
     <motion.div
@@ -82,7 +83,7 @@ const ClaimDetails = () => {
               // When claim amount is NOT present
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-gray-700">
                 <p>
-                  <strong>Status:</strong>{" "}
+                  <strong>Claim Status:</strong>{" "}
                   <span className={statusColor}>{claim.status}</span>
                 </p>
                 <p>
@@ -91,7 +92,7 @@ const ClaimDetails = () => {
                 </p>
                 <div className="sm:col-span-2">
                   <p>
-                    <strong>Description:</strong> {claim.description}
+                    <strong>Claim Description:</strong> {claim.description}
                   </p>
                 </div>
               </div>
@@ -99,7 +100,7 @@ const ClaimDetails = () => {
               // When claim amount IS present
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-gray-700">
                 <p>
-                  <strong>Status:</strong>{" "}
+                  <strong>Claim Status:</strong>{" "}
                   <span className={statusColor}>{claim.status}</span>
                 </p>
                 <p>
@@ -116,7 +117,7 @@ const ClaimDetails = () => {
                 </p>
                 <div className="sm:col-span-2">
                   <p>
-                    <strong>Description:</strong> {claim.description}
+                    <strong>Claim Description:</strong> {claim.description}
                   </p>
                 </div>
               </div>
@@ -172,17 +173,17 @@ const ClaimDetails = () => {
                       <strong>Policy Name:</strong> {product.policy.name}
                     </p>
                     <p>
-                      <strong>Company Name:</strong>{" "}
+                      <strong>Insurance Company Name:</strong>{" "}
                       {product.policy.companyName}
                     </p>
                     <p>
-                      <strong>Coverage:</strong> {product.policy.coverage}
+                      <strong>Policy Coverage:</strong> {product.policy.coverage}
                     </p>
                     <p>
-                      <strong>Price:</strong> ${product.policy.price}
+                      <strong>Policy Price:</strong> ${product.policy.price}
                     </p>
                     <p>
-                      <strong>Status:</strong> {product.policy.status}
+                      <strong>Policy Status:</strong> {product.policy.status}
                     </p>
                     <p>
                       <strong>Duration (days):</strong>{" "}
@@ -261,8 +262,23 @@ const ClaimDetails = () => {
                       {product.lens?.lens?.prescriptionMethod || "N/A"}
                     </p>
                     <p>
-                      <strong>Prescription</strong>{" "}
-                      {product.lens?.lens?.prescription || "N/A"}
+                      {(product.lens?.lens?.prescription?.fileName) && (
+                        <div className="mt-4">
+                          <strong>Prescription:</strong>{" "}
+                          <a
+                            href={
+                              product.lens.lens.prescription.fileName.startsWith("http" || "https")
+                                ? product.lens.lens.prescription.fileName
+                                : product.lens.lens.prescription.fileURL
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block px-3 py-1 font-bold text-sm text-white bg-blue-600 rounded hover:bg-blue-700 transition"
+                          >
+                            View
+                          </a>
+                        </div>
+                      )}
                     </p>
                     <p>
                       <strong>Enhancement:</strong> <br />

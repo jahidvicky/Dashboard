@@ -34,9 +34,7 @@ const VendorApprovalProduct = () => {
             if (res.data.success) {
                 Swal.fire("Approved", "Product approved successfully!", "success");
                 fetchProducts();
-            }
-
-            else {
+            } else {
                 Swal.fire({
                     toast: true,
                     icon: 'error',
@@ -131,7 +129,6 @@ const VendorApprovalProduct = () => {
                     <thead className="bg-black text-white sticky top-0 z-10">
                         <tr>
                             <th className="border px-4 py-2 border-black">Name</th>
-                            <th className="border px-4 py-2 border-black">SKU</th>
                             <th className="border px-4 py-2 border-black">Price</th>
                             <th className="border px-4 py-2 border-black">Sale Price</th>
                             <th className="border px-4 py-2 border-black">Category</th>
@@ -141,47 +138,63 @@ const VendorApprovalProduct = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {products.map((pro) => (
-                            <tr key={pro._id}>
-                                <td className="border px-4 py-2 text-center capitalize">{pro.product_name}</td>
-                                <td className="border px-4 py-2 text-center">{pro.product_sku}</td>
-                                <td className="border px-4 py-2 text-center">{pro.product_price}</td>
-                                <td className="border px-4 py-2 text-center">{pro.product_sale_price}</td>
-                                <td className="border px-4 py-2 text-center">{pro.cat_sec}</td>
-                                <td className="border px-4 py-2 text-center">{pro.subCategoryName}</td>
-                                <td className="border px-4 py-2">
-                                    {pro.product_image_collection?.length ? (
-                                        <div className="grid grid-cols-3">
-                                            {pro.product_image_collection.map((img, i) => (
+                        {products.length === 0 ? (
+                            <tr>
+                                <td
+                                    colSpan="8"
+                                    className="py-10 text-center text-gray-600 font-medium"
+                                >
+                                    No products found.
+                                </td>
+                            </tr>
+                        ) : (
+                            products.map((pro) => (
+                                <tr key={pro._id} className="hover:bg-gray-50 text-center">
+                                    <td className="border px-4 py-2 capitalize">
+                                        {pro.product_name}
+                                    </td>
+                                    <td className="border px-4 py-2">{pro.product_price}</td>
+                                    <td className="border px-4 py-2">
+                                        {pro.product_sale_price}
+                                    </td>
+                                    <td className="border px-4 py-2">{pro.cat_sec}</td>
+                                    <td className="border px-4 py-2">{pro.subCategoryName}</td>
+                                    <td className="border px-4 py-2">
+                                        {pro.product_image_collection?.length ? (
+                                            <div className="flex flex-wrap gap-1 justify-center">
+                                                {/* Show only first image */}
                                                 <img
-                                                    key={i}
-                                                    src={img.startsWith("http") ? img : IMAGE_URL + img}
+                                                    src={
+                                                        pro.product_image_collection[0].startsWith("http")
+                                                            ? pro.product_image_collection[0]
+                                                            : IMAGE_URL + pro.product_image_collection[0]
+                                                    }
                                                     alt="product"
                                                     className="w-20 h-12 object-cover rounded"
                                                 />
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        "No Images"
-                                    )}
-                                </td>
-                                <td className="border px-4 py-2 text-center space-x-2">
-                                    <button
-                                        onClick={() => handleApprove(pro._id)}
-                                        className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 hover:cursor-pointer"
-                                    >
-                                        Approve
-                                    </button>
+                                            </div>
+                                        ) : (
+                                            "No Images"
+                                        )}
+                                    </td>
+                                    <td className="border px-4 py-2 space-x-2">
+                                        <button
+                                            onClick={() => handleApprove(pro._id)}
+                                            className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                                        >
+                                            Approve
+                                        </button>
 
-                                    <button
-                                        onClick={() => handleReject(pro._id)}
-                                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 hover:cursor-pointer"
-                                    >
-                                        Reject
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                                        <button
+                                            onClick={() => handleReject(pro._id)}
+                                            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                                        >
+                                            Reject
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>

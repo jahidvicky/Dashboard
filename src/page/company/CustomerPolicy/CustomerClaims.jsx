@@ -226,7 +226,7 @@ const CustomerClaims = () => {
                             {[...Array(totalPages)].map((_, i) => (
                                 <button
                                     key={i}
-                                    className={`px-3 py-1 border rounded transition-colors ${currentPage === i + 1
+                                    className={`px-3 py-1 border rounded transition-colors hover:cursor-pointer ${currentPage === i + 1
                                         ? "bg-red-600 text-white border-red-600"
                                         : "hover:bg-red-100"
                                         }`}

@@ -21,7 +21,8 @@ const Products = () => {
         subCat_id: "",
         subCategoryName: "",
         product_name: "",
-        product_sku: "",
+        product_size: [],
+        product_color: [],
         product_price: "",
         product_sale_price: "",
         product_description: "",
@@ -108,7 +109,8 @@ const Products = () => {
             subCat_id: "",
             subCategoryName: "",
             product_name: "",
-            product_sku: "",
+            product_size: [],
+            product_color: [],
             product_price: "",
             product_sale_price: "",
             product_description: "",
@@ -141,7 +143,12 @@ const Products = () => {
             subCat_id: product.subCat_id || "",
             subCategoryName: product.subCategoryName || "",
             product_name: product.product_name || "",
-            product_sku: product.product_sku || "",
+            product_size: product.product_size
+                ? product.product_size.flatMap((item) =>
+                    item.split(",").map((s) => s.trim())
+                )
+                : [],
+            product_color: product.product_color || [],
             product_price: product.product_price || "",
             product_sale_price: product.product_sale_price || "",
             product_description: product.product_description || "",
@@ -208,14 +215,28 @@ const Products = () => {
     };
 
 
+
+
+
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!formData.product_size) {
+            Swal.fire("Error", "Product Size is required", "error");
+            return;
+        }
+        if (!formData.product_color) {
+            Swal.fire("Error", "Product Color is required", "error");
+            return;
+        }
         try {
             const payload = new FormData();
 
-            // Append all fields except stockAvailability
+            // Append all fields except arrays (we’ll handle them separately)
             Object.keys(formData).forEach((key) => {
-                if (key !== "stockAvailability") {
+                if (
+                    !["product_size", "product_color", "stockAvailability"].includes(key)
+                ) {
                     payload.append(key, formData[key] ?? "");
                 }
             });
@@ -225,6 +246,10 @@ const Products = () => {
             if (stock !== "" && stock !== null && stock !== undefined) {
                 payload.append("stockAvailability", stock.toString());
             }
+
+            // Append arrays correctly
+            formData.product_size.forEach((size) => payload.append("product_size", size));
+            formData.product_color.forEach((color) => payload.append("product_color", color));
 
             // Existing images
             keptImages.forEach((img) =>
@@ -329,17 +354,17 @@ const Products = () => {
             </div>
 
             {/* Product Table */}
-            <table className="hidden md:block relative overflow-y-auto max-h-[560px] w-full mt-6 border rounded-lg">
+            <table className="hidden md:block relative overflow-y-auto max-h-[560px] w-full mt-6 border rounded-lg table-fixed">
                 <thead className="sticky top-0 z-10 bg-black text-white font-semibold">
                     <tr>
-                        <th className="px-4 py-2 text-center">Name</th>
-                        <th className="px-4 py-2 text-center">Price</th>
-                        <th className="px-4 py-2 text-center">Sale Price</th>
-                        <th className="px-4 py-2 text-center">Category</th>
-                        <th className="px-4 py-2 text-center">Subcategory</th>
-                        <th className="px-4 py-2 text-center">Image(s)</th>
-                        <th className="px-4 py-2 text-center">Product Status</th>
-                        <th className="px-4 py-2 text-center">Actions</th>
+                        <th className="px-4 py-2 text-center w-[18%]">Name</th>
+                        <th className="px-4 py-2 text-center w-[8%]">Price</th>
+                        <th className="px-4 py-2 text-center w-[8%]">Sale Price</th>
+                        <th className="px-4 py-2 text-center w-[10%]">Category</th>
+                        <th className="px-4 py-2 text-center w-[10%]">Subcategory</th>
+                        <th className="px-4 py-2 text-center w-[14%]">Image(s)</th>
+                        <th className="px-4 py-2 text-center w-[10%]">Product Status</th>
+                        <th className="px-4 py-2 text-center w-[22%]">Actions</th>
                     </tr>
                 </thead>
 
@@ -355,14 +380,16 @@ const Products = () => {
                                 <td className="border px-4 py-2">
                                     {pro.product_image_collection?.length ? (
                                         <div className="flex flex-wrap gap-1 justify-center">
-                                            {pro.product_image_collection.map((img, i) => (
-                                                <img
-                                                    key={i}
-                                                    src={img.startsWith("http") ? img : IMAGE_URL + img}
-                                                    alt="product"
-                                                    className="w-20 h-12 object-cover rounded"
-                                                />
-                                            ))}
+                                            {/* Show only the first image */}
+                                            <img
+                                                src={
+                                                    pro.product_image_collection[0].startsWith("http")
+                                                        ? pro.product_image_collection[0]
+                                                        : IMAGE_URL + pro.product_image_collection[0]
+                                                }
+                                                alt="product"
+                                                className="w-20 h-12 object-cover rounded"
+                                            />
                                         </div>
                                     ) : (
                                         "No Images"
@@ -381,14 +408,16 @@ const Products = () => {
                                     <button
                                         onClick={() => {
                                             if (pro.productStatus === "Rejected") {
-                                                setRejectionMessage(pro.rejectionReason || "This product was rejected.");
+                                                setRejectionMessage(
+                                                    pro.rejectionReason || "This product was rejected."
+                                                );
                                                 setShowRejectionModal(true);
                                             } else {
                                                 handleSendApproval(pro._id);
                                             }
                                         }}
                                         disabled={pro.isSentForApproval && pro.productStatus !== "Rejected"}
-                                        className={`px-3 py-1 rounded text-white ${pro.productStatus === "Rejected"
+                                        className={`px-3 py-1 rounded text-white mb-1 ${pro.productStatus === "Rejected"
                                             ? "bg-yellow-500 hover:bg-yellow-600"
                                             : pro.isSentForApproval
                                                 ? "bg-red-400 cursor-not-allowed"
@@ -413,7 +442,9 @@ const Products = () => {
                     ) : (
                         <tr>
                             <td colSpan="8" className="py-4 text-center text-gray-500">
-                                No products found.
+                                {statusFilter === "Rejected"
+                                    ? "No rejected product found."
+                                    : "No product found."}
                             </td>
                         </tr>
                     )}
@@ -426,7 +457,7 @@ const Products = () => {
                         <button
                             key={page}
                             onClick={() => handlePageClick(page)}
-                            className={`px-3 py-1 rounded border ${currentPage === page
+                            className={`px-3 py-1 rounded border hover:cursor-pointer ${currentPage === page
                                 ? "bg-black text-white border-black"
                                 : "bg-white border-gray-400 hover:bg-gray-100"
                                 }`}
@@ -499,10 +530,8 @@ const Products = () => {
                                             disabled={editingProduct?.isSentForApproval}
                                             onChange={(e) => {
                                                 const selectedCat = category.find((c) => c._id === formData.cat_id);
-                                                const selectedSub =
-                                                    selectedCat?.subCategories?.find((s) => s._id === e.target.value) || null;
-                                                const selectedName =
-                                                    selectedCat?.subCategoryNames?.find((s) => s === e.target.value) || "";
+                                                const selectedSub = selectedCat?.subCategories?.find((s) => s._id === e.target.value) || null;
+                                                const selectedName = selectedCat?.subCategoryNames?.find((s) => s === e.target.value) || "";
                                                 setFormData({
                                                     ...formData,
                                                     subCat_id: selectedSub?._id || selectedName || "",
@@ -512,16 +541,26 @@ const Products = () => {
                                             className="w-full border rounded p-2"
                                         >
                                             <option value="">Select Subcategory</option>
-                                            {category.find((c) => c._id === formData.cat_id)?.subCategories?.map((sub) => (
-                                                <option key={sub._id} value={sub._id}>
-                                                    {sub.name}
-                                                </option>
-                                            ))}
-                                            {category.find((c) => c._id === formData.cat_id)?.subCategoryNames?.map((name, idx) => (
-                                                <option key={idx} value={name}>
-                                                    {name}
-                                                </option>
-                                            ))}
+
+                                            {/* Render subCategories */}
+                                            {category
+                                                .find((c) => c._id === formData.cat_id)
+                                                ?.subCategories?.filter((sub) => sub?.name?.trim()) // remove blank/space names
+                                                .map((sub) => (
+                                                    <option key={sub._id} value={sub._id}>
+                                                        {sub.name.trim()}
+                                                    </option>
+                                                ))}
+
+                                            {/* Render subCategoryNames (unique + trimmed) */}
+                                            {[...(category.find((c) => c._id === formData.cat_id)?.subCategoryNames || [])]
+                                                .map((name) => name?.trim())
+                                                .filter((name) => name) // remove empty strings
+                                                .map((name, idx) => (
+                                                    <option key={idx} value={name}>
+                                                        {name}
+                                                    </option>
+                                                ))}
                                         </select>
                                     </div>
                                 )}
@@ -535,14 +574,53 @@ const Products = () => {
                                     className="w-full border p-2 rounded"
                                     disabled={editingProduct?.isSentForApproval}
                                 />
+                                <div>
+                                    <label className="block text-gray-700 font-medium mb-2">
+                                        Product Sizes
+                                    </label>
+                                    <div className="flex gap-4">
+                                        {["S", "M", "L"].map((size) => (
+                                            <label key={size} className="flex items-center gap-1">
+                                                <input
+                                                    type="checkbox"
+                                                    value={size}
+                                                    checked={formData.product_size.includes(size)}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setFormData({
+                                                                ...formData,
+                                                                product_size: [...formData.product_size, size],
+                                                            });
+                                                        } else {
+                                                            setFormData({
+                                                                ...formData,
+                                                                product_size: formData.product_size.filter(
+                                                                    (s) => s !== size
+                                                                ),
+                                                            });
+                                                        }
+                                                    }}
+                                                />
+                                                <span>{size}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
                                 <input
                                     type="text"
-                                    name="product_sku"
-                                    value={formData.product_sku}
-                                    onChange={handleChange}
-                                    placeholder="Product SKU"
+                                    name="product_color"
+                                    value={(formData.product_color || []).join(", ")}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            product_color: e.target.value
+                                                .split(",")
+                                                .map((c) => c.trim()), // string → array
+                                        })
+                                    }
+                                    placeholder="Enter colors (Black, Red, Blue)"
                                     className="w-full border p-2 rounded"
-                                    disabled={editingProduct?.isSentForApproval}
                                 />
                                 <div className="grid grid-cols-2 gap-4">
                                     <input

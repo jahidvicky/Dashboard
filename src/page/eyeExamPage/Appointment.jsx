@@ -73,7 +73,7 @@ const Appointment = () => {
                     <input
                         type="text"
                         placeholder="Search by patient name, email, or exam type..."
-                        className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-500 outline-none shadow-sm"
+                        className="w-full pl-10 pr-4 py-2 rounded-lg border border-red-600 focus:ring-2 focus:ring-red-500 outline-none shadow-sm"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -81,7 +81,7 @@ const Appointment = () => {
                 </div>
 
                 <select
-                    className="w-full md:w-1/4 py-2 px-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-500 outline-none shadow-sm"
+                    className="w-full md:w-1/4 py-2 px-3 rounded-lg border border-red-600 focus:ring-2 focus:ring-red-500 outline-none shadow-sm"
                     value={filterDoctor}
                     onChange={(e) => setFilterDoctor(e.target.value)}
                 >
@@ -154,7 +154,7 @@ const Appointment = () => {
                         <button
                             key={i}
                             onClick={() => setCurrentPage(i + 1)}
-                            className={`px-3 py-1 rounded-lg border ${currentPage === i + 1
+                            className={`px-3 py-1 rounded-lg border hover:cursor-pointer ${currentPage === i + 1
                                 ? "bg-red-600 text-white font-semibold"
                                 : "bg-gray-100 hover:bg-gray-200"
                                 }`}

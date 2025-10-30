@@ -172,3 +172,12 @@
 .animate-pulse {
   animation: pulse 1s ease-in-out infinite;
 }
+
+button,
+a:hover {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}

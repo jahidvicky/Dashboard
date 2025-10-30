@@ -11,6 +11,8 @@ const VendorProductOrder = () => {
     const [showModal, setShowModal] = useState(false);
     const [allData, setAllData] = useState([]);
     const navigate = useNavigate();
+    const [currentPage, setCurrentPage] = useState(1);
+    const [ordersPerPage] = useState(8);
 
     const fetchOrders = async () => {
         try {
@@ -28,6 +30,12 @@ const VendorProductOrder = () => {
     useEffect(() => {
         fetchOrders();
     }, []);
+
+    // Pagination logic
+    const totalPages = Math.ceil(allData.length / ordersPerPage);
+    const indexOfLast = currentPage * ordersPerPage;
+    const indexOfFirst = indexOfLast - ordersPerPage;
+    const currentOrders = allData.slice(indexOfFirst, indexOfLast);
 
     const updateOrder = async () => {
         if (!orderId) {
@@ -76,7 +84,7 @@ const VendorProductOrder = () => {
                     <div className="text-lg">DETAILS</div>
                 </div>
 
-                {allData.map((data, idx) => (
+                {currentOrders.map((data, idx) => (
                     <div
                         key={idx}
                         className={`grid grid-cols-7 text-center items-center px-4 py-3 border-b border-gray-200 text-sm hover:bg-gray-100 
@@ -129,10 +137,27 @@ const VendorProductOrder = () => {
                     </div>
                 ))}
             </div>
+            {/* Pagination */}
+            {allData.length > 0 && (
+                <div className="flex justify-center mt-6 gap-2 flex-wrap">
+                    {[...Array(totalPages)].map((_, i) => (
+                        <button
+                            key={i}
+                            onClick={() => setCurrentPage(i + 1)}
+                            className={`px-3 py-1 rounded-lg border hover:cursor-pointer ${currentPage === i + 1
+                                ? "bg-blue-600 text-white font-semibold"
+                                : "bg-gray-100 hover:bg-gray-200"
+                                }`}
+                        >
+                            {i + 1}
+                        </button>
+                    ))}
+                </div>
+            )}
 
             {/* Mobile Cards */}
             <div className="md:hidden flex flex-col gap-4 mt-6">
-                {allData.map((data, idx) => (
+                {currentOrders.map((data, idx) => (
                     <div
                         key={idx}
                         className="bg-white shadow rounded-lg p-4 border hover:shadow-lg transition"

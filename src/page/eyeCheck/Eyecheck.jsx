@@ -28,16 +28,39 @@ const EyeCheck = () => {
     };
 
     const handleDelete = async (id) => {
-        try {
-            await API.delete(`/deleteEyecheck/${id}`, {
-                headers: {
-                    "Content-Type": "application/json",
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to undo this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!"
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await API.delete(`/deleteEyecheck/${id}`);
+                    fetchEyeCheck();
+
+                    Swal.fire({
+                        title: "Deleted!",
+                        text: "EyewearTips deleted successfully!",
+                        icon: "success",
+                        timer: 2000,
+                        // showConfirmButton: false,
+                        confirmButtonText: "OK"
+                    });
+                } catch (error) {
+                    console.error(error);
+                    Swal.fire({
+                        title: "Error!",
+                        text: "Something went wrong while deleting.",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
                 }
-            })
-            fetchEyeCheck();
-        } catch (error) {
-            console.error(error)
-        }
+            }
+        });
     };
 
 

@@ -46,26 +46,40 @@ const EyeService = () => {
 
     // Delete API
     const handleDelete = async (id) => {
-        try {
-            await API.delete(`/deleteEyeService/${id}`)
-            fetchEyeService()
-            Swal.fire({
-                icon: "success",
-                title: "Done!",
-                text: "Eye service deleted successfully!",
-                timer: 2000,
-                showConfirmButton: false,
-            });
-        } catch (error) {
-            Swal.fire({
-                icon: "error",
-                title: "Failed!",
-                text: `Deletion Failed : ${error}`,
-                timer: 2000,
-                showConfirmButton: false,
-            });
-        }
-    }
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to undo this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!"
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await API.delete(`/deleteEyeService/${id}`)
+                    fetchEyeService()
+
+                    Swal.fire({
+                        title: "Deleted!",
+                        text: "Eye service deleted successfully!",
+                        icon: "success",
+                        timer: 2000,
+                        // showConfirmButton: false,
+                        confirmButtonText: "OK"
+                    });
+                } catch (error) {
+                    console.error(error);
+                    Swal.fire({
+                        title: "Error!",
+                        text: "Something went wrong while deleting.",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                }
+            }
+        });
+    };
 
     // Get API
     const fetchEyeService = async () => {
@@ -194,7 +208,7 @@ const EyeService = () => {
                     <button
                         key={index}
                         onClick={() => setCurrentPage(index + 1)}
-                        className={`px-3 py-1 rounded ${currentPage === index + 1
+                        className={`px-3 py-1 rounded hover:cursor-pointer ${currentPage === index + 1
                             ? "bg-green-600 text-white"
                             : "bg-gray-200 hover:bg-gray-300"
                             }`}

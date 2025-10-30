@@ -136,10 +136,6 @@ const Inquiry = () => {
 
     return (
         <div className="max-w-6xl mx-auto p-6 mt-10 mb-10 bg-white shadow-md rounded-lg">
-            <h2 className="text-3xl font-bold text-left mb-6 text-red-600">
-                Inquiry List
-            </h2>
-            <hr className="w-42 border-t-2 border-red-600" />
 
             {/* Dropdown + Total count */}
             <div className="flex items-center justify-between mt-4 relative z-20">
@@ -245,7 +241,7 @@ const Inquiry = () => {
                         <button
                             key={i}
                             onClick={() => paginate(i + 1)}
-                            className={`px-3 py-1 border rounded ${currentPage === i + 1
+                            className={`px-3 py-1 border rounded hover:cursor-pointer ${currentPage === i + 1
                                 ? "bg-red-600 text-white"
                                 : "bg-white hover:bg-red-100"
                                 }`}

@@ -68,19 +68,39 @@ function Testimonial() {
 
     // Delete API
     const handleDelete = async (id) => {
-        try {
-            await API.delete(`/deleteTestimonial/${id}`);
-            fetchTestimonial();
-            Swal.fire({
-                icon: "success",
-                title: "Deleted!",
-                text: "Testimonial deleted successfully!",
-                timer: 2000,
-                showConfirmButton: false,
-            });
-        } catch (error) {
-            console.error(error);
-        }
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to undo this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!"
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await API.delete(`/deleteTestimonial/${id}`);
+                    fetchTestimonial();
+
+                    Swal.fire({
+                        title: "Deleted!",
+                        text: "Testimonial deleted successfully!",
+                        icon: "success",
+                        timer: 2000,
+                        // showConfirmButton: false,
+                        confirmButtonText: "OK"
+                    });
+                } catch (error) {
+                    console.error(error);
+                    Swal.fire({
+                        title: "Error!",
+                        text: "Something went wrong while deleting.",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                }
+            }
+        });
     };
 
     // Submit handler
@@ -106,7 +126,7 @@ function Testimonial() {
                     title: "Done!",
                     text: "Testimonial created successfully!",
                     timer: 2000,
-                    showConfirmButton: false,
+                    confirmButtonText: "OK",
                 });
             } else {
                 await API.put(`/updateTestimonial/${formData.id}`, formDataToSend);
@@ -115,7 +135,7 @@ function Testimonial() {
                     title: "Done!",
                     text: "Testimonial updated successfully!",
                     timer: 2000,
-                    showConfirmButton: false,
+                    confirmButtonText: "OK",
                 });
             }
 
@@ -190,7 +210,7 @@ function Testimonial() {
                     <button
                         key={index}
                         onClick={() => setCurrentPage(index + 1)}
-                        className={`px-3 py-1 rounded ${currentPage === index + 1
+                        className={`px-3 py-1 rounded hover:cursor-pointer ${currentPage === index + 1
                             ? "bg-green-600 text-white"
                             : "bg-gray-200 hover:bg-gray-300"
                             }`}

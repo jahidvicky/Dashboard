@@ -1,5 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { IMAGE_URL } from "../../API/Api";
 
 const VendorOrderDetails = () => {
     const location = useLocation();
@@ -18,22 +19,21 @@ const VendorOrderDetails = () => {
             </div>
         );
     }
-
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
             <div className="max-w-5xl mx-auto">
                 <Link
                     to="/vendor/order"
-                    className="text-blue-600 hover:underline mb-6 inline-block text-sm font-medium"
+                    className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded hover:cursor-pointer"
                 >
-                    ← Back to Orders
+                    🡄 Back
                 </Link>
 
                 <motion.h2
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="text-3xl font-bold mb-8 text-gray-800"
+                    className="text-3xl font-bold mb-8 mt-6 text-gray-800"
                 >
                     Order Details - #{order._id}
                 </motion.h2>
@@ -118,7 +118,11 @@ const VendorOrderDetails = () => {
                                     className="border rounded-lg p-4 bg-gray-50 flex flex-col md:flex-row gap-5 transition"
                                 >
                                     <img
-                                        src={item.image}
+                                        src={
+                                            item.image?.startsWith("http://") || item.image?.startsWith("https://")
+                                                ? item.image
+                                                : `${IMAGE_URL}${item.image}`
+                                        }
                                         alt={item.name}
                                         className="w-28 h-28 object-cover rounded-lg border"
                                         onError={(e) => (e.target.src = "/no-image.png")}
