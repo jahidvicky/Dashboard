@@ -93,21 +93,23 @@ const Products = () => {
     setKeptImages((prev) => prev.filter((_, i) => i !== idx));
   };
 
-
   // Pagination + Filtering Logic
   const filteredProducts = products.filter((pro) => {
     const matchCategory = filterCategory ? pro.cat_id === filterCategory : true;
-    const matchSubCategory = filterSubCategory ? pro.subCat_id === filterSubCategory : true;
+    const matchSubCategory = filterSubCategory
+      ? pro.subCat_id === filterSubCategory
+      : true;
     return matchCategory && matchSubCategory;
   });
 
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  const currentProducts = filteredProducts.slice(
+    indexOfFirstProduct,
+    indexOfLastProduct
+  );
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const handlePageChange = (page) => setCurrentPage(page);
-
-
 
   const openAddModal = () => {
     setFormData({
@@ -153,8 +155,8 @@ const Products = () => {
       product_name: product.product_name || "",
       product_size: product.product_size
         ? product.product_size.flatMap((item) =>
-          item.split(",").map((s) => s.trim())
-        )
+            item.split(",").map((s) => s.trim())
+          )
         : [],
 
       product_color: product.product_color || [],
@@ -340,22 +342,10 @@ const Products = () => {
     }
   };
 
-  const toggleSize = (size) => {
-    let updatedSizes;
-    if (selectedSize.includes(size)) {
-      updatedSizes = selectedSize.filter((s) => s !== size);
-    } else {
-      updatedSizes = [...selectedSize, size];
-    }
-    setSelectedSize(updatedSizes);
-    setFormData((prev) => ({ ...prev, product_size: updatedSizes })); //  keep formData in sync
-  };
-
   return (
     <div className="p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-
         {/* Filters */}
         <div className="flex gap-4">
           {/* Category Filter */}
@@ -434,9 +424,7 @@ const Products = () => {
                 <td className="border px-4 py-2 text-center">
                   {pro.product_sale_price}
                 </td>
-                <td className="border px-4 py-2 text-center">
-                  {pro.cat_sec}
-                </td>
+                <td className="border px-4 py-2 text-center">{pro.cat_sec}</td>
                 <td className="border px-4 py-2 text-center">
                   {pro.subCategoryName}
                 </td>
@@ -478,22 +466,20 @@ const Products = () => {
         </table>
       </div>
 
-
-
       {/* Pagination Buttons */}
       <div className="flex justify-center mt-4 space-x-2">
         {[...Array(totalPages)].map((_, i) => (
           <button
             key={i}
-            className={`px-3 py-1 border rounded hover:cursor-pointer ${currentPage === i + 1 ? "bg-blue-500 text-white" : ""
-              }`}
+            className={`px-3 py-1 border rounded hover:cursor-pointer ${
+              currentPage === i + 1 ? "bg-blue-500 text-white" : ""
+            }`}
             onClick={() => handlePageChange(i + 1)}
           >
             {i + 1}
           </button>
         ))}
       </div>
-
 
       {/* Modal */}
       {open && (
@@ -543,17 +529,16 @@ const Products = () => {
                         (c) => c._id === formData.cat_id
                       );
                       const selectedSubIdx =
-                        selectedCat?.subCategoryNames?.findIndex(
-                          (name) => name === e.target.value
+                        selectedCat?.subCategories?.findIndex(
+                          (id) => id === e.target.value
                         );
-
-                      const selectedSubId =
-                        selectedCat?.subCategories?.[selectedSubIdx] || "";
+                      const selectedSubName =
+                        selectedCat?.subCategoryNames?.[selectedSubIdx] || "";
 
                       setFormData({
                         ...formData,
-                        subCat_id: selectedSubId, // save ID
-                        subCategoryName: e.target.value, // save name
+                        subCat_id: e.target.value, // store ID
+                        subCategoryName: selectedSubName, // store name
                       });
                     }}
                     className="w-full border rounded p-2"
@@ -561,9 +546,12 @@ const Products = () => {
                     <option value="">Select Subcategory</option>
                     {category
                       .find((c) => c._id === formData.cat_id)
-                      ?.subCategoryNames?.map((name, idx) => (
-                        <option key={idx} value={name}>
-                          {name}
+                      ?.subCategories?.map((subId, idx) => (
+                        <option key={subId} value={subId}>
+                          {
+                            category.find((c) => c._id === formData.cat_id)
+                              ?.subCategoryNames?.[idx]
+                          }
                         </option>
                       ))}
                   </select>
