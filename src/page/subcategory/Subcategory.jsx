@@ -207,7 +207,7 @@ const Subcategory = () => {
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">
-              {editId ? "Edit Product" : "Add Product"}
+              {editId ? "Edit SubCategory" : "Add SubCategory"}
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-3">
@@ -279,7 +279,7 @@ const Subcategory = () => {
                 type="submit"
                 className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 hover:cursor-pointer"
               >
-                {editId ? "Update Product" : "Save Product"}
+                {editId ? "Update SubCategory" : "Save SubCategory"}
               </button>
             </form>
 
