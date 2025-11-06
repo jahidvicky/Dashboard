@@ -17,6 +17,7 @@ import AdminOrderDetails from "./page/ordderTracking/AdminOrderDetails";
 import ClaimDetails from "./page/company/CustomerPolicy/ClaimDetails";
 import VendorDetails from "./page/vender/VendorDetails";
 import AdminCompanyDetailsPage from "./page/company/AdminCompanyDetailsPage";
+import BrandSection from "./page/Brand/BrandSection";
 
 // ---------- lazy imports ----------
 const Login = lazy(() => import("./page/login/Login"));
@@ -118,6 +119,7 @@ function App() {
             <Route path="privacy-policy" element={<AdminPrivacyPolicy />} />
             <Route path="appointments" element={<Appointment />} />
             <Route path="order-details/:id" element={<AdminOrderDetails />} />
+            <Route path="brand" element={<BrandSection />} />
           </Route>
 
           {/* ------------ vendor ------------ */}
