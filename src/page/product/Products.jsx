@@ -16,6 +16,11 @@ const Products = () => {
   const [productsPerPage] = useState(10);
   const [filterCategory, setFilterCategory] = useState("");
   const [filterSubCategory, setFilterSubCategory] = useState("");
+  const [contactLensBrands, setContactLensBrands] = useState([]);
+  const [glassesBrands, setglassesBrands] = useState([]);
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [selectedBrandType, setSelectedBrandType] = useState("");
+
 
   const [formData, setFormData] = useState({
     cat_id: "",
@@ -42,6 +47,7 @@ const Products = () => {
     manufacturer: "",
     water_content: "",
     stockAvailability: "",
+    brand_id: ""
   });
   const [editId, setEditId] = useState(null);
 
@@ -96,6 +102,35 @@ const Products = () => {
   );
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const handlePageChange = (page) => setCurrentPage(page);
+
+
+  const fetchBrands = async () => {
+    try {
+      const res = await API.get("/getBrand");
+      const allBrands = res.data.data || [];
+
+      // Filter brands where type is "Contact Lenses"
+      const filteredBrands = allBrands.filter(
+        (brand) => brand.type === "Contact Lenses"
+      );
+      const filteredGlassesBrand = allBrands.filter(
+        (brand) => brand.type === "Glasses"
+      );
+
+      setContactLensBrands(filteredBrands);
+      setglassesBrands(filteredGlassesBrand);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+    fetchBrands();
+  }, []);
+
+
 
   const openAddModal = () => {
     setFormData({
@@ -206,6 +241,8 @@ const Products = () => {
 
     // ✅ Open modal in edit mode
     setEditId(product._id);
+    setSelectedBrand(product.brand_id || "");
+    setSelectedBrandType(product.brand_type || "");
     setOpen(true);
   };
 
@@ -282,6 +319,7 @@ const Products = () => {
       });
 
       payload.append("stockAvailability", isNaN(stockValue) ? 0 : stockValue);
+      payload.append("brand_id", selectedBrand || "");
 
       // 🔹 Product sizes (array)
       if (formData.product_size?.length) {
@@ -570,6 +608,54 @@ const Products = () => {
                   </select>
                 </div>
               )}
+
+              {/*Brand dropdown*/}
+              {formData.subCat_id === "68caa86cd72068a7d3a0f0bf" &&
+                <div>
+                  <label className="block text-gray-700 mb-1">Contact Lenses Brand (Optional)</label>
+                  <select
+                    value={selectedBrand}
+                    onChange={(e) => {
+                      const selected = contactLensBrands.find((b) => b._id === e.target.value);
+                      setSelectedBrand(selected?._id || "");
+                      setSelectedBrandType(selected?.type || ""); // type = "Eyeglass" / "Contact Lens"
+                    }}
+                    className="w-full border rounded p-2"
+                  >
+                    <option value="">Select Brand</option>
+                    {contactLensBrands.map((b) => (
+                      <option key={b._id} value={b._id}>
+                        {b.brand}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              }
+
+              {/*Brand dropdown*/}
+              {formData.subCat_id !== "68caa86cd72068a7d3a0f0bf" &&
+                <div>
+                  <label className="block text-gray-700 mb-1">Glasses Lenses Brand (Optional)</label>
+                  <select
+                    value={selectedBrand}
+                    onChange={(e) => {
+                      const selected = glassesBrands.find((b) => b._id === e.target.value);
+                      setSelectedBrand(selected?._id || "");
+                      setSelectedBrandType(selected?.type || ""); // type = "Eyeglass" / "Contact Lens"
+                    }}
+                    className="w-full border rounded p-2"
+                  >
+                    <option value="">Select Brand</option>
+                    {glassesBrands.map((b) => (
+                      <option key={b._id} value={b._id}>
+                        {b.brand}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              }
+
+
 
               <input
                 type="text"
