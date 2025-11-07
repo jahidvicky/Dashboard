@@ -7,7 +7,7 @@ import { IoIosCloseCircle } from "react-icons/io";
 const Products = () => {
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState([]);
-  const [images, setImages] = useState([]);
+  const [colorVariants, setColorVariants] = useState([]);
   const [keptImages, setKeptImages] = useState([]);
   const [lensImage1, setLensImage1] = useState(null);
   const [lensImage2, setLensImage2] = useState(null);
@@ -85,20 +85,6 @@ const Products = () => {
     }));
   };
 
-  // Image change handler
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    setImages((prev) => [...prev, ...files]);
-  };
-
-  const removeNewImage = (idx) => {
-    setImages((prev) => prev.filter((_, i) => i !== idx));
-  };
-
-  const removeExistingImage = (idx) => {
-    setKeptImages((prev) => prev.filter((_, i) => i !== idx));
-  };
-
   // Pagination + Filtering Logic
   const filteredProducts = products.filter((pro) => {
     const matchCategory = filterCategory ? pro.cat_id === filterCategory : true;
@@ -173,15 +159,16 @@ const Products = () => {
       water_content: "",
       stockAvailability: "",
     });
-    setImages([]);
     setKeptImages([]);
     setLensImage1(null);
     setLensImage2(null);
     setEditId(null);
     setOpen(true);
+    setColorVariants([]);
   };
 
   const openEditModal = (product) => {
+    // ✅ Fill general product fields
     setFormData({
       cat_id: product.cat_id || "",
       cat_sec: product.cat_sec || "",
@@ -193,7 +180,6 @@ const Products = () => {
           item.split(",").map((s) => s.trim())
         )
         : [],
-
       product_color: product.product_color || [],
       product_price: product.product_price || "",
       product_sale_price: product.product_sale_price || "",
@@ -213,12 +199,30 @@ const Products = () => {
       water_content: product.water_content || "",
       stockAvailability: product.stockAvailability || "",
     });
-    setImages([]);
+
+    // ✅ Prefill Color Variants from product_variants
+    if (product.product_variants && product.product_variants.length > 0) {
+      const variants = product.product_variants.map((variant) => ({
+        colorName: variant.colorName || "",
+        files: [], // New uploads will go here
+        existingImages:
+          (variant.images || []).map((img) =>
+            img.startsWith("http") ? img : IMAGE_URL + img
+          ) || [],
+      }));
+      setColorVariants(variants);
+    } else {
+      setColorVariants([]); // If no color variants found
+    }
+
+    // ✅ Keep any main product images (if you still have them)
     setKeptImages(
       product.product_image_collection?.map((img) =>
         img.startsWith("http") ? img : IMAGE_URL + img
       ) || []
     );
+
+    // ✅ Lens images (optional)
     setLensImage1(
       product.product_lens_image1
         ? product.product_lens_image1.startsWith("http")
@@ -226,6 +230,7 @@ const Products = () => {
           : IMAGE_URL + product.product_lens_image1
         : null
     );
+
     setLensImage2(
       product.product_lens_image2
         ? product.product_lens_image2.startsWith("http")
@@ -233,11 +238,15 @@ const Products = () => {
           : IMAGE_URL + product.product_lens_image2
         : null
     );
+
+    // ✅ Open modal in edit mode
     setEditId(product._id);
     setSelectedBrand(product.brand_id || "");
     setSelectedBrandType(product.brand_type || "");
     setOpen(true);
   };
+
+
 
   const handleDelete = async (id) => {
     Swal.fire({
@@ -273,20 +282,8 @@ const Products = () => {
       Swal.fire("Error", "Product name is required", "error");
       return;
     }
-    if (!formData.product_size) {
-      Swal.fire("Error", "Product Size is required", "error");
-      return;
-    }
-    if (!formData.product_color) {
-      Swal.fire("Error", "Product Color is required", "error");
-      return;
-    }
     if (!formData.product_price) {
       Swal.fire("Error", "Product price is required", "error");
-      return;
-    }
-    if (formData.subCat_id === "68caa86cd72068a7d3a0f0bf" && !formData.type) {
-      Swal.fire("Error", "Lens type is required for contact lenses", "error");
       return;
     }
 
@@ -294,69 +291,76 @@ const Products = () => {
       const payload = new FormData();
       const stockValue = Number(formData.stockAvailability);
 
-      // Basic product fields
-      payload.append("cat_id", formData.cat_id);
-      payload.append("cat_sec", formData.cat_sec);
-      payload.append("subCat_id", formData.subCat_id);
-      payload.append("subCategoryName", formData.subCategoryName);
-      payload.append("product_name", formData.product_name);
-      payload.append("product_size", formData.product_size);
+      // 🔹 Basic product fields
+      [
+        "cat_id",
+        "cat_sec",
+        "subCat_id",
+        "subCategoryName",
+        "product_name",
+        "product_price",
+        "product_sale_price",
+        "product_description",
+        "gender",
+        "frame_material",
+        "frame_shape",
+        "frame_color",
+        "frame_fit",
+        "contact_type",
+        "material",
+        "manufacturer",
+        "water_content",
+        "product_lens_title1",
+        "product_lens_description1",
+        "product_lens_title2",
+        "product_lens_description2",
+      ].forEach((field) => {
+        if (formData[field]) payload.append(field, formData[field]);
+      });
 
-      payload.append("product_color", formData.product_color);
-      payload.append("product_price", formData.product_price);
-      payload.append("product_sale_price", formData.product_sale_price);
-      payload.append("product_description", formData.product_description);
-      payload.append("gender", formData.gender);
       payload.append("stockAvailability", isNaN(stockValue) ? 0 : stockValue);
       payload.append("brand_id", selectedBrand || "");
 
-      // Sunglasses fields
-      if (formData.subCat_id !== "68caa86cd72068a7d3a0f0bf") {
-        payload.append("frame_material", formData.frame_material);
-        payload.append("frame_shape", formData.frame_shape);
-        payload.append("frame_color", formData.frame_color);
-        payload.append("frame_fit", formData.frame_fit);
+      // 🔹 Product sizes (array)
+      if (formData.product_size?.length) {
+        formData.product_size.forEach((size) =>
+          payload.append("product_size[]", size)
+        );
       }
 
-      // Contact Lens fields
-      if (formData.subCat_id === "68caa86cd72068a7d3a0f0bf") {
-        payload.append("contact_type", formData.type);
-        payload.append("material", formData.material);
-        payload.append("manufacturer", formData.manufacturer);
-        payload.append("water_content", formData.water_content);
+      // 🔹 Product colors (array)
+      if (formData.product_color?.length) {
+        formData.product_color.forEach((color) =>
+          payload.append("product_color[]", color)
+        );
       }
 
-      // Lens details
-      payload.append("product_lens_title1", formData.product_lens_title1);
-      payload.append(
-        "product_lens_description1",
-        formData.product_lens_description1
-      );
-      payload.append("product_lens_title2", formData.product_lens_title2);
-      payload.append(
-        "product_lens_description2",
-        formData.product_lens_description2
-      );
+      // 🔹 Color variant data (JSON part)
+      const colorDataArray = colorVariants.map((variant) => ({
+        colorName: variant.colorName.trim(),
+        images:
+          variant.existingImages?.map((img) =>
+            img.replace(IMAGE_URL, "")
+          ) || [],
+      }));
+      payload.append("colorData", JSON.stringify(colorDataArray));
 
-      // Existing images
-      payload.append(
-        "existingImages",
-        JSON.stringify(keptImages.map((img) => img.replace(IMAGE_URL, "")))
-      );
+      // 🔹 Add actual color image files (multer reads by color key)
+      colorVariants.forEach((variant) => {
+        const colorKey = variant.colorName.trim().toLowerCase();
+        if (!colorKey) return;
+        variant.files?.forEach((file) => {
+          payload.append(colorKey, file);
+        });
+      });
 
-      // New uploaded images
-      images.forEach((file) =>
-        payload.append("product_image_collection", file)
-      );
-
-      if (lensImage1 && typeof lensImage1 !== "string") {
+      // 🔹 Lens images
+      if (lensImage1 && typeof lensImage1 !== "string")
         payload.append("product_lens_image1", lensImage1);
-      }
-      if (lensImage2 && typeof lensImage2 !== "string") {
+      if (lensImage2 && typeof lensImage2 !== "string")
         payload.append("product_lens_image2", lensImage2);
-      }
 
-      // Send to backend
+      // 🔹 Submit to backend
       if (editId) {
         await API.put(`/updateProduct/${editId}`, payload, {
           headers: { "Content-Type": "multipart/form-data" },
@@ -467,14 +471,23 @@ const Products = () => {
                   {pro.subCategoryName}
                 </td>
                 <td className="border px-4 py-2">
-                  {pro.product_image_collection?.length ? (
+                  {pro?.product_image_collection?.length || pro?.product_variants?.[0]?.images?.length ? (
                     <div className="flex flex-wrap gap-1 justify-center">
-                      {/* Show only the first image */}
+                      {/* Show only the first available image */}
                       <img
                         src={
-                          pro.product_image_collection[0].startsWith("http")
-                            ? pro.product_image_collection[0]
-                            : IMAGE_URL + pro.product_image_collection[0]
+                          (
+                            pro?.product_image_collection?.[0] ||
+                            pro?.product_variants?.[0]?.images?.[0]
+                          ).startsWith("http")
+                            ? (
+                              pro?.product_image_collection?.[0] ||
+                              pro?.product_variants?.[0]?.images?.[0]
+                            )
+                            : IMAGE_URL + (
+                              pro?.product_image_collection?.[0] ||
+                              pro?.product_variants?.[0]?.images?.[0]
+                            )
                         }
                         alt="product"
                         className="w-20 h-12 object-cover rounded"
@@ -483,6 +496,7 @@ const Products = () => {
                   ) : (
                     "No Images"
                   )}
+
                 </td>
                 <td className="border space-x-1 mx-1">
                   <button
@@ -735,57 +749,181 @@ const Products = () => {
                 className="w-full border p-2 rounded"
               />
 
-              {/* Multiple Images */}
-              <label htmlFor="product_image" className="block text-gray-700">
-                Product Image
-              </label>
-              <input
-                id="product_image"
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImageChange}
-                className="w-full border p-2 rounded"
-              />
-              {/* Show kept old images */}
-              <div className="flex gap-2 flex-wrap mt-2">
-                {keptImages.map((img, idx) => (
-                  <div key={idx} className="relative">
-                    <img
-                      src={img}
-                      alt="kept"
-                      className="w-16 h-16 object-cover rounded"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeExistingImage(idx)}
-                      className="absolute top-0 right-0 bg-red-600 text-white rounded-full px-1 hover:cursor-pointer"
+              {/* ✅ Color Variants Section */}
+              <div className="mt-4 border-t pt-4">
+                <h3 className="font-semibold text-gray-700 mb-2">Color Variants</h3>
+
+                {colorVariants.map((variant, index) => {
+                  // 🎨 Check valid color name or hex for preview
+                  const isValidColor = (() => {
+                    const s = new Option().style;
+                    s.color = variant.colorName;
+                    return s.color !== "";
+                  })();
+
+                  return (
+                    <div
+                      key={index}
+                      className="border border-gray-300 rounded-lg p-3 mb-4 bg-gray-50 shadow-sm"
                     >
-                      X
-                    </button>
-                  </div>
-                ))}
+                      {/* 🔹 Color name + remove button */}
+                      <div className="flex justify-between items-center mb-2">
+                        <input
+                          type="text"
+                          placeholder="Enter Color (e.g. Blue or #0000ff)"
+                          value={variant.colorName}
+                          onChange={(e) => {
+                            const updated = [...colorVariants];
+                            updated[index].colorName = e.target.value.trim();
+                            setColorVariants(updated);
+                          }}
+                          className="border p-2 rounded w-2/3 capitalize"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setColorVariants(colorVariants.filter((_, i) => i !== index))
+                          }
+                          className="text-red-600 text-sm hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
+
+                      {/* 🖼️ Upload color images (additive uploads) */}
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        disabled={!variant.colorName.trim()} // disable upload if no color name entered
+                        onChange={(e) => {
+                          const updated = [...colorVariants];
+                          const variant = updated[index];
+
+                          // 🚨 Require color name before allowing file upload
+                          if (!variant.colorName.trim()) {
+                            Swal.fire("Error", "Please enter color name before uploading images!", "error");
+                            e.target.value = "";
+                            return;
+                          }
+
+                          const newFiles = Array.from(e.target.files);
+                          variant.files = [...(variant.files || []), ...newFiles];
+                          setColorVariants(updated);
+                        }}
+                        className="w-full border p-2 rounded"
+                      />
+
+                      {/* 🏷️ Color preview label */}
+                      {(variant.existingImages?.length > 0 || variant.files?.length > 0) && (
+                        <div className="flex items-center gap-2 mt-4 mb-2">
+                          <span
+                            className="w-5 h-5 rounded-full border border-gray-400"
+                            style={{
+                              backgroundColor: isValidColor ? variant.colorName : "transparent",
+                            }}
+                            title={
+                              isValidColor
+                                ? variant.colorName
+                                : "Invalid color name or code — preview unavailable"
+                            }
+                          ></span>
+                          <h4 className="text-gray-800 font-semibold">
+                            {variant.colorName
+                              ? `${variant.colorName.charAt(0).toUpperCase() + variant.colorName.slice(1)} Images`
+                              : "Color Images"}
+                          </h4>
+                        </div>
+                      )}
+
+                      {/* ✅ Preview Section (Existing + New) */}
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {/* Existing images */}
+                        {variant.existingImages?.map((img, i) => (
+                          <div key={`existing-${i}`} className="relative group">
+                            <img
+                              src={img}
+                              alt="existing variant"
+                              className="w-16 h-16 object-cover rounded border"
+                            />
+                            {/* ❌ Remove existing image */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = [...colorVariants];
+                                updated[index].existingImages = updated[index].existingImages.filter(
+                                  (_, idx) => idx !== i
+                                );
+                                setColorVariants(updated);
+                              }}
+                              className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-700 opacity-90"
+                            >
+                              ✕
+                            </button>
+                            <span className="absolute bottom-0 left-0 bg-black/70 text-white text-xs px-1 rounded">
+                              Old
+                            </span>
+                          </div>
+                        ))}
+
+                        {/* New uploaded images */}
+                        {variant.files?.map((file, i) => (
+                          <div key={`new-${i}`} className="relative">
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt="new variant"
+                              className="w-16 h-16 object-cover rounded border"
+                            />
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* ➕ Add more images button */}
+                      {(variant.existingImages?.length > 0 || variant.files?.length > 0) && (
+                        <div className="mt-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const input = document.createElement("input");
+                              input.type = "file";
+                              input.multiple = true;
+                              input.accept = "image/*";
+                              input.onchange = (e) => {
+                                const updated = [...colorVariants];
+                                const newFiles = Array.from(e.target.files);
+                                updated[index].files = [
+                                  ...(updated[index].files || []),
+                                  ...newFiles,
+                                ]; // ✅ merge, not overwrite
+                                setColorVariants(updated);
+                              };
+                              input.click();
+                            }}
+                            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 mt-2"
+                          >
+                            + Add More Images
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+
+
+
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setColorVariants([...colorVariants, { colorName: "", files: [] }])
+                  }
+                  className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                >
+                  + Add Color Variant
+                </button>
               </div>
 
-              {/* Show new uploaded previews */}
-              <div className="flex gap-2 flex-wrap mt-2">
-                {images.map((file, idx) => (
-                  <div key={idx} className="relative">
-                    <img
-                      src={URL.createObjectURL(file)}
-                      alt="new"
-                      className="w-16 h-16 object-cover rounded"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeNewImage(idx)}
-                      className="absolute top-0 right-0 bg-red-600 text-white rounded-full px-1 hover:cursor-pointer"
-                    >
-                      X
-                    </button>
-                  </div>
-                ))}
-              </div>
 
               {/* Gender */}
               <select
