@@ -433,14 +433,23 @@ const Products = () => {
                   {pro.subCategoryName}
                 </td>
                 <td className="border px-4 py-2">
-                  {pro.product_image_collection?.length ? (
+                  {pro?.product_image_collection?.length || pro?.product_variants?.[0]?.images?.length ? (
                     <div className="flex flex-wrap gap-1 justify-center">
-                      {/* Show only the first image */}
+                      {/* Show only the first available image */}
                       <img
                         src={
-                          pro.product_image_collection[0].startsWith("http")
-                            ? pro.product_image_collection[0]
-                            : IMAGE_URL + pro.product_image_collection[0]
+                          (
+                            pro?.product_image_collection?.[0] ||
+                            pro?.product_variants?.[0]?.images?.[0]
+                          ).startsWith("http")
+                            ? (
+                              pro?.product_image_collection?.[0] ||
+                              pro?.product_variants?.[0]?.images?.[0]
+                            )
+                            : IMAGE_URL + (
+                              pro?.product_image_collection?.[0] ||
+                              pro?.product_variants?.[0]?.images?.[0]
+                            )
                         }
                         alt="product"
                         className="w-20 h-12 object-cover rounded"
@@ -449,6 +458,7 @@ const Products = () => {
                   ) : (
                     "No Images"
                   )}
+
                 </td>
                 <td className="border space-x-1 mx-1">
                   <button

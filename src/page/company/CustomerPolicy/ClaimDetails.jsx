@@ -15,8 +15,6 @@ const ClaimDetails = () => {
     const fetchClaim = async () => {
       try {
         const res = await API.get(`/claims/${claimId}`);
-        console.log(res.data);
-
         setClaim(res.data);
 
         //  Filter cartItems to only the claimed product
