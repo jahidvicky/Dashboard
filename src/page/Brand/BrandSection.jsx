@@ -10,7 +10,7 @@ const BrandSection = () => {
     const [brandData, setBrandData] = useState([]);
     const [modalType, setModalType] = useState("add");
     const [formData, setFormData] = useState({
-        category: "",
+        type: "",
         image: "",
         brand: ""
     });
@@ -79,7 +79,7 @@ const BrandSection = () => {
         setShowModal(true);
         setFormData({
             id: tip._id,
-            category: tip.category,
+            type: tip.type,
             brand: tip.brand,
             image: null,
         });
@@ -89,7 +89,7 @@ const BrandSection = () => {
         e.preventDefault();
         try {
             const formDataToSend = new FormData();
-            formDataToSend.append("category", formData.category);
+            formDataToSend.append("type", formData.type);
             formDataToSend.append("brand", formData.brand);
 
             if (formData.image && formData.image instanceof File) {
@@ -119,7 +119,7 @@ const BrandSection = () => {
             }
 
             setShowModal(false);
-            setFormData({ id: null, category: "", brand: "", image: null });
+            setFormData({ id: null, type: "", brand: "", image: null });
             fetchBrand();
         } catch (error) {
             console.log(error);
@@ -138,7 +138,7 @@ const BrandSection = () => {
                     onClick={() => {
                         setShowModal(true);
                         setModalType("add");
-                        setFormData({ id: null, brand: "", category: "", image: null });
+                        setFormData({ id: null, brand: "", type: "", image: null });
                     }}
                     className="bg-green-500 text-white px-3 py-1 text-xl font-semibold rounded-lg mb-4 hover:cursor-pointer flex items-center gap-2"
                 >
@@ -150,8 +150,8 @@ const BrandSection = () => {
             <div className="overflow-y-auto max-h-[500px] border border-gray-200 rounded-lg">
                 {/* Sticky Header */}
                 <div className="grid grid-cols-4 gap-x-10 bg-black text-white py-2 px-4 font-semibold sticky top-0 z-10">
+                    <div className="text-lg">Type</div>
                     <div className="text-lg">Brand Name</div>
-                    <div className="text-lg">SubBrand Name</div>
                     <div className="text-lg">Image</div>
                     <div className="text-lg">Action</div>
                 </div>
@@ -162,7 +162,7 @@ const BrandSection = () => {
                         key={idx}
                         className="grid grid-cols-4 gap-x-10 items-start border-b border-gray-300 py-2 px-4 bg-white"
                     >
-                        <h1>{data.category}</h1>
+                        <h1>{data.type}</h1>
                         <h1>{data.brand}</h1>
                         {data.image && (
                             <img
@@ -171,8 +171,8 @@ const BrandSection = () => {
                                         ? data.image
                                         : `${IMAGE_URL + data.image}`
                                 }
-                                alt={data.title}
-                                className="w-20 h-10 object-cover rounded"
+                                alt={data.brand}
+                                className="max-w-25"
                             />
                         )}
                         <div className="flex gap-2">
@@ -220,23 +220,23 @@ const BrandSection = () => {
                         </h2>
 
                         <form onSubmit={handleSubmit} className="space-y-5">
-                            {/* Dropdown for Category */}
+                            {/* Dropdown for type */}
                             <div>
                                 <label className="block mb-1 font-medium text-gray-700">
                                     Select Type
                                 </label>
                                 <select
-                                    value={formData.category}
+                                    value={formData.type}
                                     onChange={(e) =>
                                         setFormData((prev) => ({
                                             ...prev,
-                                            category: e.target.value,
+                                            type: e.target.value,
                                         }))
                                     }
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-500 outline-none"
                                 >
                                     <option value="">-- Select Type --</option>
-                                    <option value="Sunglasses">Sunglasses</option>
+                                    <option value="Glasses">Glasses</option>
                                     <option value="Contact Lenses">Contact Lenses</option>
                                 </select>
                             </div>
