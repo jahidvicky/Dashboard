@@ -251,7 +251,7 @@ const Products = () => {
   const handleDelete = async (id) => {
     Swal.fire({
       title: "Are you sure?",
-      text: "You won’t be able to revert this!",
+      text: "You won�t be able to revert this!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -701,13 +701,13 @@ const Products = () => {
               <input
                 type="text"
                 name="product_color"
-                value={formData.product_color.join(", ")} // array → string
+                value={formData.product_color.join(", ")} // array ? string
                 onChange={(e) =>
                   setFormData({
                     ...formData,
                     product_color: e.target.value
                       .split(",")
-                      .map((c) => c.trim()), // string → array
+                      .map((c) => c.trim()), // string ? array
                   })
                 }
                 placeholder="Enter colors (Black, Red, Blue)"
