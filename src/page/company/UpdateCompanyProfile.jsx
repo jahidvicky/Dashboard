@@ -489,7 +489,7 @@ export default function UpdateCompanyProfile() {
               className={`w-full md:w-auto font-semibold p-3 rounded-lg hover:cursor-pointer 
                 ${loading || !formData.agreementAccepted
                   ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                  : "bg-red-600 hover:bg-red-700 text-white"
+                  : "bg-[#f00000] hover:bg-red-700 text-white"
                 }`}
             >
               {loading ? "Updating..." : "Update Company Profile"}

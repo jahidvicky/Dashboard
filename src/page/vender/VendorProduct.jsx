@@ -347,7 +347,7 @@ const Products = () => {
                 </div>
                 <button
                     onClick={openAddModal}
-                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 hover:cursor-pointer"
+                    className="bg-[#f00000] text-white px-4 py-2 rounded-lg hover:bg-red-700 hover:cursor-pointer"
                 >
                     <FaPlus className="inline mr-2" /> Add Product
                 </button>
@@ -420,8 +420,8 @@ const Products = () => {
                                         className={`px-3 py-1 rounded text-white mb-1 ${pro.productStatus === "Rejected"
                                             ? "bg-yellow-500 hover:bg-yellow-600"
                                             : pro.isSentForApproval
-                                                ? "bg-red-400 cursor-not-allowed"
-                                                : "bg-red-600 hover:bg-red-700"
+                                                ? "bg-[#f00000] cursor-not-allowed"
+                                                : "bg-[#f00000] hover:bg-red-700"
                                             }`}
                                     >
                                         {pro.productStatus === "Rejected"
@@ -432,7 +432,7 @@ const Products = () => {
                                     </button>
                                     <button
                                         onClick={() => handleDelete(pro._id)}
-                                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                                        className="bg-[#f00000] text-white px-3 py-1 rounded hover:bg-red-600"
                                     >
                                         <FaTrash />
                                     </button>
@@ -472,7 +472,7 @@ const Products = () => {
             {showRejectionModal && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
                     <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
-                        <h3 className="text-lg font-semibold mb-4 text-red-600">Product Rejected</h3>
+                        <h3 className="text-lg font-semibold mb-4 text-[#f00000]">Product Rejected</h3>
                         <p className="text-gray-700 mb-6">{rejectionMessage}</p>
                         <div className="flex justify-end">
                             <button
@@ -684,7 +684,7 @@ const Products = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => removeExistingImage(idx)}
-                                                className="absolute top-0 right-0 bg-red-600 text-white rounded-full px-1 hover:cursor-pointer"
+                                                className="absolute top-0 right-0 bg-[#f00000] text-white rounded-full px-1 hover:cursor-pointer"
                                                 disabled={editingProduct?.isSentForApproval}
                                             >
                                                 X
@@ -706,7 +706,7 @@ const Products = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => removeNewImage(idx)}
-                                                className="absolute top-0 right-0 bg-red-600 text-white rounded-full px-1 hover:cursor-pointer"
+                                                className="absolute top-0 right-0 bg-[#f00000] text-white rounded-full px-1 hover:cursor-pointer"
                                                 disabled={editingProduct?.isSentForApproval}
                                             >
                                                 X
@@ -860,7 +860,7 @@ const Products = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => setLensImage1(null)}
-                                                className="absolute top-0 right-0 bg-red-600 text-white rounded-full px-1 hover:cursor-pointer"
+                                                className="absolute top-0 right-0 bg-[#f00000] text-white rounded-full px-1 hover:cursor-pointer"
                                             >
                                                 X
                                             </button>
@@ -913,7 +913,7 @@ const Products = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => setLensImage2(null)}
-                                                className="absolute top-0 right-0 bg-red-600 text-white rounded-full px-1 hover:cursor-pointer"
+                                                className="absolute top-0 right-0 bg-[#f00000] text-white rounded-full px-1 hover:cursor-pointer"
                                             >
                                                 X
                                             </button>
@@ -939,7 +939,7 @@ const Products = () => {
                             </form>
                             <button
                                 onClick={() => setOpen(false)}
-                                className="absolute top-2 right-2 text-gray-600 hover:text-red-600 text-2xl hover:cursor-pointer"
+                                className="absolute top-2 right-2 text-gray-600 hover:text-[#f00000] text-2xl hover:cursor-pointer"
                             >
                                 <IoIosCloseCircle />
                             </button>

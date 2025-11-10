@@ -434,7 +434,7 @@ const Products = () => {
 
         <button
           onClick={openAddModal}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 hover:cursor-pointer"
+          className="bg-[#f00000] text-white px-4 py-2 rounded-lg hover:bg-red-700 hover:cursor-pointer"
         >
           <FaPlus className="inline mr-2" /> Add Product
         </button>
@@ -507,7 +507,7 @@ const Products = () => {
                   </button>
                   <button
                     onClick={() => handleDelete(pro._id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 hover:cursor-pointer"
+                    className="bg-[#f00000] text-white px-3 py-1 rounded hover:bg-red-600 hover:cursor-pointer"
                   >
                     <FaTrash />
                   </button>
@@ -784,7 +784,7 @@ const Products = () => {
                           onClick={() =>
                             setColorVariants(colorVariants.filter((_, i) => i !== index))
                           }
-                          className="text-red-600 text-sm hover:underline"
+                          className="text-[#f00000] text-sm hover:underline"
                         >
                           Remove
                         </button>
@@ -856,7 +856,7 @@ const Products = () => {
                                 );
                                 setColorVariants(updated);
                               }}
-                              className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-700 opacity-90"
+                              className="absolute -top-1 -right-1 bg-[#f00000] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-700 opacity-90"
                             >
                               ✕
                             </button>
@@ -1057,7 +1057,7 @@ const Products = () => {
                     <button
                       type="button"
                       onClick={() => setLensImage1(null)}
-                      className="absolute top-0 right-0 bg-red-600 text-white rounded-full px-1 hover:cursor-pointer"
+                      className="absolute top-0 right-0 bg-[#f00000] text-white rounded-full px-1 hover:cursor-pointer"
                     >
                       X
                     </button>
@@ -1107,7 +1107,7 @@ const Products = () => {
                     <button
                       type="button"
                       onClick={() => setLensImage2(null)}
-                      className="absolute top-0 right-0 bg-red-600 text-white rounded-full px-1 hover:cursor-pointer"
+                      className="absolute top-0 right-0 bg-[#f00000] text-white rounded-full px-1 hover:cursor-pointer"
                     >
                       X
                     </button>
@@ -1134,7 +1134,7 @@ const Products = () => {
 
             <button
               onClick={() => setOpen(false)}
-              className="absolute top-2 right-2 text-gray-600 hover:text-red-600 text-2xl hover:cursor-pointer"
+              className="absolute top-2 right-2 text-gray-600 hover:text-[#f00000] text-2xl hover:cursor-pointer"
             >
               <IoIosCloseCircle />
             </button>

@@ -226,7 +226,7 @@ export default function PolicyManagement() {
                                                 {p.coverage && p.coverage.length > 80 && (
                                                     <button
                                                         onClick={() => viewCoverage(p)}
-                                                        className="text-sm underline ml-1 text-red-600 hover:text-red-700 hover:cursor-pointer"
+                                                        className="text-sm underline ml-1 text-[#f00000] hover:text-red-700 hover:cursor-pointer"
                                                     >
                                                         View
                                                     </button>
@@ -246,7 +246,7 @@ export default function PolicyManagement() {
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(p._id)}
-                                                    className="px-3 py-1.5 rounded-md bg-red-600 text-white text-sm font-medium hover:bg-red-700 hover:cursor-pointer"
+                                                    className="px-3 py-1.5 rounded-md bg-[#f00000] text-white text-sm font-medium hover:bg-red-700 hover:cursor-pointer"
                                                 >
                                                     Delete
                                                 </button>
@@ -265,7 +265,7 @@ export default function PolicyManagement() {
                                 <button
                                     key={i}
                                     className={`px-3 py-1 border rounded transition-colors hover:cursor-pointer ${currentPage === i + 1
-                                        ? "bg-red-600 text-white border-red-600"
+                                        ? "bg-[#f00000] text-white border-red-600"
                                         : "hover:bg-red-100"
                                         }`}
                                     onClick={() => handlePageChange(i + 1)}
@@ -355,7 +355,7 @@ export default function PolicyManagement() {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="px-4 py-2 rounded-md bg-red-600 text-white text-sm font-medium hover:bg-red-700 hover:cursor-pointer"
+                                    className="px-4 py-2 rounded-md bg-[#f00000] text-white text-sm font-medium hover:bg-red-700 hover:cursor-pointer"
                                 >
                                     {loading ? "Saving..." : formMode === "add" ? "Add Policy" : "Save Changes"}
                                 </button>
@@ -384,7 +384,7 @@ export default function PolicyManagement() {
                         <div className="px-6 py-4 border-t flex justify-end">
                             <button
                                 onClick={() => setCoverageViewer({ open: false, text: "", title: "" })}
-                                className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 hover:cursor-pointer"
+                                className="px-4 py-2 rounded-md bg-[#f00000] text-white hover:bg-red-700 hover:cursor-pointer"
                             >
                                 Close
                             </button>

@@ -55,7 +55,7 @@ const Register = () => {
 
                 {/* Full Name */}
                 <div className="mb-4">
-                    <label>Full Name<span className="text-red-500 ml-1">*</span></label>
+                    <label>Full Name<span className="text-[#f00000] ml-1">*</span></label>
                     <input
                         type="text"
                         name="name"
@@ -69,7 +69,7 @@ const Register = () => {
 
                 {/* Email */}
                 <div className="mb-4">
-                    <label>Email<span className="text-red-500 ml-1">*</span></label>
+                    <label>Email<span className="text-[#f00000] ml-1">*</span></label>
                     <input
                         type="email"
                         name="email"
@@ -83,7 +83,7 @@ const Register = () => {
 
                 {/* Password */}
                 <div className="mb-4 relative">
-                    <label>Password<span className="text-red-500 ml-1">*</span></label>
+                    <label>Password<span className="text-[#f00000] ml-1">*</span></label>
                     <input
                         type={showpassword ? "text" : "password"}
                         name="password"

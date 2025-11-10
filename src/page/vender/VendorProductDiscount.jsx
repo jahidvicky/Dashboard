@@ -210,7 +210,7 @@ const VendorProductDiscount = () => {
                                 <td className="border px-4 py-2 border-black">
                                     <button
                                         onClick={() => handleOpenModal(pro)}
-                                        className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center justify-center gap-2"
+                                        className="bg-[#f00000] text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center justify-center gap-2"
                                     >
                                         <FaPlus /> Add Discount
                                     </button>

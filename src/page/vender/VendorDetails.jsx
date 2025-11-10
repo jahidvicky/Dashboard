@@ -91,7 +91,7 @@ const VendorDetails = () => {
                                 href={fileUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-block px-2 py-1 w-28 font-bold text-[12px] text-red-600 border rounded hover:border-black transition-colors duration-200"
+                                className="inline-block px-2 py-1 w-28 font-bold text-[12px] text-[#f00000] border rounded hover:border-black transition-colors duration-200"
                             >
                                 View Document
                             </a>
@@ -112,7 +112,7 @@ const VendorDetails = () => {
                 href={fileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block px-2 py-1 w-28 font-bold text-[12px] text-red-600 border rounded hover:border-black transition-colors duration-200"
+                className="inline-block px-2 py-1 w-28 font-bold text-[12px] text-[#f00000] border rounded hover:border-black transition-colors duration-200"
             >
                 View Document
             </a>

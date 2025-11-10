@@ -146,7 +146,7 @@ const Inquiry = () => {
                     >
                         <span className="truncate">{selected}</span>
                         <svg
-                            className={`h-4 w-4 text-red-600 transition-transform ${open ? "rotate-180" : ""}`}
+                            className={`h-4 w-4 text-[#f00000] transition-transform ${open ? "rotate-180" : ""}`}
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
@@ -171,7 +171,7 @@ const Inquiry = () => {
                                     <li
                                         key={option}
                                         onClick={() => handleFilter(option)}
-                                        className="cursor-pointer px-3 py-2 text-sm text-black hover:bg-red-100 hover:text-red-600"
+                                        className="cursor-pointer px-3 py-2 text-sm text-black hover:bg-red-100 hover:text-[#f00000]"
                                     >
                                         {option}
                                     </li>
@@ -181,7 +181,7 @@ const Inquiry = () => {
                     )}
                 </div>
 
-                <h2 className="text-lg font-semibold text-red-600">
+                <h2 className="text-lg font-semibold text-[#f00000]">
                     Total Inquiries: {filteredInquiries.length}
                 </h2>
             </div>
@@ -221,8 +221,8 @@ const Inquiry = () => {
                                         }}
                                         disabled={data.inquiryStatus === "close"}
                                         className={`text-white p-2 rounded transition ${data.inquiryStatus === "close"
-                                            ? "bg-red-400 cursor-not-allowed"
-                                            : "bg-red-600 hover:bg-red-700 cursor-pointer"
+                                            ? "bg-[#f00000] cursor-not-allowed"
+                                            : "bg-[#f00000] hover:bg-red-700 cursor-pointer"
                                             }`}
                                     >
                                         Send Response
@@ -242,7 +242,7 @@ const Inquiry = () => {
                             key={i}
                             onClick={() => paginate(i + 1)}
                             className={`px-3 py-1 border rounded hover:cursor-pointer ${currentPage === i + 1
-                                ? "bg-red-600 text-white"
+                                ? "bg-[#f00000] text-white"
                                 : "bg-white hover:bg-red-100"
                                 }`}
                         >
@@ -257,7 +257,7 @@ const Inquiry = () => {
             {showResponse && selectedInquiry && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
                     <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
-                        <h2 className="text-xl font-semibold text-red-600 mb-4">
+                        <h2 className="text-xl font-semibold text-[#f00000] mb-4">
                             Response to {selectedInquiry.name}
                         </h2>
                         <textarea
@@ -272,14 +272,14 @@ const Inquiry = () => {
                             <button
                                 type="button"
                                 onClick={handleSend}
-                                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 hover:cursor-pointer"
+                                className="px-4 py-2 bg-[#f00000] text-white rounded hover:bg-red-700 hover:cursor-pointer"
                             >
                                 Send
                             </button>
                             <button
                                 type="button"
                                 onClick={handleSendNReg}
-                                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 hover:cursor-pointer"
+                                className="px-4 py-2 bg-[#f00000] text-white rounded hover:bg-red-700 hover:cursor-pointer"
                             >
                                 Send & Register
                             </button>

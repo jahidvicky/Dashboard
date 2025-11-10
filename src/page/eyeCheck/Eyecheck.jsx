@@ -158,7 +158,7 @@ const EyeCheck = () => {
                                 </div>
                                 <div>
                                     <button
-                                        className="bg-red-500 px-3 py-1 rounded-xl text-white hover:cursor-pointer"
+                                        className="bg-[#f00000] px-3 py-1 rounded-xl text-white hover:cursor-pointer"
                                         onClick={() => handleDelete(data._id)}>
                                         <MdDelete className="text-2xl" />
 

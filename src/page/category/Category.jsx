@@ -143,7 +143,7 @@ const Category = () => {
                   </button>
                   <button
                     onClick={() => handleDelete(cat._id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 flex items-center hover:cursor-pointer"
+                    className="bg-[#f00000] text-white px-3 py-1 rounded hover:bg-red-600 flex items-center hover:cursor-pointer"
                   >
                     <FaTrash />
                     Delete
@@ -196,7 +196,7 @@ const Category = () => {
               <div>
                 <button
                   type="submit"
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 hover:cursor-pointer"
+                  className="bg-[#f00000] text-white px-4 py-2 rounded-lg hover:bg-red-700 hover:cursor-pointer"
                 >
                   {modalType === "add" ? "Save Category" : "Update Category"}
                 </button>
@@ -206,7 +206,7 @@ const Category = () => {
             {/* Close Button */}
             <button
               onClick={() => setShowModal(false)}
-              className="absolute top-2 right-2 text-4xl hover:text-red-600 hover:cursor-pointer"
+              className="absolute top-2 right-2 text-4xl hover:text-[#f00000] hover:cursor-pointer"
             >
               <IoIosCloseCircle />
             </button>

@@ -93,7 +93,7 @@ export default function VendorHome() {
         {/* Banking */}
         <div className="bg-white p-3 rounded-2xl shadow hover:shadow-lg hover:shadow-red-600 transition border border-red-200 break-words">
           <div className="flex items-center gap-3">
-            <Banknote className="text-red-500" size={28} />
+            <Banknote className="text-[#f00000]" size={28} />
             <h2 className="text-lg font-semibold">Bank</h2>
           </div>
           <p className="text-xl font-bold mt-4">{vendorData.bankName}</p>

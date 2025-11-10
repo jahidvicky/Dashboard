@@ -166,7 +166,7 @@ const AddInsurancePolicy = () => {
               </button>
               <button
                 onClick={() => handleDelete(p._id)}
-                className="bg-red-500 px-3 py-1 rounded-xl text-white hover:cursor-pointer"
+                className="bg-[#f00000] px-3 py-1 rounded-xl text-white hover:cursor-pointer"
               >
                 <MdDelete />
               </button>

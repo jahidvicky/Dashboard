@@ -175,7 +175,7 @@ const CouponCode = () => {
                     </button>
                     <button
                       onClick={() => handleDelete(c._id)}
-                      className="bg-red-500 px-3 py-1 rounded text-white flex items-center gap-1 whitespace-nowrap hover:cursor-pointer"
+                      className="bg-[#f00000] px-3 py-1 rounded text-white flex items-center gap-1 whitespace-nowrap hover:cursor-pointer"
                     >
                       <MdDelete /> <span>Delete</span>
                     </button>

@@ -36,7 +36,7 @@ const ClaimDetails = () => {
       ? "text-green-600"
       : claim.status === "Pending"
         ? "text-yellow-600"
-        : "text-red-600";
+        : "text-[#f00000]";
 
   return (
     <motion.div

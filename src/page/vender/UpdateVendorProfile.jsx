@@ -266,7 +266,7 @@ const UpdateVendorProfile = () => {
                             className={`input ${errors.companyName ? "border-red-500" : ""}`}
                         />
                         {errors.companyName && (
-                            <p className="text-red-500 text-sm">{errors.companyName}</p>
+                            <p className="text-[#f00000] text-sm">{errors.companyName}</p>
                         )}
                     </div>
 
@@ -368,7 +368,7 @@ const UpdateVendorProfile = () => {
                             className={`input ${errors.contactEmail ? "border-red-500" : ""}`}
                         />
                         {errors.contactEmail && (
-                            <p className="text-red-500 text-sm">{errors.contactEmail}</p>
+                            <p className="text-[#f00000] text-sm">{errors.contactEmail}</p>
                         )}
                     </div>
                     <div>
@@ -659,7 +659,7 @@ const UpdateVendorProfile = () => {
                                         <button
                                             type="button"
                                             onClick={() => removeFile("certifications", idx)}
-                                            className="text-red-500 hover:underline hover:cursor-pointer"
+                                            className="text-[#f00000] hover:underline hover:cursor-pointer"
                                         >
                                             Remove
                                         </button>
@@ -714,7 +714,7 @@ const UpdateVendorProfile = () => {
                                         <button
                                             type="button"
                                             onClick={() => removeFile("certificates", idx)}
-                                            className="text-red-500 hover:underline hover:cursor-pointer"
+                                            className="text-[#f00000] hover:underline hover:cursor-pointer"
                                         >
                                             Remove
                                         </button>
@@ -743,7 +743,7 @@ const UpdateVendorProfile = () => {
                     I accept the Terms & Conditions and Privacy Policy.
                 </label>
                 {errors.termsAccepted && (
-                    <p className="text-red-500 text-sm">{errors.termsAccepted}</p>
+                    <p className="text-[#f00000] text-sm">{errors.termsAccepted}</p>
                 )}
             </div>
 
@@ -754,7 +754,7 @@ const UpdateVendorProfile = () => {
                 disabled={loading || !formData.termsAccepted}
                 className={`w-full font-semibold p-3 rounded-lg hover:cursor-pointer ${loading || !formData.termsAccepted
                     ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                    : "bg-red-600 hover:bg-red-700 text-white"
+                    : "bg-[#f00000] hover:bg-red-700 text-white"
                     }`}
             >
                 {loading ? "Submitting..." : "Submit Profile"}

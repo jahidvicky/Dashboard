@@ -149,7 +149,7 @@ function Review() {
                 {review.description.length > 20 && (
                   <button
                     onClick={() => toggleExpand(review._id)}
-                    className="text-red-600 ml-2 hover:underline hover:cursor-pointer"
+                    className="text-[#f00000] ml-2 hover:underline hover:cursor-pointer"
                   >
                     {isExpanded ? "Show Less" : "Show More"}
                   </button>

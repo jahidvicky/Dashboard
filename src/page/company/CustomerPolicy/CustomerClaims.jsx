@@ -109,7 +109,7 @@ const CustomerClaims = () => {
                     return reason;
                 },
                 customClass: {
-                    confirmButton: "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded ml-2",
+                    confirmButton: "bg-[#f00000] hover:bg-red-700 text-white px-4 py-2 rounded ml-2",
                     cancelButton: "bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded",
                     popup: "p-6 rounded-lg border border-gray-300 shadow-lg max-w-md w-full",
                     title: "text-xl font-bold mb-4 text-gray-800 text-center",
@@ -181,7 +181,7 @@ const CustomerClaims = () => {
                                             ? "text-yellow-600"
                                             : claim.status === "Approved"
                                                 ? "text-green-600"
-                                                : "text-red-600"
+                                                : "text-[#f00000]"
                                             }`}
                                     >
                                         {claim.status}
@@ -202,8 +202,8 @@ const CustomerClaims = () => {
                                                 onClick={() => handleStatusChange(claim._id, "Rejected")}
                                                 disabled={claim.status !== "Pending"}
                                                 className={`px-4 py-2 rounded text-white transition ${claim.status !== "Pending"
-                                                    ? "bg-red-400 opacity-100 cursor-not-allowed"
-                                                    : "bg-red-600 hover:bg-red-700 cursor-pointer"
+                                                    ? "bg-[#f00000] opacity-100 cursor-not-allowed"
+                                                    : "bg-[#f00000] hover:bg-red-700 cursor-pointer"
                                                     }`}
                                             >
                                                 {claim.status === "Rejected" ? "Rejected" : "Reject"}
@@ -227,7 +227,7 @@ const CustomerClaims = () => {
                                 <button
                                     key={i}
                                     className={`px-3 py-1 border rounded transition-colors hover:cursor-pointer ${currentPage === i + 1
-                                        ? "bg-red-600 text-white border-red-600"
+                                        ? "bg-[#f00000] text-white border-red-600"
                                         : "hover:bg-red-100"
                                         }`}
                                     onClick={() => handlePageChange(i + 1)}

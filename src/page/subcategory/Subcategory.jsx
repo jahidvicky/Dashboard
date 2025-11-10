@@ -175,7 +175,7 @@ const Subcategory = () => {
                   <button onClick={() => openEditModal(data)} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 hover:cursor-pointer text-center">
                     <FaEdit />
                   </button>
-                  <button onClick={() => handleDelete(data._id)} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 hover:cursor-pointer">
+                  <button onClick={() => handleDelete(data._id)} className="bg-[#f00000] text-white px-3 py-1 rounded hover:bg-red-600 hover:cursor-pointer">
                     <FaTrash />
                   </button>
                 </td>
@@ -277,7 +277,7 @@ const Subcategory = () => {
 
               <button
                 type="submit"
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 hover:cursor-pointer"
+                className="bg-[#f00000] text-white px-4 py-2 rounded-lg hover:bg-red-700 hover:cursor-pointer"
               >
                 {editId ? "Update SubCategory" : "Save SubCategory"}
               </button>
