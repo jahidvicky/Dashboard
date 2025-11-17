@@ -59,7 +59,7 @@ const Products = () => {
       const res = await API.get("/getAllProduct");
       setProducts(res.data.products || []);
     } catch (err) {
-      Swal.fire("Error", "Failed to fetch products", "error");
+      console.error(err)
     }
   };
 
@@ -68,9 +68,8 @@ const Products = () => {
     try {
       const res = await API.get("/getcategories");
       setCategory(res.data.categories || []);
-      console.log(res);
     } catch (err) {
-      Swal.fire("Error", "Failed to fetch categories", "error");
+      console.error(err)
     }
   };
 
