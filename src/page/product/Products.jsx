@@ -42,7 +42,7 @@ const Products = () => {
     product_lens_description1: "",
     product_lens_title2: "",
     product_lens_description2: "",
-    type: "",
+    lens_type: "",
     material: "",
     manufacturer: "",
     water_content: "",
@@ -151,7 +151,7 @@ const Products = () => {
       product_lens_description1: "",
       product_lens_title2: "",
       product_lens_description2: "",
-      type: "",
+      lens_type: "",
       material: "",
       manufacturer: "",
       water_content: "",
@@ -197,7 +197,7 @@ const Products = () => {
       product_lens_description1: product.product_lens_description1 || "",
       product_lens_title2: product.product_lens_title2 || "",
       product_lens_description2: product.product_lens_description2 || "",
-      type: product.contact_type || "",
+      lens_type: product.lens_type || "",
       material: product.material || "",
       manufacturer: product.manufacturer || "",
       water_content: product.water_content || "",
@@ -309,7 +309,7 @@ const Products = () => {
         "face_shape",
         "frame_color",
         "frame_fit",
-        "contact_type",
+        "lens_type",
         "material",
         "manufacturer",
         "water_content",
@@ -930,12 +930,12 @@ const Products = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-gray-700 font-medium mb-2">
-                        Type
+                        Lens Type
                       </label>
                       <input
                         type="text"
-                        name="type"
-                        value={formData.type}
+                        name="lens_type"
+                        value={formData.lens_type}
                         onChange={handleChange}
                         placeholder="Daily/Monthly"
                         className="w-full border p-2 rounded"
