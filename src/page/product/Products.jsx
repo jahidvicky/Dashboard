@@ -68,7 +68,6 @@ const Products = () => {
     try {
       const res = await API.get("/getcategories");
       setCategory(res.data.categories || []);
-      console.log(res);
     } catch (err) {
       console.error(err)
     }
