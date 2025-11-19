@@ -6,74 +6,90 @@ import { IoIosCloseCircle } from "react-icons/io";
 
 const Subcategory = () => {
   const [open, setOpen] = useState(false);
-  const [category, setCategory] = useState([]);
-  const [subcategory, setsubCategory] = useState([]);
-  const [Image, setImage] = useState(null);
-  const [formData, setFormData] = useState({
-    cat_sec: "",
-    subCategoryName: "",
-    description: ""
-  });
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+
+  const [image, setImage] = useState(null);
   const [editId, setEditId] = useState(null);
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; // show 5 rows per page
+  const [formData, setFormData] = useState({
+    categoryName: "",
+    subCategoryName: "",
+    description: "",
+    oldImage: "",
+  });
 
-  // Fetch categories
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // =============================
+  // Fetch Categories
+  // =============================
   const fetchCategories = async () => {
     try {
       const res = await API.get("/getcategories");
-      setCategory(res.data.categories || []);
-    } catch (err) {
+      setCategories(res.data.categories || []);
+    } catch {
       Swal.fire("Error", "Failed to fetch categories", "error");
     }
   };
 
-  const fetchsubCategories = async () => {
+  // =============================
+  // Fetch Subcategories
+  // =============================
+  const fetchSubcategories = async () => {
     try {
       const res = await API.get("/getallsubcategory");
-      setsubCategory(res.data.subcategory || []);
-    } catch (err) {
-      Swal.fire("Error", "Failed to fetch categories", "error");
+      setSubcategories(res.data.subcategories || []);
+    } catch {
+      Swal.fire("Error", "Failed to fetch subcategories", "error");
     }
   };
 
   useEffect(() => {
     fetchCategories();
-    fetchsubCategories();
+    fetchSubcategories();
   }, []);
 
-  // Handle input
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
+  // =============================
   // Open Add Modal
+  // =============================
   const openAddModal = () => {
-    setFormData({ cat_sec: "", subCategoryName: "", description: "" });
+    setFormData({
+      categoryName: "",
+      subCategoryName: "",
+      description: "",
+      oldImage: "",
+    });
     setImage(null);
     setEditId(null);
     setOpen(true);
   };
 
+  // =============================
   // Open Edit Modal
-  const openEditModal = (product) => {
+  // =============================
+  const openEditModal = (data) => {
     setFormData({
-      ...product,
-      cat_sec: product.cat_sec || "",
-      subCategoryName: product.subCategoryName || "",
+      categoryName: data.category?.categoryName || "",
+      subCategoryName: data.name || "",
+      description: data.description || "",
+      oldImage: data.image || "",
     });
-    setEditId(product._id);
+
+    setImage(null);
+    setEditId(data._id);
     setOpen(true);
   };
 
+  // =============================
   // Delete Subcategory
-  const handleDelete = async (id) => {
+  // =============================
+  const handleDelete = (id) => {
     Swal.fire({
       title: "Are you sure?",
-      text: "You won�t be able to revert this!",
+      text: "This will remove the subcategory permanently.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -83,99 +99,116 @@ const Subcategory = () => {
       if (result.isConfirmed) {
         try {
           await API.delete(`/deletesubcategory/${id}`);
-          Swal.fire("Deleted!", "Product deleted successfully!", "success");
-          fetchsubCategories();
-        } catch (err) {
-          Swal.fire("Error", "Failed to delete product", "error");
+          Swal.fire("Deleted!", "Subcategory deleted!", "success");
+          fetchSubcategories();
+        } catch {
+          Swal.fire("Error", "Failed to delete", "error");
         }
       }
     });
   };
 
+  // =============================
+  // Submit Form
+  // =============================
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       const payload = new FormData();
-      payload.append("cat_sec", formData.cat_sec);
+      payload.append("categoryName", formData.categoryName);
       payload.append("subCategoryName", formData.subCategoryName);
       payload.append("description", formData.description);
-      if (Image) payload.append("image", Image);
+      payload.append("oldImage", formData.oldImage); // important
+
+      if (image) payload.append("image", image);
 
       if (editId) {
         await API.put(`/updatesubcategory/${editId}`, payload, {
           headers: { "Content-Type": "multipart/form-data" },
         });
-        Swal.fire("Success", "Subcategory updated successfully!", "success");
+        Swal.fire("Success", "Subcategory updated!", "success");
       } else {
         await API.post("/addsubcategory", payload, {
           headers: { "Content-Type": "multipart/form-data" },
         });
-        Swal.fire("Success", "Subcategory added successfully!", "success");
+        Swal.fire("Success", "Subcategory created!", "success");
       }
 
-      fetchsubCategories();
+      fetchSubcategories();
       setOpen(false);
     } catch (err) {
-      Swal.fire(
-        "Error",
-        err.response?.data?.message || "Failed to save subcategory",
-        "error"
-      );
+      Swal.fire("Error", "Failed to save subcategory", "error");
     }
   };
 
-  // Pagination logic
-  const totalPages = Math.ceil(subcategory.length / itemsPerPage);
-  const currentData = subcategory.slice(
+  // Pagination Logic
+  const totalPages = Math.ceil(subcategories.length / itemsPerPage);
+  const currentData = subcategories.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
   return (
     <div className="p-6">
+
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Sub Category</h2>
+        <h2 className="text-xl font-semibold">Sub Categories</h2>
         <button
           onClick={openAddModal}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 hover:cursor-pointer"
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
         >
-          <FaPlus className="inline mr-2" /> Add Sub-Category
+          <FaPlus className="inline mr-2" /> Add SubCategory
         </button>
       </div>
 
-      {/* Product Table */}
+      {/* Table */}
       <div className="overflow-auto max-h-[60vh] border rounded">
         <table className="w-full border-collapse">
-          <thead className="bg-black text-white sticky top-0 z-10">
+          <thead className="bg-black text-white sticky top-0">
             <tr>
-              <th className="px-4 py-2">Category Name</th>
-              <th className="px-4 py-2">SubCategory Name</th>
+              <th className="px-4 py-2">Category</th>
+              <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Description</th>
               <th className="px-4 py-2">Image</th>
               <th className="px-4 py-2">Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {currentData.map((data, index) => (
               <tr key={index}>
-                <td className="border px-4 py-2 text-center capitalize">{data.cat_sec}</td>
-                <td className="border px-4 py-2 text-center">{data.subCategoryName}</td>
-                <td className="border px-4 py-2 text-center">{data.description}</td>
+                <td className="border px-4 py-2 capitalize">
+                  {data.category?.categoryName}
+                </td>
+
+                <td className="border px-4 py-2">{data.name}</td>
+
+                <td className="border px-4 py-2">{data.description}</td>
+
                 <td className="border px-4 py-2 text-center">
                   {data.image && (
                     <img
-                      src={`${IMAGE_URL + data.image}`}
-                      alt="review"
-                      className="w-12 h-12 object-cover rounded"
+                      src={`${IMAGE_URL}${data.image}`}
+                      alt="subcategory"
+                      className="w-16 h-16 object-cover rounded"
                     />
                   )}
                 </td>
-                <td className="border space-x-1 mx-1">
-                  <button onClick={() => openEditModal(data)} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 hover:cursor-pointer text-center">
+
+                <td className="border px-4 py-2 text-center space-x-2">
+                  <button
+                    onClick={() => openEditModal(data)}
+                    className="bg-blue-500 text-white px-3 py-1 rounded"
+                  >
                     <FaEdit />
                   </button>
-                  <button onClick={() => handleDelete(data._id)} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 hover:cursor-pointer">
+
+                  <button
+                    onClick={() => handleDelete(data._id)}
+                    className="bg-red-600 text-white px-3 py-1 rounded"
+                  >
                     <FaTrash />
                   </button>
                 </td>
@@ -185,16 +218,15 @@ const Subcategory = () => {
         </table>
       </div>
 
-
       {/* Pagination */}
-      <div className="flex justify-center space-x-2 mt-4">
+      <div className="flex justify-center gap-2 mt-4">
         {Array.from({ length: totalPages }, (_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentPage(idx + 1)}
-            className={`px-3 py-1 rounded hover:cursor-pointer ${currentPage === idx + 1
+            className={`px-3 py-1 rounded ${currentPage === idx + 1
               ? "bg-blue-500 text-white"
-              : "bg-gray-200 hover:bg-gray-300"
+              : "bg-gray-200"
               }`}
           >
             {idx + 1}
@@ -204,30 +236,27 @@ const Subcategory = () => {
 
       {/* Modal */}
       {open && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="bg-white w-full max-w-2xl rounded-lg shadow p-6 relative max-h-[90vh] overflow-y-auto">
+
             <h3 className="text-lg font-semibold mb-4">
               {editId ? "Edit SubCategory" : "Add SubCategory"}
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-3">
-              {/* Category Dropdown */}
+
+              {/* Category */}
               <div>
-                <label className="block text-gray-700 mb-1">Category</label>
+                <label className="block font-medium">Category</label>
                 <select
-                  name="cat_sec"
-                  value={formData.cat_sec}
+                  value={formData.categoryName}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      cat_sec: e.target.value,
-                      subCategoryName: "",
-                    })
+                    setFormData({ ...formData, categoryName: e.target.value })
                   }
-                  className="w-full border rounded p-2"
+                  className="w-full border p-2 rounded"
                 >
                   <option value="">Select Category</option>
-                  {category.map((cat) => (
+                  {categories.map((cat) => (
                     <option key={cat._id} value={cat.categoryName}>
                       {cat.categoryName}
                     </option>
@@ -235,38 +264,74 @@ const Subcategory = () => {
                 </select>
               </div>
 
-              {/* Subcategory Dropdown */}
-              {formData.cat_sec && (
-                <div>
-                  <label className="block text-gray-700">Subcategory</label>
-                  <select
-                    name="subCategoryName"
-                    value={formData.subCategoryName}
-                    onChange={handleChange}
-                    className="w-full border rounded p-2"
-                  >
-                    <option value="">Select Subcategory</option>
-                    {category
-                      .find((c) => c.categoryName === formData.cat_sec)
-                      ?.subCategoryNames.map((sub, idx) => (
-                        <option key={idx} value={sub}>
-                          {sub}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-              )}
+              {/* SubCategory Name */}
+              <div>
+                <label className="block font-medium">SubCategory Name</label>
+                <input
+                  type="text"
+                  value={formData.subCategoryName}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      subCategoryName: e.target.value,
+                    })
+                  }
+                  className="w-full border p-2 rounded"
+                />
+              </div>
 
+              {/* Description */}
               <textarea
-                name="description"
                 value={formData.description}
-                onChange={handleChange}
-                placeholder="SubCategory Description"
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                placeholder="Description"
                 className="w-full border p-2 rounded"
               />
 
+              {/* Image Section */}
               <div>
-                <label className="block text-gray-700">SubCategory Image</label>
+                <label className="block font-medium mb-1">
+                  SubCategory Image
+                </label>
+
+                {/* Existing Image */}
+                {editId && !image && formData.oldImage && (
+                  <div className="relative inline-block mb-2">
+                    <img
+                      src={`${IMAGE_URL}${formData.oldImage}`}
+                      className="w-28 h-28 rounded object-cover"
+                    />
+                    <button
+                      type="button"
+                      className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center"
+                      onClick={() =>
+                        setFormData({ ...formData, oldImage: "" })
+                      }
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+
+                {/* New Image Preview */}
+                {image && (
+                  <div className="relative inline-block mb-2">
+                    <img
+                      src={URL.createObjectURL(image)}
+                      className="w-28 h-28 rounded object-cover"
+                    />
+                    <button
+                      type="button"
+                      className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center"
+                      onClick={() => setImage(null)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+
                 <input
                   type="file"
                   accept="image/*"
@@ -275,18 +340,14 @@ const Subcategory = () => {
                 />
               </div>
 
-              <button
-                type="submit"
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 hover:cursor-pointer"
-              >
+              <button className="bg-red-600 text-white px-4 py-2 rounded">
                 {editId ? "Update SubCategory" : "Save SubCategory"}
               </button>
             </form>
 
-            {/* Close Button */}
             <button
               onClick={() => setOpen(false)}
-              className="absolute top-2 right-2 text-4xl hover:text-red-500 hover:cursor-pointer"
+              className="absolute top-2 right-2 text-4xl text-gray-600 hover:text-red-600"
             >
               <IoIosCloseCircle />
             </button>

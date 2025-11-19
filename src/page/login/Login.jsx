@@ -101,7 +101,7 @@ const Login = () => {
                 <>
                   {/* Email */}
                   <label className="text-xl mb-1 block">
-                    Email <span className="text-red-500">*</span>
+                    Email <span className="text-[#f00000]">*</span>
                   </label>
                   <input
                     type="email"
@@ -114,7 +114,7 @@ const Login = () => {
 
                   {/* Password */}
                   <label className="text-xl mb-1 block">
-                    Password <span className="text-red-500">*</span>
+                    Password <span className="text-[#f00000]">*</span>
                   </label>
                   <div className="relative mb-6">
                     <input
@@ -143,7 +143,7 @@ const Login = () => {
                   </button>
 
                   <p
-                    className="text-red-500 cursor-pointer text-center hover:underline"
+                    className="text-[#f00000] cursor-pointer text-center hover:underline"
                     onClick={() => setStep(1)}
                   >
                     Forgot Password?
@@ -215,7 +215,7 @@ const Login = () => {
                   )}
 
                   <p
-                    className="text-red-500 mt-2 cursor-pointer text-center hover:underline"
+                    className="text-[#f00000] mt-2 cursor-pointer text-center hover:underline"
                     onClick={() => setStep(0)}
                   >
                     Cancel

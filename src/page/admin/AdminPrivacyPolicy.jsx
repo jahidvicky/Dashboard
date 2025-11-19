@@ -9,8 +9,8 @@ export default function AdminPrivacyPolicy() {
                 {/* Header */}
                 <header className="mb-8">
                     <div className="bg-gradient-to-r from-red-900 via-black to-black rounded-2xl p-6 shadow-2xl border-2 border-red-700 py-12">
-                        <h1 className="text-3xl sm:text-4xl font-extrabold text-red-400 text-center">Privacy Policy</h1>
-                        {/* <p className="mt-2 text-sm text-gray-300">Last Updated: <span className="text-red-200"></span></p> */}
+                        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#f00000] text-center">Privacy Policy</h1>
+                        {/* <p className="mt-2 text-sm text-gray-300">Last Updated: <span className="text-[#f00000]"></span></p> */}
                         <p className="mt-3 text-gray-200 text-center">This document outlines privacy and data handling practices for administrators.</p>
                     </div>
                 </header>
@@ -31,7 +31,7 @@ export default function AdminPrivacyPolicy() {
                         ].map((item, idx) => (
                             <p
                                 key={idx}
-                                className="text-sm px-3 py-1 rounded-md bg-red-900/20 border border-red-700 text-black hover:bg-red-800/40 transition"
+                                className="text-sm px-3 py-1 rounded-md bg-[#f00000] border border-red-700 text-black hover:bg-red-800/40 transition"
                             >
                                 {item}
                             </p>
@@ -42,14 +42,14 @@ export default function AdminPrivacyPolicy() {
                 {/* Content */}
                 <article className="prose prose-invert max-w-none">
                     <section id="sec-0" className="mb-6">
-                        <h2 className="text-2xl font-bold text-red-500">1. Purpose & Scope</h2>
+                        <h2 className="text-2xl font-bold text-[#f00000]">1. Purpose & Scope</h2>
                         <p className="text-black">This policy governs handling of personal data within the
                             {/* <strong>{companyName}</strong>  */}
                             admin panel. It applies to all administrators, moderators, support staff, and third-party contractors who access the admin interface.</p>
                     </section>
 
                     <section id="sec-1" className="mb-6">
-                        <h2 className="text-2xl font-bold text-red-500">2. Data Collected</h2>
+                        <h2 className="text-2xl font-bold text-[#f00000]">2. Data Collected</h2>
                         <p className="text-black">Admin operations may access the following categories of data:</p>
                         <ul className="list-disc ml-6 text-black">
                             <li>User profile data: name, email, phone, addresses, date of birth.</li>
@@ -61,7 +61,7 @@ export default function AdminPrivacyPolicy() {
                     </section>
 
                     <section id="sec-2" className="mb-6">
-                        <h2 className="text-2xl font-bold text-red-500">3. Admin Access & Roles</h2>
+                        <h2 className="text-2xl font-bold text-[#f00000]">3. Admin Access & Roles</h2>
                         <p className="text-black">We enforce role-based access control (RBAC). Typical roles include:</p>
                         <ul className="list-disc ml-6 text-black">
                             <li><strong>Super Admin:</strong> Full system access, user & company management, security settings.</li>
@@ -73,13 +73,13 @@ export default function AdminPrivacyPolicy() {
                     </section>
 
                     <section id="sec-3" className="mb-6">
-                        <h2 className="text-2xl font-bold text-red-500">4. Audit Logs & Monitoring</h2>
+                        <h2 className="text-2xl font-bold text-[#f00000]">4. Audit Logs & Monitoring</h2>
                         <p className="text-black">Every admin action is logged with timestamp, admin ID, IP, and action details. Logs are retained for security investigations and compliance.</p>
                         <p className="mt-2 text-black">Audit logs are immutable and accessible only by authorized security personnel and auditors.</p>
                     </section>
 
                     <section id="sec-4" className="mb-6">
-                        <h2 className="text-2xl font-bold text-red-500">5. Data Exports & Sharing</h2>
+                        <h2 className="text-2xl font-bold text-[#f00000]">5. Data Exports & Sharing</h2>
                         <p className="text-black">Data export is restricted and should follow the Export Policy:</p>
                         <ul className="list-disc ml-6 text-black">
                             <li>Exports require justification and approval (email record stored).</li>
@@ -89,7 +89,7 @@ export default function AdminPrivacyPolicy() {
                     </section>
 
                     <section id="sec-5" className="mb-6">
-                        <h2 className="text-2xl font-bold text-red-500">6. Retention & Deletion</h2>
+                        <h2 className="text-2xl font-bold text-[#f00000]">6. Retention & Deletion</h2>
                         <p className="text-black">Data retention is governed by legal, tax, and operational requirements. Admins should:</p>
                         <ul className="list-disc ml-6 text-black">
                             <li>Follow retention timelines (e.g., financial records: 7 years or local legal requirement).</li>
@@ -98,7 +98,7 @@ export default function AdminPrivacyPolicy() {
                     </section>
 
                     <section id="sec-6" className="mb-6">
-                        <h2 className="text-2xl font-bold text-red-500">7. Security & Best Practices</h2>
+                        <h2 className="text-2xl font-bold text-[#f00000]">7. Security & Best Practices</h2>
                         <p className="text-black">Administrators must adhere to security standards:</p>
                         <ul className="list-disc ml-6 text-black">
                             <li>Use MFA and unique admin credentials; never share accounts.</li>
@@ -109,7 +109,7 @@ export default function AdminPrivacyPolicy() {
                     </section>
 
                     <section id="sec-7" className="mb-6">
-                        <h2 className="text-2xl font-bold text-red-500">8. User Rights & Admin Responsibilities</h2>
+                        <h2 className="text-2xl font-bold text-[#f00000]">8. User Rights & Admin Responsibilities</h2>
                         <p className="text-black">Admins handling user requests must verify identity before making changes. Common requests include:</p>
                         <ul className="list-disc ml-6 text-black">
                             <li>Access or export of user data (logged and requires identity verification).</li>
@@ -119,7 +119,7 @@ export default function AdminPrivacyPolicy() {
                     </section>
 
                     <section id="sec-8" className="mb-6">
-                        <h2 className="text-2xl font-bold text-red-500">9. Breach Response & Incident Management</h2>
+                        <h2 className="text-2xl font-bold text-[#f00000]">9. Breach Response & Incident Management</h2>
                         <p className="text-black">In case of a suspected data breach:</p>
                         <ul className="list-disc ml-6 text-black">
                             <li>Immediately notify the security team and freeze affected admin accounts.</li>

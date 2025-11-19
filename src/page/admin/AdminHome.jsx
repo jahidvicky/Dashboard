@@ -132,7 +132,7 @@ export default function AdminHome() {
 
                 <div className="bg-white p-6  border border-red-200 rounded-2xl shadow-red-600 hover:shadow-lg transition">
                     <div className="flex items-center gap-3">
-                        <BadgeQuestionMark className="text-red-500" size={28} />
+                        <BadgeQuestionMark className="text-[#f00000]" size={28} />
                         <h2 className="text-lg font-semibold">Inquiries</h2>
                     </div>
                     <p className="text-2xl font-bold mt-4">{totalInquiries.length}</p>
@@ -163,7 +163,7 @@ export default function AdminHome() {
                     </Link>
                     <Link
                         to="/admin/company"
-                        className="bg-red-500 text-white text-center py-4 px-6 rounded-xl shadow hover:bg-red-600 transition hover:cursor-pointer"
+                        className="bg-[#f00000] text-white text-center py-4 px-6 rounded-xl shadow hover:bg-red-600 transition hover:cursor-pointer"
                     >
                         Manage Company
                     </Link>

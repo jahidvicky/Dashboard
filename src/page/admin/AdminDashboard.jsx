@@ -41,7 +41,7 @@ export default function AdminDashboard() {
               key={item.path}
               to={item.path}
               className={`block px-4 py-2 rounded border-b border-gray-200 hover:bg-red-500 hover:text-white hover:cursor-pointer ${location.pathname === item.path
-                ? "bg-red-500 text-white"
+                ? "bg-[#f00000] text-white"
                 : "text-gray-700"
                 }`}
             >

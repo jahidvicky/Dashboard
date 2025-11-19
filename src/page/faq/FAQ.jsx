@@ -177,7 +177,7 @@ function FAQ() {
                   <>
                     <p>{data.description}</p>
                     <button
-                      className="text-red-500 underline text-sm hover:cursor-pointer"
+                      className="text-[#f00000] underline text-sm hover:cursor-pointer"
                       onClick={() => setExpandedIndex(null)}
                     >
                       Show Less
@@ -192,7 +192,7 @@ function FAQ() {
                     </p>
                     {data.description?.length > 100 && (
                       <button
-                        className="text-red-500 underline text-sm hover:cursor-pointer"
+                        className="text-[#f00000] underline text-sm hover:cursor-pointer"
                         onClick={() => setExpandedIndex(index)}
                       >
                         Show More
@@ -209,7 +209,7 @@ function FAQ() {
                   <RiEdit2Fill className="text-2xl" />
                 </button>
                 <button
-                  className="bg-red-500 px-3 py-1 rounded-xl text-white hover:bg-red-600 hover:cursor-pointer"
+                  className="bg-[#f00000] px-3 py-1 rounded-xl text-white hover:bg-red-600 hover:cursor-pointer"
                   onClick={() => handleDelete(data._id)}
                 >
                   <MdDelete className="text-2xl" />

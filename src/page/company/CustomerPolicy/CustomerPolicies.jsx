@@ -83,7 +83,7 @@ const CustomerPolicies = () => {
 
   return (
     <div className="min-h-screen">
-      <h1 className="text-2xl font-bold mb-6 text-red-600">
+      <h1 className="text-2xl font-bold mb-6 text-[#f00000]">
         Customer Policies
       </h1>
 
@@ -159,7 +159,7 @@ const CustomerPolicies = () => {
                         ? "bg-green-100 text-green-700"
                         : item?.status === "Expired"
                           ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
+                          : "bg-[#f00000] text-[#f00000]"
                         }`}
                     >
                       {item?.status || "-"}
@@ -187,7 +187,7 @@ const CustomerPolicies = () => {
               <button
                 key={i}
                 className={`px-3 py-1 border rounded transition-colors hover:cursor-pointer ${currentPage === i + 1
-                  ? "bg-red-600 text-white border-red-600"
+                  ? "bg-[#f00000] text-white border-red-600"
                   : "hover:bg-red-100"
                   }`}
                 onClick={() => handlePageChange(i + 1)}

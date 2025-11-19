@@ -183,7 +183,7 @@ const BrandSection = () => {
                                 <RiEdit2Fill className="text-2xl" />
                             </button>
                             <button
-                                className="bg-red-500 px-3 py-1 rounded-xl text-white hover:cursor-pointer"
+                                className="bg-[#f00000] px-3 py-1 rounded-xl text-white hover:cursor-pointer"
                                 onClick={() => handleDelete(data._id)}
                             >
                                 <MdDelete className="text-2xl" />
@@ -201,7 +201,7 @@ const BrandSection = () => {
                             key={i}
                             onClick={() => setCurrentPage(i + 1)}
                             className={`px-4 py-2 rounded-lg font-semibold ${currentPage === i + 1
-                                ? "bg-red-600 text-white"
+                                ? "bg-[#f00000] text-white"
                                 : "bg-gray-200 hover:bg-gray-300"
                                 }`}
                         >

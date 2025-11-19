@@ -187,7 +187,7 @@ const Disclaimer = () => {
                             {data.description.length > 20 && (
                                 <button
                                     onClick={() => toggleExpand(data._id)}
-                                    className="text-red-600 ml-2 hover:underline hover:cursor-pointer"
+                                    className="text-[#f00000] ml-2 hover:underline hover:cursor-pointer"
                                 >
                                     {isExpanded ? "Show Less" : "Show More"}
                                 </button>
@@ -214,7 +214,7 @@ const Disclaimer = () => {
                                 <RiEdit2Fill className="text-2xl" />
                             </button>
                             <button
-                                className="bg-red-500 px-3 py-1 rounded-xl text-white hover:cursor-pointer"
+                                className="bg-[#f00000] px-3 py-1 rounded-xl text-white hover:cursor-pointer"
                                 onClick={() => handleDelete(data._id)}
                             >
                                 <MdDelete className="text-2xl" />

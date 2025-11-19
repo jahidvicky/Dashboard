@@ -59,7 +59,7 @@ const Appointment = () => {
         <div className="p-6 bg-gray-50 min-h-screen">
             {/* Title */}
             <motion.h2
-                className="text-3xl font-bold text-center text-red-600 mb-8"
+                className="text-3xl font-bold text-center text-[#f00000] mb-8"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
@@ -155,7 +155,7 @@ const Appointment = () => {
                             key={i}
                             onClick={() => setCurrentPage(i + 1)}
                             className={`px-3 py-1 rounded-lg border hover:cursor-pointer ${currentPage === i + 1
-                                ? "bg-red-600 text-white font-semibold"
+                                ? "bg-[#f00000] text-white font-semibold"
                                 : "bg-gray-100 hover:bg-gray-200"
                                 }`}
                         >

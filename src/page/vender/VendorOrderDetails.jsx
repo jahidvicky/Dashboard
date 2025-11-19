@@ -9,7 +9,7 @@ const VendorOrderDetails = () => {
     if (!order) {
         return (
             <div className="p-6 flex flex-col items-center justify-center min-h-[60vh]">
-                <p className="text-red-600 text-lg font-semibold mb-4">No order data found.</p>
+                <p className="text-[#f00000] text-lg font-semibold mb-4">No order data found.</p>
                 <Link
                     to="/vendor/order"
                     className="text-white bg-blue-600 px-6 py-2 rounded-lg hover:bg-blue-700 transition"

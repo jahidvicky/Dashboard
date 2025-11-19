@@ -162,7 +162,7 @@ const EyeExam = () => {
                                     <RiEdit2Fill className="text-2xl" />
                                 </button>
                                 <button
-                                    className="bg-red-500 px-3 py-1 h-10 rounded-xl text-white hover:cursor-pointer"
+                                    className="bg-[#f00000] px-3 py-1 h-10 rounded-xl text-white hover:cursor-pointer"
                                     onClick={() => handleDelete(exam._id)}
                                 >
                                     <MdDelete className="text-2xl" />

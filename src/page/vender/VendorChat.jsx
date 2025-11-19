@@ -83,7 +83,7 @@ const VendorChat = () => {
 
       {/* Error Display */}
       {error && (
-        <div className="p-3 bg-red-100 text-red-800 border-b border-red-300">
+        <div className="p-3 bg-[#f00000] text-[#f00000] border-b border-red-300">
           {error}
         </div>
       )}
@@ -102,9 +102,8 @@ const VendorChat = () => {
             onMouseLeave={() => setActiveMsgMenu(null)}
           >
             <div
-              className={`px-4 py-2 rounded-xl max-w-[70%] relative ${
-                msg.sender === ADMIN_ID ? "bg-gray-200 text-gray-800" : "bg-green-500 text-white"
-              }`}
+              className={`px-4 py-2 rounded-xl max-w-[70%] relative ${msg.sender === ADMIN_ID ? "bg-gray-200 text-gray-800" : "bg-green-500 text-white"
+                }`}
             >
               <div>{msg.text}</div>
               <div className="text-xs opacity-70 mt-1">
@@ -117,7 +116,7 @@ const VendorChat = () => {
               {/* Hover delete button */}
               {activeMsgMenu === msg._id && (
                 <div
-                  className="absolute top-1 right-1 bg-white border shadow-md px-2 py-1 text-red-500 text-sm rounded cursor-pointer hover:bg-gray-100"
+                  className="absolute top-1 right-1 bg-white border shadow-md px-2 py-1 text-[#f00000] text-sm rounded cursor-pointer hover:bg-gray-100"
                   onClick={() => handleDeleteMessage(msg._id)}
                 >
                   Delete

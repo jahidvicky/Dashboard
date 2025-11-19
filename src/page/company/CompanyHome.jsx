@@ -104,7 +104,7 @@ export default function CompanyHome() {
                 {/* Compliance / Standards */}
                 <div className="bg-white p-3 rounded-2xl shadow hover:shadow-lg hover:shadow-red-600 transition border border-red-200 break-words">
                     <div className="flex items-center gap-3">
-                        <FileBadge className="text-red-500" size={28} />
+                        <FileBadge className="text-[#f00000]" size={28} />
                         <h2 className="text-lg font-semibold">Standards</h2>
                     </div>
                     <p className="text-xl font-bold mt-4">{companyData.serviceStandards}</p>

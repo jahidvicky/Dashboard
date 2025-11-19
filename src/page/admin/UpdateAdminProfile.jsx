@@ -157,7 +157,7 @@ const UpdateAdminProfile = () => {
               onChange={handleChange}
               className={`input ${errors.name ? "border-red-500" : ""}`}
             />
-            {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
+            {errors.name && <p className="text-[#f00000] text-sm">{errors.name}</p>}
           </div>
 
           {/* Profile Image */}
@@ -193,7 +193,7 @@ const UpdateAdminProfile = () => {
               onChange={handleChange}
               className={`input ${errors.email ? "border-red-500" : ""}`}
             />
-            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+            {errors.email && <p className="text-[#f00000] text-sm">{errors.email}</p>}
           </div>
 
           {/* Password */}
@@ -217,7 +217,7 @@ const UpdateAdminProfile = () => {
         disabled={loading}
         className={`w-full font-semibold p-3 rounded-lg hover:cursor-pointer ${loading
           ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-          : "bg-red-600 hover:bg-red-700 text-white"
+          : "bg-[#f00000] hover:bg-red-700 text-white"
           }`}
       >
         {loading ? "Submitting..." : "Update Profile"}

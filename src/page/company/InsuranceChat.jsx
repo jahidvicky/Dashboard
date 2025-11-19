@@ -105,7 +105,7 @@ const InsuranceChat = () => {
                 {/* Three-dot menu for delete */}
                 {activeMsgMenu === msg._id && (
                   <div
-                    className="absolute top-1 right-1 bg-white border shadow-md rounded text-sm z-50 cursor-pointer px-2 py-1 text-red-500 hover:bg-gray-100"
+                    className="absolute top-1 right-1 bg-white border shadow-md rounded text-sm z-50 cursor-pointer px-2 py-1 text-[#f00000] hover:bg-gray-100"
                     onClick={() => handleDeleteMessage(msg._id)}
                   >
                     Delete

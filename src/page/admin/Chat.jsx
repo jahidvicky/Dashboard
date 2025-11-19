@@ -155,16 +155,16 @@ const Chat = () => {
               <div
                 key={msg._id}
                 className={`flex ${msg.sender === selectedUser.userId
-                    ? "justify-start"
-                    : "justify-end"
+                  ? "justify-start"
+                  : "justify-end"
                   } relative`}
                 onMouseEnter={() => setActiveMsgMenu(msg._id)}
                 onMouseLeave={() => setActiveMsgMenu(null)}
               >
                 <div
                   className={`px-4 py-2 rounded-lg max-w-xs break-words relative ${msg.sender === selectedUser.userId
-                      ? "bg-gray-200 text-gray-800"
-                      : "bg-green-500 text-white"
+                    ? "bg-gray-200 text-gray-800"
+                    : "bg-green-500 text-white"
                     }`}
                 >
                   <div>{msg.text}</div>
@@ -173,7 +173,7 @@ const Chat = () => {
                   {activeMsgMenu === msg._id && msg.sender === user._id && (
                     <div className="absolute top-1 right-1 bg-white border shadow rounded text-xs z-10">
                       <div
-                        className="px-2 py-1 cursor-pointer text-red-500 hover:bg-gray-100"
+                        className="px-2 py-1 cursor-pointer text-[#f00000] hover:bg-gray-100"
                         onClick={() => handleDeleteMessage(msg._id)}
                       >
                         Delete
@@ -207,8 +207,8 @@ const Chat = () => {
           />
           <button
             className={`px-4 py-2 rounded-r ${selectedUser
-                ? "bg-blue-500 text-white hover:bg-blue-600"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed hover:cursor-pointer"
+              ? "bg-blue-500 text-white hover:bg-blue-600"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed hover:cursor-pointer"
               }`}
             onClick={handleSend}
             disabled={!selectedUser}

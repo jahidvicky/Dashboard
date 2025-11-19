@@ -21,7 +21,6 @@ const Products = () => {
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedBrandType, setSelectedBrandType] = useState("");
 
-
   const [formData, setFormData] = useState({
     cat_id: "",
     cat_sec: "",
@@ -35,6 +34,7 @@ const Products = () => {
     product_description: "",
     frame_material: "",
     frame_shape: "",
+    face_shape: "",
     frame_color: "",
     frame_fit: "",
     gender: "",
@@ -42,12 +42,14 @@ const Products = () => {
     product_lens_description1: "",
     product_lens_title2: "",
     product_lens_description2: "",
-    type: "",
+    lens_type: "",
     material: "",
     manufacturer: "",
     water_content: "",
     stockAvailability: "",
-    brand_id: ""
+    brand_id: "",
+    isBestSeller: false,
+    isTrending: false,
   });
   const [editId, setEditId] = useState(null);
 
@@ -57,7 +59,7 @@ const Products = () => {
       const res = await API.get("/getAllProduct");
       setProducts(res.data.products || []);
     } catch (err) {
-      Swal.fire("Error", "Failed to fetch products", "error");
+      console.error(err)
     }
   };
 
@@ -67,7 +69,7 @@ const Products = () => {
       const res = await API.get("/getcategories");
       setCategory(res.data.categories || []);
     } catch (err) {
-      Swal.fire("Error", "Failed to fetch categories", "error");
+      console.error(err)
     }
   };
 
@@ -87,10 +89,9 @@ const Products = () => {
 
   // Pagination + Filtering Logic
   const filteredProducts = products.filter((pro) => {
-    const matchCategory = filterCategory ? pro.cat_id === filterCategory : true;
-    const matchSubCategory = filterSubCategory
-      ? pro.subCat_id === filterSubCategory
-      : true;
+    const matchCategory = filterCategory ? pro.cat_id?.toString() === filterCategory : true;
+    const matchSubCategory = filterSubCategory ? pro.subCat_id?.toString() === filterSubCategory : true;
+
     return matchCategory && matchSubCategory;
   });
 
@@ -102,7 +103,6 @@ const Products = () => {
   );
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const handlePageChange = (page) => setCurrentPage(page);
-
 
   const fetchBrands = async () => {
     try {
@@ -130,8 +130,6 @@ const Products = () => {
     fetchBrands();
   }, []);
 
-
-
   const openAddModal = () => {
     setFormData({
       cat_id: "",
@@ -153,11 +151,14 @@ const Products = () => {
       product_lens_description1: "",
       product_lens_title2: "",
       product_lens_description2: "",
-      type: "",
+      lens_type: "",
       material: "",
       manufacturer: "",
       water_content: "",
       stockAvailability: "",
+      brand_id: "",
+      isBestSeller: false,
+      isTrending: false,
     });
     setKeptImages([]);
     setLensImage1(null);
@@ -175,6 +176,8 @@ const Products = () => {
       subCat_id: product.subCat_id || "",
       subCategoryName: product.subCategoryName || "",
       product_name: product.product_name || "",
+      isBestSeller: product.isBestSeller || false,
+      isTrending: product.isTrending || false,
       product_size: product.product_size
         ? product.product_size.flatMap((item) =>
           item.split(",").map((s) => s.trim())
@@ -187,13 +190,14 @@ const Products = () => {
       gender: product.gender || "",
       frame_material: product.frame_material || "",
       frame_shape: product.frame_shape || "",
+      face_shape: product.face_shape || "",
       frame_color: product.frame_color || "",
       frame_fit: product.frame_fit || "",
       product_lens_title1: product.product_lens_title1 || "",
       product_lens_description1: product.product_lens_description1 || "",
       product_lens_title2: product.product_lens_title2 || "",
       product_lens_description2: product.product_lens_description2 || "",
-      type: product.contact_type || "",
+      lens_type: product.lens_type || "",
       material: product.material || "",
       manufacturer: product.manufacturer || "",
       water_content: product.water_content || "",
@@ -246,12 +250,10 @@ const Products = () => {
     setOpen(true);
   };
 
-
-
   const handleDelete = async (id) => {
     Swal.fire({
       title: "Are you sure?",
-      text: "You won�t be able to revert this!",
+      text: "You won't be able to revert this!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -304,9 +306,10 @@ const Products = () => {
         "gender",
         "frame_material",
         "frame_shape",
+        "face_shape",
         "frame_color",
         "frame_fit",
-        "contact_type",
+        "lens_type",
         "material",
         "manufacturer",
         "water_content",
@@ -320,6 +323,8 @@ const Products = () => {
 
       payload.append("stockAvailability", isNaN(stockValue) ? 0 : stockValue);
       payload.append("brand_id", selectedBrand || "");
+      payload.append("isBestSeller", formData.isBestSeller);
+      payload.append("isTrending", formData.isTrending);
 
       // 🔹 Product sizes (array)
       if (formData.product_size?.length) {
@@ -392,6 +397,9 @@ const Products = () => {
         <div className="flex gap-4">
           {/* Category Filter */}
           <div className="flex flex-col">
+            <label className="block text-gray-700 font-medium mb-2">
+              Filter Category
+            </label>
             <select
               value={filterCategory}
               onChange={(e) => {
@@ -411,21 +419,22 @@ const Products = () => {
 
           {/* Subcategory Filter */}
           <div className="flex flex-col">
+            <label className="block text-gray-700 font-medium mb-2">
+              Filter Subcategory
+            </label>
             <select
               value={filterSubCategory}
               onChange={(e) => setFilterSubCategory(e.target.value)}
               className="border rounded-lg p-2 border-red-600"
-              disabled={!filterCategory} // disable until a category is chosen
+              disabled={!filterCategory}
             >
               <option value="">All Subcategories</option>
+
               {category
                 .find((c) => c._id === filterCategory)
-                ?.subCategories?.map((subId, idx) => (
-                  <option key={subId} value={subId}>
-                    {
-                      category.find((c) => c._id === filterCategory)
-                        ?.subCategoryNames?.[idx]
-                    }
+                ?.subCategories?.map((sub) => (
+                  <option key={sub._id} value={sub._id}>
+                    {sub.name}
                   </option>
                 ))}
             </select>
@@ -434,7 +443,7 @@ const Products = () => {
 
         <button
           onClick={openAddModal}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 hover:cursor-pointer"
+          className="bg-[#f00000] text-white px-4 py-2 rounded-lg hover:bg-red-700 hover:cursor-pointer"
         >
           <FaPlus className="inline mr-2" /> Add Product
         </button>
@@ -496,7 +505,6 @@ const Products = () => {
                   ) : (
                     "No Images"
                   )}
-
                 </td>
                 <td className="border space-x-1 mx-1">
                   <button
@@ -507,7 +515,7 @@ const Products = () => {
                   </button>
                   <button
                     onClick={() => handleDelete(pro._id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 hover:cursor-pointer"
+                    className="bg-[#f00000] text-white px-3 py-1 rounded hover:bg-red-600 hover:cursor-pointer"
                   >
                     <FaTrash />
                   </button>
@@ -543,7 +551,9 @@ const Products = () => {
             <form onSubmit={handleSubmit} className="space-y-3">
               {/* Category dropdown */}
               <div>
-                <label className="block text-gray-700 mb-1">Category</label>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Category <span className="text-red-500">*</span>
+                </label>
                 <select
                   value={formData.cat_id}
                   onChange={(e) => {
@@ -572,53 +582,55 @@ const Products = () => {
               {/* Subcategory dropdown */}
               {formData.cat_id && (
                 <div>
-                  <label className="block text-gray-700">Subcategory</label>
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Subcategory <span className="text-red-500">*</span>
+                  </label>
                   <select
                     value={formData.subCat_id}
                     onChange={(e) => {
                       const selectedCat = category.find(
                         (c) => c._id === formData.cat_id
                       );
-                      const selectedSubIdx =
-                        selectedCat?.subCategories?.findIndex(
-                          (id) => id === e.target.value
-                        );
-                      const selectedSubName =
-                        selectedCat?.subCategoryNames?.[selectedSubIdx] || "";
+
+                      const selectedSub = selectedCat?.subCategories?.find(
+                        (sub) => sub._id === e.target.value
+                      );
 
                       setFormData({
                         ...formData,
-                        subCat_id: e.target.value, // store ID
-                        subCategoryName: selectedSubName, // store name
+                        subCat_id: selectedSub?._id || "",
+                        subCategoryName: selectedSub?.name || "",
                       });
                     }}
                     className="w-full border rounded p-2"
                   >
                     <option value="">Select Subcategory</option>
+
                     {category
                       .find((c) => c._id === formData.cat_id)
-                      ?.subCategories?.map((subId, idx) => (
-                        <option key={subId} value={subId}>
-                          {
-                            category.find((c) => c._id === formData.cat_id)
-                              ?.subCategoryNames?.[idx]
-                          }
+                      ?.subCategories?.map((sub) => (
+                        <option key={sub._id} value={sub._id}>
+                          {sub.name}
                         </option>
                       ))}
                   </select>
                 </div>
               )}
 
-              {/*Brand dropdown*/}
-              {formData.subCat_id === "68caa86cd72068a7d3a0f0bf" &&
+              {/* Brand dropdown */}
+              {formData.cat_id === "6915735feeb23fa59c7d532b" && (
                 <div>
-                  <label className="block text-gray-700 mb-1">Contact Lenses Brand (Optional)</label>
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Contact Lenses Brand <span className="text-gray-500">(Optional)</span>
+                  </label>
                   <select
                     value={selectedBrand}
                     onChange={(e) => {
-                      const selected = contactLensBrands.find((b) => b._id === e.target.value);
+                      const selected = contactLensBrands.find(
+                        (b) => b._id === e.target.value
+                      );
                       setSelectedBrand(selected?._id || "");
-                      setSelectedBrandType(selected?.type || ""); // type = "Eyeglass" / "Contact Lens"
+                      setSelectedBrandType(selected?.type || "");
                     }}
                     className="w-full border rounded p-2"
                   >
@@ -630,18 +642,22 @@ const Products = () => {
                     ))}
                   </select>
                 </div>
-              }
+              )}
 
-              {/*Brand dropdown*/}
-              {formData.subCat_id !== "68caa86cd72068a7d3a0f0bf" &&
+              {/* Brand dropdown for Glasses */}
+              {formData.cat_id !== "6915735feeb23fa59c7d532b" && (
                 <div>
-                  <label className="block text-gray-700 mb-1">Glasses Lenses Brand (Optional)</label>
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Glasses Brand <span className="text-gray-500">(Optional)</span>
+                  </label>
                   <select
                     value={selectedBrand}
                     onChange={(e) => {
-                      const selected = glassesBrands.find((b) => b._id === e.target.value);
+                      const selected = glassesBrands.find(
+                        (b) => b._id === e.target.value
+                      );
                       setSelectedBrand(selected?._id || "");
-                      setSelectedBrandType(selected?.type || ""); // type = "Eyeglass" / "Contact Lens"
+                      setSelectedBrandType(selected?.type || "");
                     }}
                     className="w-full border rounded p-2"
                   >
@@ -653,25 +669,31 @@ const Products = () => {
                     ))}
                   </select>
                 </div>
-              }
+              )}
 
+              {/* Product Name */}
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Product Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="product_name"
+                  value={formData.product_name.toUpperCase()}
+                  onChange={handleChange}
+                  placeholder="Enter product name"
+                  className="w-full border p-2 rounded"
+                />
+              </div>
 
-
-              <input
-                type="text"
-                name="product_name"
-                value={formData.product_name.toUpperCase()}
-                onChange={handleChange}
-                placeholder="Product Name"
-                className="w-full border p-2 rounded"
-              />
+              {/* Product Sizes */}
               <div>
                 <label className="block text-gray-700 font-medium mb-2">
                   Product Sizes
                 </label>
                 <div className="flex gap-4">
                   {["S", "M", "L"].map((size) => (
-                    <label key={size} className="flex items-center gap-1">
+                    <label key={size} className="flex items-center gap-1 cursor-pointer">
                       <input
                         type="checkbox"
                         value={size}
@@ -698,60 +720,401 @@ const Products = () => {
                 </div>
               </div>
 
-              <input
-                type="text"
-                name="product_color"
-                value={formData.product_color.join(", ")} // array ? string
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    product_color: e.target.value
-                      .split(",")
-                      .map((c) => c.trim()), // string ? array
-                  })
-                }
-                placeholder="Enter colors (Black, Red, Blue)"
-                className="w-full border p-2 rounded"
-              />
-              <div className="grid grid-cols-2 gap-4">
+              {/* Product Colors */}
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Product Colors
+                </label>
                 <input
-                  type="number"
-                  name="product_price"
-                  value={formData.product_price || ""}
-                  onChange={handleChange}
-                  placeholder="Price"
-                  className="w-full border p-2 rounded"
-                />
-                <input
-                  type="number"
-                  name="product_sale_price"
-                  value={formData.product_sale_price || ""}
-                  onChange={handleChange}
-                  placeholder="Sale Price"
+                  type="text"
+                  name="product_color"
+                  value={formData.product_color.join(", ")}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      product_color: e.target.value
+                        .split(",")
+                        .map((c) => c.trim()),
+                    })
+                  }
+                  placeholder="Enter colors (Black, Red, Blue)"
                   className="w-full border p-2 rounded"
                 />
               </div>
 
-              <input
-                type="number"
-                name="stockAvailability"
-                value={formData.stockAvailability || ""}
-                onChange={handleChange}
-                placeholder="Stock Availability"
-                className="w-full border p-2 rounded"
-              />
+              {/* Pricing */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Price <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="product_price"
+                    value={formData.product_price || ""}
+                    onChange={handleChange}
+                    placeholder="Enter price"
+                    className="w-full border p-2 rounded"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Sale Price
+                  </label>
+                  <input
+                    type="number"
+                    name="product_sale_price"
+                    value={formData.product_sale_price || ""}
+                    onChange={handleChange}
+                    placeholder="Enter sale price"
+                    className="w-full border p-2 rounded"
+                  />
+                </div>
+              </div>
 
-              <textarea
-                name="product_description"
-                value={formData.product_description}
-                onChange={handleChange}
-                placeholder="Product Description"
-                className="w-full border p-2 rounded"
-              />
+              {/* Stock Availability */}
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Stock Availability
+                </label>
+                <input
+                  type="number"
+                  name="stockAvailability"
+                  value={formData.stockAvailability || ""}
+                  onChange={handleChange}
+                  placeholder="Enter stock quantity"
+                  className="w-full border p-2 rounded"
+                />
+              </div>
+
+              {/* Product Description */}
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Product Description <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  name="product_description"
+                  value={formData.product_description}
+                  onChange={handleChange}
+                  placeholder="Enter product description"
+                  className="w-full border p-2 rounded h-20"
+                />
+              </div>
+
+              {/* Gender */}
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Gender
+                </label>
+                <select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleChange}
+                  className="w-full border p-2 rounded"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Men">Men</option>
+                  <option value="Women">Women</option>
+                  <option value="Unisex">Unisex</option>
+                </select>
+              </div>
+
+              {/* Best Seller & Trending */}
+              <div className="grid grid-cols-2 gap-4 mt-4">
+
+                {/* Best Seller */}
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.isBestSeller}
+                    onChange={(e) =>
+                      setFormData({ ...formData, isBestSeller: e.target.checked })
+                    }
+                  />
+                  <span className="font-medium">Best Seller</span>
+                </label>
+
+                {/* Trending */}
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.isTrending}
+                    onChange={(e) =>
+                      setFormData({ ...formData, isTrending: e.target.checked })
+                    }
+                  />
+                  <span className="font-medium">Trending Product</span>
+                </label>
+
+              </div>
+
+
+              {/* Sunglasses Fields */}
+              {formData.cat_id !== "6915735feeb23fa59c7d532b" && (
+                <div>
+                  <h4 className="text-gray-700 font-semibold mb-3">Frame Details</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Frame Material
+                      </label>
+                      <input
+                        type="text"
+                        name="frame_material"
+                        value={formData.frame_material}
+                        onChange={handleChange}
+                        placeholder="e.g., Metal, Plastic"
+                        className="w-full border p-2 rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Frame Shape
+                      </label>
+                      <input
+                        type="text"
+                        name="frame_shape"
+                        value={formData.frame_shape}
+                        onChange={handleChange}
+                        placeholder="e.g., Round, Square"
+                        className="w-full border p-2 rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Face Shape
+                      </label>
+                      <input
+                        type="text"
+                        name="face_shape"
+                        value={formData.face_shape}
+                        onChange={handleChange}
+                        placeholder="e.g., Round, Square, Oval, Heart..."
+                        className="w-full border p-2 rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Frame Color
+                      </label>
+                      <input
+                        type="text"
+                        name="frame_color"
+                        value={formData.frame_color}
+                        onChange={handleChange}
+                        placeholder="e.g., Black, Silver"
+                        className="w-full border p-2 rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Frame Fit
+                      </label>
+                      <input
+                        type="text"
+                        name="frame_fit"
+                        value={formData.frame_fit}
+                        onChange={handleChange}
+                        placeholder="e.g., Regular, Wide"
+                        className="w-full border p-2 rounded"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Contact Lens Fields */}
+              {formData.cat_id === "6915735feeb23fa59c7d532b" && (
+                <div>
+                  <h4 className="text-gray-700 font-semibold mb-3">Contact Lens Details</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Lens Type
+                      </label>
+                      <input
+                        type="text"
+                        name="lens_type"
+                        value={formData.lens_type}
+                        onChange={handleChange}
+                        placeholder="Daily/Monthly"
+                        className="w-full border p-2 rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Material
+                      </label>
+                      <input
+                        type="text"
+                        name="material"
+                        value={formData.material}
+                        onChange={handleChange}
+                        placeholder="e.g., Silicone Hydrogel"
+                        className="w-full border p-2 rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Manufacturer
+                      </label>
+                      <input
+                        type="text"
+                        name="manufacturer"
+                        value={formData.manufacturer}
+                        onChange={handleChange}
+                        placeholder="e.g., Bausch & Lomb"
+                        className="w-full border p-2 rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Water Content (%)
+                      </label>
+                      <input
+                        type="text"
+                        name="water_content"
+                        value={formData.water_content}
+                        onChange={handleChange}
+                        placeholder="e.g., 40"
+                        className="w-full border p-2 rounded"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Lens Fields */}
+              <div>
+                <h4 className="text-gray-700 font-semibold mb-3">Lens Details</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-gray-700 font-medium mb-2">
+                      Lens Title 1
+                    </label>
+                    <input
+                      type="text"
+                      name="product_lens_title1"
+                      value={formData.product_lens_title1}
+                      onChange={handleChange}
+                      placeholder="e.g., Anti-Reflective"
+                      className="w-full border p-2 rounded"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 font-medium mb-2">
+                      Lens Description 1
+                    </label>
+                    <input
+                      type="text"
+                      name="product_lens_description1"
+                      value={formData.product_lens_description1}
+                      onChange={handleChange}
+                      placeholder="Description"
+                      className="w-full border p-2 rounded"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Lens Image 1 */}
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Lens Image 1
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setLensImage1(e.target.files[0])}
+                  className="w-full border p-2 rounded"
+                />
+                {lensImage1 && (
+                  <div className="relative inline-block mt-2">
+                    <img
+                      src={
+                        typeof lensImage1 === "string"
+                          ? lensImage1
+                          : URL.createObjectURL(lensImage1)
+                      }
+                      alt="lens1"
+                      className="w-20 h-20 object-cover rounded"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setLensImage1(null)}
+                      className="absolute top-0 right-0 bg-[#f00000] text-white rounded-full px-1 hover:cursor-pointer"
+                    >
+                      X
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Lens Title 2
+                  </label>
+                  <input
+                    type="text"
+                    name="product_lens_title2"
+                    value={formData.product_lens_title2}
+                    onChange={handleChange}
+                    placeholder="e.g., UV Protection"
+                    className="w-full border p-2 rounded"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Lens Description 2
+                  </label>
+                  <input
+                    type="text"
+                    name="product_lens_description2"
+                    value={formData.product_lens_description2}
+                    onChange={handleChange}
+                    placeholder="Description"
+                    className="w-full border p-2 rounded"
+                  />
+                </div>
+              </div>
+
+              {/* Lens Image 2 */}
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Lens Image 2
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setLensImage2(e.target.files[0])}
+                  className="w-full border p-2 rounded"
+                />
+                {lensImage2 && (
+                  <div className="relative inline-block mt-2">
+                    <img
+                      src={
+                        typeof lensImage2 === "string"
+                          ? lensImage2
+                          : URL.createObjectURL(lensImage2)
+                      }
+                      alt="lens2"
+                      className="w-20 h-20 object-cover rounded"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setLensImage2(null)}
+                      className="absolute top-0 right-0 bg-[#f00000] text-white rounded-full px-1 hover:cursor-pointer"
+                    >
+                      X
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* ✅ Color Variants Section */}
               <div className="mt-4 border-t pt-4">
-                <h3 className="font-semibold text-gray-700 mb-2">Color Variants</h3>
+                <h4 className="text-gray-700 font-semibold mb-3">Color Variants</h4>
 
                 {colorVariants.map((variant, index) => {
                   // 🎨 Check valid color name or hex for preview
@@ -768,51 +1131,61 @@ const Products = () => {
                     >
                       {/* 🔹 Color name + remove button */}
                       <div className="flex justify-between items-center mb-2">
-                        <input
-                          type="text"
-                          placeholder="Enter Color (e.g. Blue or #0000ff)"
-                          value={variant.colorName}
-                          onChange={(e) => {
-                            const updated = [...colorVariants];
-                            updated[index].colorName = e.target.value.trim();
-                            setColorVariants(updated);
-                          }}
-                          className="border p-2 rounded w-2/3 capitalize"
-                        />
+                        <div className="flex-1">
+                          <label className="block text-gray-700 font-medium mb-2">
+                            Color Name {index + 1}
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Enter Color (e.g. Blue or #0000ff)"
+                            value={variant.colorName}
+                            onChange={(e) => {
+                              const updated = [...colorVariants];
+                              updated[index].colorName = e.target.value.trim();
+                              setColorVariants(updated);
+                            }}
+                            className="border p-2 rounded w-full capitalize"
+                          />
+                        </div>
                         <button
                           type="button"
                           onClick={() =>
                             setColorVariants(colorVariants.filter((_, i) => i !== index))
                           }
-                          className="text-red-600 text-sm hover:underline"
+                          className="text-[#f00000] text-sm hover:underline ml-2"
                         >
                           Remove
                         </button>
                       </div>
 
-                      {/* 🖼️ Upload color images (additive uploads) */}
-                      <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        disabled={!variant.colorName.trim()} // disable upload if no color name entered
-                        onChange={(e) => {
-                          const updated = [...colorVariants];
-                          const variant = updated[index];
+                      {/* 🖼️ Upload color images */}
+                      <div>
+                        <label className="block text-gray-700 font-medium mb-2">
+                          Upload Images for {variant.colorName || `Color ${index + 1}`}
+                        </label>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          disabled={!variant.colorName.trim()}
+                          onChange={(e) => {
+                            const updated = [...colorVariants];
+                            const variant = updated[index];
 
-                          // 🚨 Require color name before allowing file upload
-                          if (!variant.colorName.trim()) {
-                            Swal.fire("Error", "Please enter color name before uploading images!", "error");
-                            e.target.value = "";
-                            return;
-                          }
+                            // 🚨 Require color name before allowing file upload
+                            if (!variant.colorName.trim()) {
+                              Swal.fire("Error", "Please enter color name before uploading images!", "error");
+                              e.target.value = "";
+                              return;
+                            }
 
-                          const newFiles = Array.from(e.target.files);
-                          variant.files = [...(variant.files || []), ...newFiles];
-                          setColorVariants(updated);
-                        }}
-                        className="w-full border p-2 rounded"
-                      />
+                            const newFiles = Array.from(e.target.files);
+                            variant.files = [...(variant.files || []), ...newFiles];
+                            setColorVariants(updated);
+                          }}
+                          className="w-full border p-2 rounded"
+                        />
+                      </div>
 
                       {/* 🏷️ Color preview label */}
                       {(variant.existingImages?.length > 0 || variant.files?.length > 0) && (
@@ -825,7 +1198,7 @@ const Products = () => {
                             title={
                               isValidColor
                                 ? variant.colorName
-                                : "Invalid color name or code — preview unavailable"
+                                : "Invalid color name or code"
                             }
                           ></span>
                           <h4 className="text-gray-800 font-semibold">
@@ -856,7 +1229,7 @@ const Products = () => {
                                 );
                                 setColorVariants(updated);
                               }}
-                              className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-700 opacity-90"
+                              className="absolute -top-1 -right-1 bg-[#f00000] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-700 opacity-90"
                             >
                               ✕
                             </button>
@@ -894,7 +1267,7 @@ const Products = () => {
                                 updated[index].files = [
                                   ...(updated[index].files || []),
                                   ...newFiles,
-                                ]; // ✅ merge, not overwrite
+                                ];
                                 setColorVariants(updated);
                               };
                               input.click();
@@ -909,14 +1282,10 @@ const Products = () => {
                   );
                 })}
 
-
-
-
-
                 <button
                   type="button"
                   onClick={() =>
-                    setColorVariants([...colorVariants, { colorName: "", files: [] }])
+                    setColorVariants([...colorVariants, { colorName: "", files: [], existingImages: [] }])
                   }
                   className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
                 >
@@ -924,198 +1293,8 @@ const Products = () => {
                 </button>
               </div>
 
-
-              {/* Gender */}
-              <select
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
-                className="w-full border p-2 rounded"
-              >
-                <option value="">Select Gender</option>
-                <option value="Men">Men</option>
-                <option value="Women">Women</option>
-                <option value="Unisex">Unisex</option>
-              </select>
-
-              {/* Sunglasses Fields */}
-              {formData.subCat_id !== "68caa86cd72068a7d3a0f0bf" && (
-                <div className="grid grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    name="frame_material"
-                    value={formData.frame_material}
-                    onChange={handleChange}
-                    placeholder="Frame Material"
-                    className="w-full border p-2 rounded"
-                  />
-                  <input
-                    type="text"
-                    name="frame_shape"
-                    value={formData.frame_shape}
-                    onChange={handleChange}
-                    placeholder="Frame Shape"
-                    className="w-full border p-2 rounded"
-                  />
-                  <input
-                    type="text"
-                    name="frame_color"
-                    value={formData.frame_color}
-                    onChange={handleChange}
-                    placeholder="Frame Color"
-                    className="w-full border p-2 rounded"
-                  />
-                  <input
-                    type="text"
-                    name="frame_fit"
-                    value={formData.frame_fit}
-                    onChange={handleChange}
-                    placeholder="Frame Fit"
-                    className="w-full border p-2 rounded"
-                  />
-                </div>
-              )}
-
-              {/* Contact Lens Fields */}
-              {formData.subCat_id === "68caa86cd72068a7d3a0f0bf" && (
-                <div className="grid grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    name="type"
-                    value={formData.type}
-                    onChange={handleChange}
-                    placeholder="Lens Type (Daily/Monthly)"
-                    className="w-full border p-2 rounded"
-                  />
-                  <input
-                    type="text"
-                    name="material"
-                    value={formData.material}
-                    onChange={handleChange}
-                    placeholder="Material"
-                    className="w-full border p-2 rounded"
-                  />
-                  <input
-                    type="text"
-                    name="manufacturer"
-                    value={formData.manufacturer}
-                    onChange={handleChange}
-                    placeholder="Manufacturer"
-                    className="w-full border p-2 rounded"
-                  />
-                  <input
-                    type="text"
-                    name="water_content"
-                    value={formData.water_content}
-                    onChange={handleChange}
-                    placeholder="Water Content (e.g., 55%)"
-                    className="w-full border p-2 rounded"
-                  />
-                </div>
-              )}
-
-              {/* Lens Fields */}
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  name="product_lens_title1"
-                  value={formData.product_lens_title1}
-                  onChange={handleChange}
-                  placeholder="Lens Title 1"
-                  className="w-full border p-2 rounded"
-                />
-                <input
-                  type="text"
-                  name="product_lens_description1"
-                  value={formData.product_lens_description1}
-                  onChange={handleChange}
-                  placeholder="Lens Description 1"
-                  className="w-full border p-2 rounded"
-                />
-              </div>
-
-              {/* Lens Image 1 */}
-              <div>
-                <label className="block text-gray-700">Lens Image 1</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setLensImage1(e.target.files[0])}
-                  className="w-full border p-2 rounded"
-                />
-                {lensImage1 && (
-                  <div className="relative inline-block mt-2">
-                    <img
-                      src={
-                        typeof lensImage1 === "string"
-                          ? lensImage1
-                          : URL.createObjectURL(lensImage1)
-                      }
-                      alt="lens1"
-                      className="w-20 h-20 object-cover rounded"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setLensImage1(null)}
-                      className="absolute top-0 right-0 bg-red-600 text-white rounded-full px-1 hover:cursor-pointer"
-                    >
-                      X
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  name="product_lens_title2"
-                  value={formData.product_lens_title2}
-                  onChange={handleChange}
-                  placeholder="Lens Title 2"
-                  className="w-full border p-2 rounded"
-                />
-                <input
-                  type="text"
-                  name="product_lens_description2"
-                  value={formData.product_lens_description2}
-                  onChange={handleChange}
-                  placeholder="Lens Description 2"
-                  className="w-full border p-2 rounded"
-                />
-              </div>
-
-              {/* Lens Image 2 */}
-              <div>
-                <label className="block text-gray-700">Lens Image 2</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setLensImage2(e.target.files[0])}
-                  className="w-full border p-2 rounded"
-                />
-                {lensImage2 && (
-                  <div className="relative inline-block mt-2">
-                    <img
-                      src={
-                        typeof lensImage2 === "string"
-                          ? lensImage2
-                          : URL.createObjectURL(lensImage2)
-                      }
-                      alt="lens2"
-                      className="w-20 h-20 object-cover rounded"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setLensImage2(null)}
-                      className="absolute top-0 right-0 bg-red-600 text-white rounded-full px-1 hover:cursor-pointer"
-                    >
-                      X
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex justify-end space-x-2">
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-2 pt-4 border-t">
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
@@ -1134,7 +1313,7 @@ const Products = () => {
 
             <button
               onClick={() => setOpen(false)}
-              className="absolute top-2 right-2 text-gray-600 hover:text-red-600 text-2xl hover:cursor-pointer"
+              className="absolute top-2 right-2 text-gray-600 hover:text-[#f00000] text-2xl hover:cursor-pointer"
             >
               <IoIosCloseCircle />
             </button>
