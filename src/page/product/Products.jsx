@@ -20,6 +20,9 @@ const Products = () => {
   const [glassesBrands, setglassesBrands] = useState([]);
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedBrandType, setSelectedBrandType] = useState("");
+  const [lensPacks, setLensPacks] = useState([
+    { packSize: "", oldPrice: "", salePrice: "", isBestValue: false }
+  ]);
 
   const [formData, setFormData] = useState({
     cat_id: "",
@@ -166,10 +169,11 @@ const Products = () => {
     setEditId(null);
     setOpen(true);
     setColorVariants([]);
+    setLensPacks([{ packSize: "", oldPrice: "", salePrice: "", isBestValue: false }]);
   };
 
   const openEditModal = (product) => {
-    // ✅ Fill general product fields
+    //  Fill general product fields
     setFormData({
       cat_id: product.cat_id || "",
       cat_sec: product.cat_sec || "",
@@ -204,7 +208,15 @@ const Products = () => {
       stockAvailability: product.stockAvailability || "",
     });
 
-    // ✅ Prefill Color Variants from product_variants
+    // Prefill Lens Packs
+    setLensPacks(
+      product.contactLens_packs?.length
+        ? product.contactLens_packs
+        : [{ packSize: "", oldPrice: "", salePrice: "", isBestValue: false }]
+    );
+
+
+    //  Prefill Color Variants from product_variants
     if (product.product_variants && product.product_variants.length > 0) {
       const variants = product.product_variants.map((variant) => ({
         colorName: variant.colorName || "",
@@ -219,14 +231,14 @@ const Products = () => {
       setColorVariants([]); // If no color variants found
     }
 
-    // ✅ Keep any main product images (if you still have them)
+    //  Keep any main product images (if you still have them)
     setKeptImages(
       product.product_image_collection?.map((img) =>
         img.startsWith("http") ? img : IMAGE_URL + img
       ) || []
     );
 
-    // ✅ Lens images (optional)
+    //  Lens images (optional)
     setLensImage1(
       product.product_lens_image1
         ? product.product_lens_image1.startsWith("http")
@@ -243,7 +255,7 @@ const Products = () => {
         : null
     );
 
-    // ✅ Open modal in edit mode
+    //  Open modal in edit mode
     setEditId(product._id);
     setSelectedBrand(product.brand_id || "");
     setSelectedBrandType(product.brand_type || "");
@@ -293,7 +305,7 @@ const Products = () => {
       const payload = new FormData();
       const stockValue = Number(formData.stockAvailability);
 
-      // 🔹 Basic product fields
+      //  Basic product fields
       [
         "cat_id",
         "cat_sec",
@@ -326,21 +338,21 @@ const Products = () => {
       payload.append("isBestSeller", formData.isBestSeller);
       payload.append("isTrending", formData.isTrending);
 
-      // 🔹 Product sizes (array)
+      //  Product sizes (array)
       if (formData.product_size?.length) {
         formData.product_size.forEach((size) =>
           payload.append("product_size[]", size)
         );
       }
 
-      // 🔹 Product colors (array)
+      //  Product colors (array)
       if (formData.product_color?.length) {
         formData.product_color.forEach((color) =>
           payload.append("product_color[]", color)
         );
       }
 
-      // 🔹 Color variant data (JSON part)
+      //  Color variant data (JSON part)
       const colorDataArray = colorVariants.map((variant) => ({
         colorName: variant.colorName.trim(),
         images:
@@ -350,7 +362,7 @@ const Products = () => {
       }));
       payload.append("colorData", JSON.stringify(colorDataArray));
 
-      // 🔹 Add actual color image files (multer reads by color key)
+      //  Add actual color image files (multer reads by color key)
       colorVariants.forEach((variant) => {
         const colorKey = variant.colorName.trim().toLowerCase();
         if (!colorKey) return;
@@ -359,13 +371,17 @@ const Products = () => {
         });
       });
 
-      // 🔹 Lens images
+      //  Lens images
       if (lensImage1 && typeof lensImage1 !== "string")
         payload.append("product_lens_image1", lensImage1);
       if (lensImage2 && typeof lensImage2 !== "string")
         payload.append("product_lens_image2", lensImage2);
 
-      // 🔹 Submit to backend
+      if (formData.cat_id === "6915735feeb23fa59c7d532b") {
+        payload.append("contactLens_packs", JSON.stringify(lensPacks));
+      }
+
+      //  Submit to backend
       if (editId) {
         await API.put(`/updateProduct/${editId}`, payload, {
           headers: { "Content-Type": "multipart/form-data" },
@@ -984,6 +1000,105 @@ const Products = () => {
                 </div>
               )}
 
+              {/* Contact Lens Packs Section */}
+              {formData.cat_id === "6915735feeb23fa59c7d532b" && (
+                <div className="mt-4 border-t pt-4">
+                  <h4 className="text-gray-700 font-semibold mb-3">Contact Lens Packs</h4>
+
+                  {lensPacks.map((pack, index) => (
+                    <div
+                      key={index}
+                      className="border border-gray-300 rounded p-3 mb-3 bg-gray-50"
+                    >
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-gray-700 font-medium mb-1">Pack Size</label>
+                          <input
+                            type="number"
+                            value={pack.packSize}
+                            onChange={(e) => {
+                              const updated = [...lensPacks];
+                              updated[index].packSize = e.target.value;
+                              setLensPacks(updated);
+                            }}
+                            className="w-full border p-2 rounded"
+                            placeholder="Ex: 30, 90"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-gray-700 font-medium mb-1">Old Price</label>
+                          <input
+                            type="number"
+                            value={pack.oldPrice}
+                            onChange={(e) => {
+                              const updated = [...lensPacks];
+                              updated[index].oldPrice = e.target.value;
+                              setLensPacks(updated);
+                            }}
+                            className="w-full border p-2 rounded"
+                            placeholder="Ex: 499"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-gray-700 font-medium mb-1">Sale Price</label>
+                          <input
+                            type="number"
+                            value={pack.salePrice}
+                            onChange={(e) => {
+                              const updated = [...lensPacks];
+                              updated[index].salePrice = e.target.value;
+                              setLensPacks(updated);
+                            }}
+                            className="w-full border p-2 rounded"
+                            placeholder="Ex: 399"
+                          />
+                        </div>
+                      </div>
+
+                      <label className="flex items-center gap-2 mt-2">
+                        <input
+                          type="checkbox"
+                          checked={pack.isBestValue}
+                          onChange={(e) => {
+                            const updated = [...lensPacks];
+                            updated[index].isBestValue = e.target.checked;
+                            setLensPacks(updated);
+                          }}
+                        />
+                        <span className="text-sm font-medium">Best Value Pack</span>
+                      </label>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = lensPacks.filter((_, i) => i !== index);
+                          setLensPacks(updated);
+                        }}
+                        className="mt-2 text-red-600"
+                      >
+                        Remove Pack
+                      </button>
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setLensPacks([
+                        ...lensPacks,
+                        { packSize: "", oldPrice: "", salePrice: "", isBestValue: false },
+                      ])
+                    }
+                    className="bg-blue-600 text-white px-3 py-1 rounded"
+                  >
+                    + Add Pack Size
+                  </button>
+                </div>
+              )}
+
+
               {/* Lens Fields */}
               <div>
                 <h4 className="text-gray-700 font-semibold mb-3">Lens Details</h4>
@@ -1112,12 +1227,12 @@ const Products = () => {
                 )}
               </div>
 
-              {/* ✅ Color Variants Section */}
+              {/*  Color Variants Section */}
               <div className="mt-4 border-t pt-4">
                 <h4 className="text-gray-700 font-semibold mb-3">Color Variants</h4>
 
                 {colorVariants.map((variant, index) => {
-                  // 🎨 Check valid color name or hex for preview
+                  //  Check valid color name or hex for preview
                   const isValidColor = (() => {
                     const s = new Option().style;
                     s.color = variant.colorName;
@@ -1129,7 +1244,7 @@ const Products = () => {
                       key={index}
                       className="border border-gray-300 rounded-lg p-3 mb-4 bg-gray-50 shadow-sm"
                     >
-                      {/* 🔹 Color name + remove button */}
+                      {/*  Color name + remove button */}
                       <div className="flex justify-between items-center mb-2">
                         <div className="flex-1">
                           <label className="block text-gray-700 font-medium mb-2">
@@ -1158,7 +1273,7 @@ const Products = () => {
                         </button>
                       </div>
 
-                      {/* 🖼️ Upload color images */}
+                      {/*  Upload color images */}
                       <div>
                         <label className="block text-gray-700 font-medium mb-2">
                           Upload Images for {variant.colorName || `Color ${index + 1}`}
@@ -1187,7 +1302,7 @@ const Products = () => {
                         />
                       </div>
 
-                      {/* 🏷️ Color preview label */}
+                      {/*  Color preview label */}
                       {(variant.existingImages?.length > 0 || variant.files?.length > 0) && (
                         <div className="flex items-center gap-2 mt-4 mb-2">
                           <span
@@ -1209,7 +1324,7 @@ const Products = () => {
                         </div>
                       )}
 
-                      {/* ✅ Preview Section (Existing + New) */}
+                      {/*  Preview Section (Existing + New) */}
                       <div className="flex flex-wrap gap-2 mt-2">
                         {/* Existing images */}
                         {variant.existingImages?.map((img, i) => (
@@ -1219,7 +1334,7 @@ const Products = () => {
                               alt="existing variant"
                               className="w-16 h-16 object-cover rounded border"
                             />
-                            {/* ❌ Remove existing image */}
+                            {/*  Remove existing image */}
                             <button
                               type="button"
                               onClick={() => {
@@ -1251,7 +1366,7 @@ const Products = () => {
                         ))}
                       </div>
 
-                      {/* ➕ Add more images button */}
+                      {/*  Add more images button */}
                       {(variant.existingImages?.length > 0 || variant.files?.length > 0) && (
                         <div className="mt-3">
                           <button
