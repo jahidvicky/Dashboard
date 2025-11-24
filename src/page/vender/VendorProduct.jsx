@@ -1,33 +1,51 @@
+// VendorProduct.jsx
+
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import API, { IMAGE_URL } from "../../API/Api";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import { IoIosCloseCircle } from "react-icons/io";
 
+// 👇 Fixed category id for Contact Lenses
+const CONTACT_LENS_CATEGORY_ID = "6915735feeb23fa59c7d532b";
+
+// 👇 Only these fields vendor can edit after product is Approved
+const APPROVED_EDITABLE_FIELDS = [
+  "product_price",
+  "product_sale_price",
+  "stockAvailability",
+];
+
 const Products = () => {
+  // ---------- STATE: UI ----------
   const [open, setOpen] = useState(false);
+  const [showRejectionModal, setShowRejectionModal] = useState(false);
+  const [rejectionMessage, setRejectionMessage] = useState("");
+
+  // ---------- STATE: Data ----------
   const [category, setCategory] = useState([]);
-  const [colorVariants, setColorVariants] = useState([]);
-  const [keptImages, setKeptImages] = useState([]); // main product images (existing)
+  const [products, setProducts] = useState([]);
+  const [contactLensBrands, setContactLensBrands] = useState([]);
+  const [glassesBrands, setGlassesBrands] = useState([]);
+  const [colorVariants, setColorVariants] = useState([]); // only product_variants images
   const [lensImage1, setLensImage1] = useState(null);
   const [lensImage2, setLensImage2] = useState(null);
-  const [products, setProducts] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [productsPerPage] = useState(10);
-  const [filterCategory, setFilterCategory] = useState("");
-  const [filterSubCategory, setFilterSubCategory] = useState("");
-  const [contactLensBrands, setContactLensBrands] = useState([]);
-  const [glassesBrands, setglassesBrands] = useState([]);
-  const [selectedBrand, setSelectedBrand] = useState("");
-  const [selectedBrandType, setSelectedBrandType] = useState("");
   const [lensPacks, setLensPacks] = useState([
     { packSize: "", oldPrice: "", salePrice: "", isBestValue: false },
   ]);
 
-  const [showRejectionModal, setShowRejectionModal] = useState(false);
-  const [rejectionMessage, setRejectionMessage] = useState("");
+  // ---------- STATE: Filters & Pagination ----------
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterSubCategory, setFilterSubCategory] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [productsPerPage] = useState(10);
 
-  const [formData, setFormData] = useState({
+  // ---------- STATE: Brand selection ----------
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [selectedBrandType, setSelectedBrandType] = useState("");
+
+  // ---------- STATE: Form ----------
+  const initialFormState = {
     cat_id: "",
     cat_sec: "",
     subCat_id: "",
@@ -56,10 +74,22 @@ const Products = () => {
     brand_id: "",
     isBestSeller: false,
     isTrending: false,
-  });
+    // Status flags
+    productStatus: "Pending", // "Pending" | "Approved" | "Rejected"
+    isResubmitted: false,
+    isSentForApproval: false,
+  };
+
+  const [formData, setFormData] = useState(initialFormState);
   const [editId, setEditId] = useState(null);
 
-  // Fetch vendor-only products
+  // Derived flag: vendor is editing an approved product (NOT yet resubmitted)
+  const isApprovedEditing =
+    !!editId &&
+    formData.productStatus === "Approved" &&
+    !formData.isResubmitted;
+
+  // ---------- FETCH: Products ----------
   const fetchProducts = async () => {
     try {
       const res = await API.get("/getVendorProduct");
@@ -70,7 +100,7 @@ const Products = () => {
     }
   };
 
-  // Fetch categories
+  // ---------- FETCH: Categories ----------
   const fetchCategories = async () => {
     try {
       const res = await API.get("/getcategories");
@@ -80,7 +110,7 @@ const Products = () => {
     }
   };
 
-  // Fetch brands and split by type
+  // ---------- FETCH: Brands ----------
   const fetchBrands = async () => {
     try {
       const res = await API.get("/getBrand");
@@ -88,7 +118,7 @@ const Products = () => {
       setContactLensBrands(
         allBrands.filter((b) => b.type === "Contact Lenses")
       );
-      setglassesBrands(allBrands.filter((b) => b.type === "Glasses"));
+      setGlassesBrands(allBrands.filter((b) => b.type === "Glasses"));
     } catch (err) {
       console.error(err);
     }
@@ -100,20 +130,7 @@ const Products = () => {
     fetchBrands();
   }, []);
 
-  // Handle generic input changes
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    if (
-      type === "checkbox" &&
-      (name === "isBestSeller" || name === "isTrending")
-    ) {
-      setFormData((prev) => ({ ...prev, [name]: checked }));
-      return;
-    }
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Pagination & filtering
+  // ---------- FILTER + PAGINATION ----------
   const filteredProducts = products.filter((pro) => {
     const matchCategory = filterCategory
       ? pro.cat_id?.toString() === filterCategory
@@ -133,66 +150,78 @@ const Products = () => {
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const handlePageChange = (page) => setCurrentPage(page);
 
-  // Open add modal - reset form
+  // ---------- HANDLE CHANGE (with Approved-field restriction) ----------
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+
+    if (type === "checkbox") {
+      setFormData((prev) => ({ ...prev, [name]: checked }));
+      return;
+    }
+
+    // If product is Approved and not yet resubmitted → only allow limited fields
+    if (
+      isApprovedEditing &&
+      !APPROVED_EDITABLE_FIELDS.includes(name)
+    ) {
+      Swal.fire(
+        "Restricted",
+        "After approval, only Price, Sale Price & Stock can be edited.",
+        "warning"
+      );
+      return;
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // ---------- OPEN ADD MODAL ----------
   const openAddModal = () => {
-    setFormData({
-      cat_id: "",
-      cat_sec: "",
-      subCat_id: "",
-      subCategoryName: "",
-      product_name: "",
-      product_size: [],
-      product_color: [],
-      product_price: "",
-      product_sale_price: "",
-      product_description: "",
-      frame_material: "",
-      frame_shape: "",
-      face_shape: "",
-      frame_color: "",
-      frame_fit: "",
-      gender: "",
-      product_lens_title1: "",
-      product_lens_description1: "",
-      product_lens_title2: "",
-      product_lens_description2: "",
-      lens_type: "",
-      material: "",
-      manufacturer: "",
-      water_content: "",
-      stockAvailability: "",
-      brand_id: "",
-      isBestSeller: false,
-      isTrending: false,
-    });
-    setKeptImages([]);
+    setFormData(initialFormState);
     setLensImage1(null);
     setLensImage2(null);
-    setEditId(null);
-    setOpen(true);
     setColorVariants([]);
     setLensPacks([
       { packSize: "", oldPrice: "", salePrice: "", isBestValue: false },
     ]);
     setSelectedBrand("");
     setSelectedBrandType("");
+    setEditId(null);
+    setOpen(true);
   };
 
-  // Open edit modal and prefill
+  // ---------- OPEN EDIT MODAL ----------
   const openEditModal = (product) => {
+    // If currently sent for approval and not rejected → block editing completely
+    if (
+      product.isSentForApproval &&
+      product.productStatus !== "Rejected"
+    ) {
+      Swal.fire(
+        "Not Editable",
+        "This product is already sent for approval. Wait until admin approves or rejects.",
+        "info"
+      );
+      return;
+    }
+
+    const normalizedSizes = Array.isArray(product.product_size)
+      ? product.product_size
+      : typeof product.product_size === "string"
+        ? product.product_size
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+        : [];
+
     setFormData({
+      ...initialFormState,
       cat_id: product.cat_id || "",
       cat_sec: product.cat_sec || "",
       subCat_id: product.subCat_id || "",
       subCategoryName: product.subCategoryName || "",
       product_name: product.product_name || "",
-      isBestSeller: product.isBestSeller || false,
-      isTrending: product.isTrending || false,
-      product_size: product.product_size
-        ? product.product_size.flatMap((item) =>
-            item.split(",").map((s) => s.trim())
-          )
-        : [],
+      product_size: normalizedSizes,
       product_color: product.product_color || [],
       product_price: product.product_price || "",
       product_sale_price: product.product_sale_price || "",
@@ -212,16 +241,15 @@ const Products = () => {
       manufacturer: product.manufacturer || "",
       water_content: product.water_content || "",
       stockAvailability: product.stockAvailability || "",
+      brand_id: product.brand_id || "",
+      isBestSeller: product.isBestSeller || false,
+      isTrending: product.isTrending || false,
+      productStatus: product.productStatus || "Pending",
+      isResubmitted: product.isResubmitted || false,
+      isSentForApproval: product.isSentForApproval || false,
     });
 
-    // Prefill lens packs if present
-    setLensPacks(
-      product.contactLens_packs?.length
-        ? product.contactLens_packs
-        : [{ packSize: "", oldPrice: "", salePrice: "", isBestValue: false }]
-    );
-
-    // Prefill color variants
+    // Color variants (ALL images via product_variants)
     if (product.product_variants && product.product_variants.length > 0) {
       const variants = product.product_variants.map((variant) => ({
         colorName: variant.colorName || "",
@@ -235,13 +263,6 @@ const Products = () => {
     } else {
       setColorVariants([]);
     }
-
-    // Keep main product images
-    setKeptImages(
-      product.product_image_collection?.map((img) =>
-        img.startsWith("http") ? img : IMAGE_URL + img
-      ) || []
-    );
 
     // Lens images
     setLensImage1(
@@ -259,13 +280,26 @@ const Products = () => {
         : null
     );
 
-    setEditId(product._id);
+    // Contact lens packs
+    if (product.cat_id?.toString() === CONTACT_LENS_CATEGORY_ID) {
+      setLensPacks(
+        product.contactLens_packs?.length
+          ? product.contactLens_packs
+          : [{ packSize: "", oldPrice: "", salePrice: "", isBestValue: false }]
+      );
+    } else {
+      setLensPacks([
+        { packSize: "", oldPrice: "", salePrice: "", isBestValue: false },
+      ]);
+    }
+
     setSelectedBrand(product.brand_id || "");
     setSelectedBrandType(product.brand_type || "");
+    setEditId(product._id);
     setOpen(true);
   };
 
-  // Delete
+  // ---------- DELETE ----------
   const handleDelete = async (id) => {
     Swal.fire({
       title: "Are you sure?",
@@ -288,19 +322,17 @@ const Products = () => {
     });
   };
 
-  // Send for approval (NEW)
+  // ---------- SEND FOR APPROVAL ----------
   const handleSendApproval = async (product) => {
-    // if product is rejected, show message modal instead
-    if (product.productStatus === "Rejected") {
-      setRejectionMessage(
-        product.rejectionReason || "This product was rejected."
-      );
-      setShowRejectionModal(true);
+    if (product.productStatus === "Approved") {
+      Swal.fire("Info", "This product is already approved.", "info");
       return;
     }
 
-    // if already sent, ignore
-    if (product.isSentForApproval) return;
+    if (product.isSentForApproval && product.productStatus !== "Rejected") {
+      Swal.fire("Info", "This product is already sent for approval.", "info");
+      return;
+    }
 
     try {
       const response = await API.put(
@@ -310,7 +342,10 @@ const Products = () => {
         Swal.fire({
           toast: true,
           icon: "success",
-          title: "Product sent for approval successfully!",
+          title:
+            product.productStatus === "Rejected"
+              ? "Product re-sent for approval!"
+              : "Product sent for approval!",
           position: "top-end",
           showConfirmButton: false,
           timer: 2000,
@@ -342,7 +377,21 @@ const Products = () => {
     }
   };
 
-  // Submit add/update
+  // ---------- VIEW REJECTION MESSAGE ----------
+  const handleShowRejectionReason = (product) => {
+    if (!product.rejectionReason) {
+      Swal.fire(
+        "Info",
+        "This product was rejected but no specific reason was provided.",
+        "info"
+      );
+      return;
+    }
+    setRejectionMessage(product.rejectionReason);
+    setShowRejectionModal(true);
+  };
+
+  // ---------- SUBMIT (ADD / UPDATE) ----------
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -363,6 +412,18 @@ const Products = () => {
     try {
       const payload = new FormData();
       const stockValue = Number(formData.stockAvailability);
+
+      // *** Status logic when editing APPROVED product ***
+      let nextProductStatus = formData.productStatus || "Pending";
+      let nextIsResubmitted = formData.isResubmitted;
+      let nextIsSentForApproval = formData.isSentForApproval;
+
+      // If vendor edits an Approved product (even just price/stock/images) → back to Pending & Resubmitted
+      if (isApprovedEditing) {
+        nextProductStatus = "Pending";
+        nextIsResubmitted = true;
+        nextIsSentForApproval = false;
+      }
 
       // Basic product fields
       [
@@ -398,9 +459,22 @@ const Products = () => {
         }
       });
 
+      // Status fields
+      payload.append("productStatus", nextProductStatus);
+      payload.append("isResubmitted", nextIsResubmitted ? "true" : "false");
+      payload.append(
+        "isSentForApproval",
+        nextIsSentForApproval ? "true" : "false"
+      );
+
+      // Stock, brand, flags
       payload.append("stockAvailability", isNaN(stockValue) ? 0 : stockValue);
       payload.append("brand_id", selectedBrand || "");
-      payload.append("isBestSeller", formData.isBestSeller ? "true" : "false");
+      payload.append("brand_type", selectedBrandType || "");
+      payload.append(
+        "isBestSeller",
+        formData.isBestSeller ? "true" : "false"
+      );
       payload.append("isTrending", formData.isTrending ? "true" : "false");
 
       // Product sizes
@@ -417,12 +491,20 @@ const Products = () => {
         );
       }
 
-      // Keep main existing images (if backend expects them)
-      keptImages.forEach((img) => {
-        payload.append("existingImages[]", img.replace(IMAGE_URL, ""));
-      });
+      // Lens packs (only for Contact Lens category)
+      if (formData.cat_id === CONTACT_LENS_CATEGORY_ID) {
+        payload.append("contactLens_packs", JSON.stringify(lensPacks));
+      }
 
-      // Build colorData (metadata with existing image filenames)
+      // Lens images (if new uploads)
+      if (lensImage1 && typeof lensImage1 !== "string") {
+        payload.append("product_lens_image1", lensImage1);
+      }
+      if (lensImage2 && typeof lensImage2 !== "string") {
+        payload.append("product_lens_image2", lensImage2);
+      }
+
+      // Color variants metadata (existing images)
       const colorDataArray = colorVariants.map((variant) => ({
         colorName: (variant.colorName || "").trim(),
         images: (variant.existingImages || []).map((img) =>
@@ -431,7 +513,7 @@ const Products = () => {
       }));
       payload.append("colorData", JSON.stringify(colorDataArray));
 
-      // Append files for each color variant under a color-specific key
+      // New variant images – append per color name key
       colorVariants.forEach((variant) => {
         const colorKey = (variant.colorName || "").trim().toLowerCase();
         if (!colorKey) return;
@@ -440,18 +522,38 @@ const Products = () => {
         });
       });
 
-      // Append lens images if new File objects
-      if (lensImage1 && typeof lensImage1 !== "string")
-        payload.append("product_lens_image1", lensImage1);
-      if (lensImage2 && typeof lensImage2 !== "string")
-        payload.append("product_lens_image2", lensImage2);
+      // Removed images (compare original product vs current variant existingImages)
+      if (editId) {
+        const original = products.find((p) => p._id === editId);
+        const removedImages = [];
 
-      // Append lens packs for contact lenses category
-      if (formData.cat_id === "6915735feeb23fa59c7d532b") {
-        payload.append("contactLens_packs", JSON.stringify(lensPacks));
+        if (original?.product_variants) {
+          original.product_variants.forEach((origVariant) => {
+            const origColor = (origVariant.colorName || "")
+              .trim()
+              .toLowerCase();
+            const matched = colorVariants.find(
+              (v) =>
+                (v.colorName || "").trim().toLowerCase() === origColor
+            );
+
+            const keepFilenames = (matched?.existingImages || []).map((img) =>
+              img.replace(IMAGE_URL, "")
+            );
+            (origVariant.images || []).forEach((imgFile) => {
+              if (!keepFilenames.includes(imgFile)) {
+                removedImages.push(imgFile);
+              }
+            });
+          });
+        }
+
+        if (removedImages.length > 0) {
+          payload.append("removedImages", JSON.stringify(removedImages));
+        }
       }
 
-      // Submit
+      // Submit to backend
       if (editId) {
         await API.put(`/updateVendorProduct/${editId}`, payload, {
           headers: { "Content-Type": "multipart/form-data" },
@@ -467,6 +569,7 @@ const Products = () => {
       fetchProducts();
       setOpen(false);
     } catch (err) {
+      console.error(err);
       Swal.fire(
         "Error",
         err.response?.data?.message || "Operation failed",
@@ -474,7 +577,6 @@ const Products = () => {
       );
     }
   };
-
   return (
     <div className="p-6">
       {/* Header */}
@@ -518,7 +620,7 @@ const Products = () => {
               {category
                 .find((c) => c._id === filterCategory)
                 ?.subCategories?.map((sub) => (
-                  <option key={sub._id} value={sub._1d}>
+                  <option key={sub._id} value={sub._id}>
                     {sub.name}
                   </option>
                 ))}
@@ -566,20 +668,13 @@ const Products = () => {
                   {pro.subCategoryName}
                 </td>
                 <td className="border px-4 py-2">
-                  {pro?.product_image_collection?.length ||
-                  pro?.product_variants?.[0]?.images?.length ? (
+                  {pro?.product_variants?.[0]?.images?.length ? (
                     <div className="flex flex-wrap gap-1 justify-center">
                       <img
                         src={
-                          (
-                            pro?.product_image_collection?.[0] ||
-                            pro?.product_variants?.[0]?.images?.[0]
-                          ).startsWith("http")
-                            ? pro?.product_image_collection?.[0] ||
-                              pro?.product_variants?.[0]?.images?.[0]
-                            : IMAGE_URL +
-                              (pro?.product_image_collection?.[0] ||
-                                pro?.product_variants?.[0]?.images?.[0])
+                          pro.product_variants[0].images[0].startsWith("http")
+                            ? pro.product_variants[0].images[0]
+                            : IMAGE_URL + pro.product_variants[0].images[0]
                         }
                         alt="product"
                         className="w-20 h-12 object-cover rounded"
@@ -594,19 +689,30 @@ const Products = () => {
                   {pro.productStatus || "N/A"}
                 </td>
 
-                <td className="border space-x-1 mx-1 flex justify-center items-center gap-2">
+                <td className="border px-4 py-2 flex justify-center items-center gap-2">
+                  {/* Edit */}
                   <button
                     onClick={() => openEditModal(pro)}
-                    className={`bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 hover:cursor-pointer text-center `}
+                    disabled={
+                      pro.isSentForApproval &&
+                      pro.productStatus !== "Rejected"
+                    }
+                    className={`bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 hover:cursor-pointer text-center ${pro.isSentForApproval && pro.productStatus !== "Rejected"
+                        ? "opacity-60 cursor-not-allowed"
+                        : ""
+                      }`}
                     title={
-                      pro.isSentForApproval && pro.productStatus !== "Approved"
-                        ? "Cannot edit while sent for approval (until approved/rejected)"
-                        : "Edit"
+                      pro.isSentForApproval && pro.productStatus !== "Rejected"
+                        ? "Cannot edit while sent for approval"
+                        : pro.productStatus === "Approved"
+                          ? "Only price, sale price & stock (and images) can be edited"
+                          : "Edit product"
                     }
                   >
                     <FaEdit />
                   </button>
 
+                  {/* Send For Approval */}
                   <button
                     onClick={() => handleSendApproval(pro)}
                     disabled={
@@ -614,36 +720,44 @@ const Products = () => {
                       (pro.isSentForApproval &&
                         pro.productStatus !== "Rejected")
                     }
-                    className={`px-3 py-1 rounded text-white 
-    ${
-      pro.productStatus === "Approved"
-        ? "bg-[#f00000] opacity-60 cursor-not-allowed" // fade when approved
-        : pro.productStatus === "Rejected"
-        ? "bg-yellow-500 hover:bg-yellow-600"
-        : pro.isSentForApproval
-        ? "bg-[#f00000] opacity-60 cursor-not-allowed" // fade when sent
-        : "bg-[#f00000] hover:bg-red-700"
-    }
-  `}
+                    className={`px-3 py-1 rounded text-white ${pro.productStatus === "Approved"
+                        ? "bg-[#f00000] opacity-60 cursor-not-allowed"
+                        : pro.productStatus === "Rejected"
+                          ? "bg-yellow-500 hover:bg-yellow-600"
+                          : pro.isSentForApproval
+                            ? "bg-[#f00000] opacity-60 cursor-not-allowed"
+                            : "bg-[#f00000] hover:bg-red-700"
+                      }`}
                     title={
                       pro.productStatus === "Approved"
-                        ? "Already Approved — cannot send again"
+                        ? "Already approved"
                         : pro.productStatus === "Rejected"
-                        ? "View rejection message"
-                        : pro.isSentForApproval
-                        ? "Already sent for approval"
-                        : "Send For Approval"
+                          ? "Send again after fixing"
+                          : pro.isSentForApproval
+                            ? "Already sent for approval"
+                            : "Send For Approval"
                     }
                   >
                     {pro.productStatus === "Rejected"
-                      ? "Show Message"
+                      ? "Send Again"
                       : pro.productStatus === "Approved"
-                      ? "Approved"
-                      : pro.isSentForApproval
-                      ? "Sent"
-                      : "Send For Approval"}
+                        ? "Approved"
+                        : pro.isSentForApproval
+                          ? "Sent"
+                          : "Send For Approval"}
                   </button>
 
+                  {/* View Rejection Reason (if rejected) */}
+                  {pro.productStatus === "Rejected" && (
+                    <button
+                      onClick={() => handleShowRejectionReason(pro)}
+                      className="px-3 py-1 rounded bg-gray-500 text-white hover:bg-gray-600"
+                    >
+                      Reason
+                    </button>
+                  )}
+
+                  {/* Delete */}
                   <button
                     onClick={() => handleDelete(pro._id)}
                     className="bg-[#f00000] text-white px-3 py-1 rounded hover:bg-red-600 hover:cursor-pointer"
@@ -662,9 +776,8 @@ const Products = () => {
         {[...Array(totalPages)].map((_, i) => (
           <button
             key={i}
-            className={`px-3 py-1 border rounded hover:cursor-pointer ${
-              currentPage === i + 1 ? "bg-blue-500 text-white" : ""
-            }`}
+            className={`px-3 py-1 border rounded hover:cursor-pointer ${currentPage === i + 1 ? "bg-blue-500 text-white" : ""
+              }`}
             onClick={() => handlePageChange(i + 1)}
           >
             {i + 1}
@@ -679,7 +792,9 @@ const Products = () => {
             <h3 className="text-lg font-semibold mb-4 text-[#f00000]">
               Product Rejected
             </h3>
-            <p className="text-gray-700 mb-6">{rejectionMessage}</p>
+            <p className="text-gray-700 mb-6 whitespace-pre-line">
+              {rejectionMessage}
+            </p>
             <div className="flex justify-end">
               <button
                 onClick={() => setShowRejectionModal(false)}
@@ -696,9 +811,17 @@ const Products = () => {
       {open && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">
+            <h3 className="text-lg font-semibold mb-1">
               {editId ? "Edit Product" : "Add Product"}
             </h3>
+
+            {isApprovedEditing && (
+              <p className="text-xs text-red-600 mb-3">
+                This product is <b>Approved</b>. You can only change{" "}
+                <b>Price, Sale Price & Stock</b> and update images. Other
+                fields are locked and will be reviewed by admin again.
+              </p>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-3">
               {/* Category dropdown */}
@@ -708,19 +831,21 @@ const Products = () => {
                 </label>
                 <select
                   value={formData.cat_id}
+                  disabled={isApprovedEditing}
                   onChange={(e) => {
                     const selectedCat = category.find(
                       (c) => c._id === e.target.value
                     );
-                    setFormData({
-                      ...formData,
+                    setFormData((prev) => ({
+                      ...prev,
                       cat_id: selectedCat?._id || "",
                       cat_sec: selectedCat?.categoryName || "",
                       subCat_id: "",
                       subCategoryName: "",
-                    });
+                    }));
                   }}
-                  className="w-full border rounded p-2"
+                  className={`w-full border rounded p-2 ${isApprovedEditing ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
                 >
                   <option value="">Select Category</option>
                   {category.map((cat) => (
@@ -739,6 +864,7 @@ const Products = () => {
                   </label>
                   <select
                     value={formData.subCat_id}
+                    disabled={isApprovedEditing}
                     onChange={(e) => {
                       const selectedCat = category.find(
                         (c) => c._id === formData.cat_id
@@ -746,13 +872,14 @@ const Products = () => {
                       const selectedSub = selectedCat?.subCategories?.find(
                         (sub) => sub._id === e.target.value
                       );
-                      setFormData({
-                        ...formData,
+                      setFormData((prev) => ({
+                        ...prev,
                         subCat_id: selectedSub?._id || "",
                         subCategoryName: selectedSub?.name || "",
-                      });
+                      }));
                     }}
-                    className="w-full border rounded p-2"
+                    className={`w-full border rounded p-2 ${isApprovedEditing ? "bg-gray-100 cursor-not-allowed" : ""
+                      }`}
                   >
                     <option value="">Select Subcategory</option>
                     {category
@@ -767,7 +894,7 @@ const Products = () => {
               )}
 
               {/* Brand dropdowns */}
-              {formData.cat_id === "6915735feeb23fa59c7d532b" ? (
+              {formData.cat_id === CONTACT_LENS_CATEGORY_ID ? (
                 <div>
                   <label className="block text-gray-700 font-medium mb-2">
                     Contact Lenses Brand{" "}
@@ -775,6 +902,7 @@ const Products = () => {
                   </label>
                   <select
                     value={selectedBrand}
+                    disabled={isApprovedEditing}
                     onChange={(e) => {
                       const selected = contactLensBrands.find(
                         (b) => b._id === e.target.value
@@ -782,7 +910,8 @@ const Products = () => {
                       setSelectedBrand(selected?._id || "");
                       setSelectedBrandType(selected?.type || "");
                     }}
-                    className="w-full border rounded p-2"
+                    className={`w-full border rounded p-2 ${isApprovedEditing ? "bg-gray-100 cursor-not-allowed" : ""
+                      }`}
                   >
                     <option value="">Select Brand</option>
                     {contactLensBrands.map((b) => (
@@ -800,6 +929,7 @@ const Products = () => {
                   </label>
                   <select
                     value={selectedBrand}
+                    disabled={isApprovedEditing}
                     onChange={(e) => {
                       const selected = glassesBrands.find(
                         (b) => b._id === e.target.value
@@ -807,7 +937,8 @@ const Products = () => {
                       setSelectedBrand(selected?._id || "");
                       setSelectedBrandType(selected?.type || "");
                     }}
-                    className="w-full border rounded p-2"
+                    className={`w-full border rounded p-2 ${isApprovedEditing ? "bg-gray-100 cursor-not-allowed" : ""
+                      }`}
                   >
                     <option value="">Select Brand</option>
                     {glassesBrands.map((b) => (
@@ -827,10 +958,12 @@ const Products = () => {
                 <input
                   type="text"
                   name="product_name"
+                  disabled={isApprovedEditing}
                   value={formData.product_name.toUpperCase()}
                   onChange={handleChange}
                   placeholder="Enter product name"
-                  className="w-full border p-2 rounded"
+                  className={`w-full border p-2 rounded ${isApprovedEditing ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
                 />
               </div>
 
@@ -843,25 +976,27 @@ const Products = () => {
                   {["S", "M", "L"].map((size) => (
                     <label
                       key={size}
-                      className="flex items-center gap-1 cursor-pointer"
+                      className={`flex items-center gap-1 cursor-pointer ${isApprovedEditing ? "cursor-not-allowed" : ""
+                        }`}
                     >
                       <input
                         type="checkbox"
                         value={size}
+                        disabled={isApprovedEditing}
                         checked={formData.product_size.includes(size)}
                         onChange={(e) => {
                           if (e.target.checked) {
-                            setFormData({
-                              ...formData,
-                              product_size: [...formData.product_size, size],
-                            });
+                            setFormData((prev) => ({
+                              ...prev,
+                              product_size: [...prev.product_size, size],
+                            }));
                           } else {
-                            setFormData({
-                              ...formData,
-                              product_size: formData.product_size.filter(
+                            setFormData((prev) => ({
+                              ...prev,
+                              product_size: prev.product_size.filter(
                                 (s) => s !== size
                               ),
-                            });
+                            }));
                           }
                         }}
                       />
@@ -879,18 +1014,20 @@ const Products = () => {
                 <input
                   type="text"
                   name="product_color"
+                  disabled={isApprovedEditing}
                   value={formData.product_color.join(", ")}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
+                    setFormData((prev) => ({
+                      ...prev,
                       product_color: e.target.value
                         .split(",")
                         .map((c) => c.trim())
                         .filter(Boolean),
-                    })
+                    }))
                   }
                   placeholder="Enter colors (Black, Red, Blue)"
-                  className="w-full border p-2 rounded"
+                  className={`w-full border p-2 rounded ${isApprovedEditing ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
                 />
               </div>
 
@@ -946,10 +1083,12 @@ const Products = () => {
                 </label>
                 <textarea
                   name="product_description"
+                  disabled={isApprovedEditing}
                   value={formData.product_description}
                   onChange={handleChange}
                   placeholder="Enter product description"
-                  className="w-full border p-2 rounded h-20"
+                  className={`w-full border p-2 rounded h-20 ${isApprovedEditing ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
                 />
               </div>
 
@@ -960,9 +1099,11 @@ const Products = () => {
                 </label>
                 <select
                   name="gender"
+                  disabled={isApprovedEditing}
                   value={formData.gender}
                   onChange={handleChange}
-                  className="w-full border p-2 rounded"
+                  className={`w-full border p-2 rounded ${isApprovedEditing ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
                 >
                   <option value="">Select Gender</option>
                   <option value="Men">Men</option>
@@ -976,12 +1117,13 @@ const Products = () => {
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
+                    disabled={isApprovedEditing}
                     checked={formData.isBestSeller}
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
+                      setFormData((prev) => ({
+                        ...prev,
                         isBestSeller: e.target.checked,
-                      })
+                      }))
                     }
                   />
                   <span className="font-medium">Best Seller</span>
@@ -990,9 +1132,13 @@ const Products = () => {
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
+                    disabled={isApprovedEditing}
                     checked={formData.isTrending}
                     onChange={(e) =>
-                      setFormData({ ...formData, isTrending: e.target.checked })
+                      setFormData((prev) => ({
+                        ...prev,
+                        isTrending: e.target.checked,
+                      }))
                     }
                   />
                   <span className="font-medium">Trending Product</span>
@@ -1000,7 +1146,7 @@ const Products = () => {
               </div>
 
               {/* Sunglasses Fields */}
-              {formData.cat_id !== "6915735feeb23fa59c7d532b" && (
+              {formData.cat_id !== CONTACT_LENS_CATEGORY_ID && (
                 <div>
                   <h4 className="text-gray-700 font-semibold mb-3">
                     Frame Details
@@ -1013,10 +1159,14 @@ const Products = () => {
                       <input
                         type="text"
                         name="frame_material"
+                        disabled={isApprovedEditing}
                         value={formData.frame_material}
                         onChange={handleChange}
                         placeholder="e.g., Metal, Plastic"
-                        className="w-full border p-2 rounded"
+                        className={`w-full border p-2 rounded ${isApprovedEditing
+                            ? "bg-gray-100 cursor-not-allowed"
+                            : ""
+                          }`}
                       />
                     </div>
                     <div>
@@ -1026,10 +1176,14 @@ const Products = () => {
                       <input
                         type="text"
                         name="frame_shape"
+                        disabled={isApprovedEditing}
                         value={formData.frame_shape}
                         onChange={handleChange}
                         placeholder="e.g., Round, Square"
-                        className="w-full border p-2 rounded"
+                        className={`w-full border p-2 rounded ${isApprovedEditing
+                            ? "bg-gray-100 cursor-not-allowed"
+                            : ""
+                          }`}
                       />
                     </div>
                     <div>
@@ -1039,10 +1193,14 @@ const Products = () => {
                       <input
                         type="text"
                         name="face_shape"
+                        disabled={isApprovedEditing}
                         value={formData.face_shape}
                         onChange={handleChange}
                         placeholder="e.g., Round, Square, Oval, Heart..."
-                        className="w-full border p-2 rounded"
+                        className={`w-full border p-2 rounded ${isApprovedEditing
+                            ? "bg-gray-100 cursor-not-allowed"
+                            : ""
+                          }`}
                       />
                     </div>
                     <div>
@@ -1052,10 +1210,14 @@ const Products = () => {
                       <input
                         type="text"
                         name="frame_color"
+                        disabled={isApprovedEditing}
                         value={formData.frame_color}
                         onChange={handleChange}
                         placeholder="e.g., Black, Silver"
-                        className="w-full border p-2 rounded"
+                        className={`w-full border p-2 rounded ${isApprovedEditing
+                            ? "bg-gray-100 cursor-not-allowed"
+                            : ""
+                          }`}
                       />
                     </div>
                     <div>
@@ -1065,10 +1227,14 @@ const Products = () => {
                       <input
                         type="text"
                         name="frame_fit"
+                        disabled={isApprovedEditing}
                         value={formData.frame_fit}
                         onChange={handleChange}
                         placeholder="e.g., Regular, Wide"
-                        className="w-full border p-2 rounded"
+                        className={`w-full border p-2 rounded ${isApprovedEditing
+                            ? "bg-gray-100 cursor-not-allowed"
+                            : ""
+                          }`}
                       />
                     </div>
                   </div>
@@ -1076,7 +1242,7 @@ const Products = () => {
               )}
 
               {/* Contact Lens Fields */}
-              {formData.cat_id === "6915735feeb23fa59c7d532b" && (
+              {formData.cat_id === CONTACT_LENS_CATEGORY_ID && (
                 <div>
                   <h4 className="text-gray-700 font-semibold mb-3">
                     Contact Lens Details
@@ -1089,10 +1255,14 @@ const Products = () => {
                       <input
                         type="text"
                         name="lens_type"
+                        disabled={isApprovedEditing}
                         value={formData.lens_type}
                         onChange={handleChange}
                         placeholder="Daily/Monthly"
-                        className="w-full border p-2 rounded"
+                        className={`w-full border p-2 rounded ${isApprovedEditing
+                            ? "bg-gray-100 cursor-not-allowed"
+                            : ""
+                          }`}
                       />
                     </div>
                     <div>
@@ -1102,10 +1272,14 @@ const Products = () => {
                       <input
                         type="text"
                         name="material"
+                        disabled={isApprovedEditing}
                         value={formData.material}
                         onChange={handleChange}
                         placeholder="e.g., Silicone Hydrogel"
-                        className="w-full border p-2 rounded"
+                        className={`w-full border p-2 rounded ${isApprovedEditing
+                            ? "bg-gray-100 cursor-not-allowed"
+                            : ""
+                          }`}
                       />
                     </div>
                     <div>
@@ -1115,10 +1289,14 @@ const Products = () => {
                       <input
                         type="text"
                         name="manufacturer"
+                        disabled={isApprovedEditing}
                         value={formData.manufacturer}
                         onChange={handleChange}
                         placeholder="e.g., Bausch & Lomb"
-                        className="w-full border p-2 rounded"
+                        className={`w-full border p-2 rounded ${isApprovedEditing
+                            ? "bg-gray-100 cursor-not-allowed"
+                            : ""
+                          }`}
                       />
                     </div>
                     <div>
@@ -1128,18 +1306,22 @@ const Products = () => {
                       <input
                         type="text"
                         name="water_content"
+                        disabled={isApprovedEditing}
                         value={formData.water_content}
                         onChange={handleChange}
                         placeholder="e.g., 40"
-                        className="w-full border p-2 rounded"
+                        className={`w-full border p-2 rounded ${isApprovedEditing
+                            ? "bg-gray-100 cursor-not-allowed"
+                            : ""
+                          }`}
                       />
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Contact Lens Packs Section (if contact lenses) */}
-              {formData.cat_id === "6915735feeb23fa59c7d532b" && (
+              {/* Contact Lens Packs Section */}
+              {formData.cat_id === CONTACT_LENS_CATEGORY_ID && (
                 <div className="mt-4 border-t pt-4">
                   <h4 className="text-gray-700 font-semibold mb-3">
                     Contact Lens Packs
@@ -1157,13 +1339,17 @@ const Products = () => {
                           </label>
                           <input
                             type="number"
+                            disabled={isApprovedEditing}
                             value={pack.packSize}
                             onChange={(e) => {
                               const updated = [...lensPacks];
                               updated[index].packSize = e.target.value;
                               setLensPacks(updated);
                             }}
-                            className="w-full border p-2 rounded"
+                            className={`w-full border p-2 rounded ${isApprovedEditing
+                                ? "bg-gray-100 cursor-not-allowed"
+                                : ""
+                              }`}
                             placeholder="Ex: 30, 90"
                           />
                         </div>
@@ -1174,13 +1360,17 @@ const Products = () => {
                           </label>
                           <input
                             type="number"
+                            disabled={isApprovedEditing}
                             value={pack.oldPrice}
                             onChange={(e) => {
                               const updated = [...lensPacks];
                               updated[index].oldPrice = e.target.value;
                               setLensPacks(updated);
                             }}
-                            className="w-full border p-2 rounded"
+                            className={`w-full border p-2 rounded ${isApprovedEditing
+                                ? "bg-gray-100 cursor-not-allowed"
+                                : ""
+                              }`}
                             placeholder="Ex: 499"
                           />
                         </div>
@@ -1191,13 +1381,17 @@ const Products = () => {
                           </label>
                           <input
                             type="number"
+                            disabled={isApprovedEditing}
                             value={pack.salePrice}
                             onChange={(e) => {
                               const updated = [...lensPacks];
                               updated[index].salePrice = e.target.value;
                               setLensPacks(updated);
                             }}
-                            className="w-full border p-2 rounded"
+                            className={`w-full border p-2 rounded ${isApprovedEditing
+                                ? "bg-gray-100 cursor-not-allowed"
+                                : ""
+                              }`}
                             placeholder="Ex: 399"
                           />
                         </div>
@@ -1206,6 +1400,7 @@ const Products = () => {
                       <label className="flex items-center gap-2 mt-2">
                         <input
                           type="checkbox"
+                          disabled={isApprovedEditing}
                           checked={pack.isBestValue}
                           onChange={(e) => {
                             const updated = [...lensPacks];
@@ -1220,13 +1415,17 @@ const Products = () => {
 
                       <button
                         type="button"
+                        disabled={isApprovedEditing}
                         onClick={() => {
                           const updated = lensPacks.filter(
                             (_, i) => i !== index
                           );
                           setLensPacks(updated);
                         }}
-                        className="mt-2 text-red-600"
+                        className={`mt-2 text-red-600 ${isApprovedEditing
+                            ? "opacity-60 cursor-not-allowed"
+                            : ""
+                          }`}
                       >
                         Remove Pack
                       </button>
@@ -1235,6 +1434,7 @@ const Products = () => {
 
                   <button
                     type="button"
+                    disabled={isApprovedEditing}
                     onClick={() =>
                       setLensPacks([
                         ...lensPacks,
@@ -1246,7 +1446,10 @@ const Products = () => {
                         },
                       ])
                     }
-                    className="bg-blue-600 text-white px-3 py-1 rounded"
+                    className={`bg-blue-600 text-white px-3 py-1 rounded ${isApprovedEditing
+                        ? "opacity-60 cursor-not-allowed"
+                        : "hover:bg-blue-700"
+                      }`}
                   >
                     + Add Pack Size
                   </button>
@@ -1266,10 +1469,14 @@ const Products = () => {
                     <input
                       type="text"
                       name="product_lens_title1"
+                      disabled={isApprovedEditing}
                       value={formData.product_lens_title1}
                       onChange={handleChange}
                       placeholder="e.g., Anti-Reflective"
-                      className="w-full border p-2 rounded"
+                      className={`w-full border p-2 rounded ${isApprovedEditing
+                          ? "bg-gray-100 cursor-not-allowed"
+                          : ""
+                        }`}
                     />
                   </div>
                   <div>
@@ -1279,10 +1486,14 @@ const Products = () => {
                     <input
                       type="text"
                       name="product_lens_description1"
+                      disabled={isApprovedEditing}
                       value={formData.product_lens_description1}
                       onChange={handleChange}
                       placeholder="Description"
-                      className="w-full border p-2 rounded"
+                      className={`w-full border p-2 rounded ${isApprovedEditing
+                          ? "bg-gray-100 cursor-not-allowed"
+                          : ""
+                        }`}
                     />
                   </div>
                 </div>
@@ -1328,10 +1539,12 @@ const Products = () => {
                   <input
                     type="text"
                     name="product_lens_title2"
+                    disabled={isApprovedEditing}
                     value={formData.product_lens_title2}
                     onChange={handleChange}
                     placeholder="e.g., UV Protection"
-                    className="w-full border p-2 rounded"
+                    className={`w-full border p-2 rounded ${isApprovedEditing ? "bg-gray-100 cursor-not-allowed" : ""
+                      }`}
                   />
                 </div>
                 <div>
@@ -1341,10 +1554,12 @@ const Products = () => {
                   <input
                     type="text"
                     name="product_lens_description2"
+                    disabled={isApprovedEditing}
                     value={formData.product_lens_description2}
                     onChange={handleChange}
                     placeholder="Description"
-                    className="w-full border p-2 rounded"
+                    className={`w-full border p-2 rounded ${isApprovedEditing ? "bg-gray-100 cursor-not-allowed" : ""
+                      }`}
                   />
                 </div>
               </div>
@@ -1412,12 +1627,16 @@ const Products = () => {
                             type="text"
                             placeholder="Enter Color (e.g. Blue or #0000ff)"
                             value={variant.colorName}
+                            disabled={isApprovedEditing}
                             onChange={(e) => {
                               const updated = [...colorVariants];
                               updated[index].colorName = e.target.value;
                               setColorVariants(updated);
                             }}
-                            className="border p-2 rounded w-full capitalize"
+                            className={`border p-2 rounded w-full capitalize ${isApprovedEditing
+                                ? "bg-gray-100 cursor-not-allowed"
+                                : ""
+                              }`}
                           />
                         </div>
                         <button
@@ -1427,7 +1646,11 @@ const Products = () => {
                               colorVariants.filter((_, i) => i !== index)
                             )
                           }
-                          className="text-[#f00000] text-sm hover:underline ml-2"
+                          disabled={isApprovedEditing}
+                          className={`text-[#f00000] text-sm ml-2 ${isApprovedEditing
+                              ? "opacity-60 cursor-not-allowed"
+                              : "hover:underline"
+                            }`}
                         >
                           Remove
                         </button>
@@ -1467,30 +1690,29 @@ const Products = () => {
 
                       {(variant.existingImages?.length > 0 ||
                         variant.files?.length > 0) && (
-                        <div className="flex items-center gap-2 mt-4 mb-2">
-                          <span
-                            className="w-5 h-5 rounded-full border border-gray-400"
-                            style={{
-                              backgroundColor: isValidColor
-                                ? variant.colorName
-                                : "transparent",
-                            }}
-                            title={
-                              isValidColor
-                                ? variant.colorName
-                                : "Invalid color name or code"
-                            }
-                          />
-                          <h4 className="text-gray-800 font-semibold">
-                            {variant.colorName
-                              ? `${
-                                  variant.colorName.charAt(0).toUpperCase() +
-                                  variant.colorName.slice(1)
+                          <div className="flex items-center gap-2 mt-4 mb-2">
+                            <span
+                              className="w-5 h-5 rounded-full border border-gray-400"
+                              style={{
+                                backgroundColor: isValidColor
+                                  ? variant.colorName
+                                  : "transparent",
+                              }}
+                              title={
+                                isValidColor
+                                  ? variant.colorName
+                                  : "Invalid color name or code"
+                              }
+                            />
+                            <h4 className="text-gray-800 font-semibold">
+                              {variant.colorName
+                                ? `${variant.colorName.charAt(0).toUpperCase() +
+                                variant.colorName.slice(1)
                                 } Images`
-                              : "Color Images"}
-                          </h4>
-                        </div>
-                      )}
+                                : "Color Images"}
+                            </h4>
+                          </div>
+                        )}
 
                       <div className="flex flex-wrap gap-2 mt-2">
                         {variant.existingImages?.map((img, i) => (
@@ -1532,44 +1754,48 @@ const Products = () => {
 
                       {(variant.existingImages?.length > 0 ||
                         variant.files?.length > 0) && (
-                        <div className="mt-3">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const input = document.createElement("input");
-                              input.type = "file";
-                              input.multiple = true;
-                              input.accept = "image/*";
-                              input.onchange = (e) => {
-                                const updated = [...colorVariants];
-                                const newFiles = Array.from(e.target.files);
-                                updated[index].files = [
-                                  ...(updated[index].files || []),
-                                  ...newFiles,
-                                ];
-                                setColorVariants(updated);
-                              };
-                              input.click();
-                            }}
-                            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 mt-2"
-                          >
-                            + Add More Images
-                          </button>
-                        </div>
-                      )}
+                          <div className="mt-3">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const input = document.createElement("input");
+                                input.type = "file";
+                                input.multiple = true;
+                                input.accept = "image/*";
+                                input.onchange = (e) => {
+                                  const updated = [...colorVariants];
+                                  const newFiles = Array.from(e.target.files);
+                                  updated[index].files = [
+                                    ...(updated[index].files || []),
+                                    ...newFiles,
+                                  ];
+                                  setColorVariants(updated);
+                                };
+                                input.click();
+                              }}
+                              className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 mt-2"
+                            >
+                              + Add More Images
+                            </button>
+                          </div>
+                        )}
                     </div>
                   );
                 })}
 
                 <button
                   type="button"
+                  disabled={isApprovedEditing}
                   onClick={() =>
                     setColorVariants([
                       ...colorVariants,
                       { colorName: "", files: [], existingImages: [] },
                     ])
                   }
-                  className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                  className={`bg-blue-600 text-white px-3 py-1 rounded ${isApprovedEditing
+                      ? "opacity-60 cursor-not-allowed"
+                      : "hover:bg-blue-700"
+                    }`}
                 >
                   + Add Color Variant
                 </button>
