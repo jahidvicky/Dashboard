@@ -11,7 +11,7 @@ const Category = () => {
     categoryName: "",
     subCategoryNames: "",
     categoryImage: null,
-    oldImage: "", // 🔥 required for backend
+    oldImage: "", //  required for backend
   });
 
   const [previewImage, setPreviewImage] = useState(null);
@@ -72,9 +72,8 @@ const Category = () => {
       categoryName: cat.categoryName,
       subCategoryNames: cat.subCategoryNames?.join(", ") || "",
       categoryImage: null, // no new image yet
-      oldImage: cat.categoryImage || "", // 🔥 important
+      oldImage: cat.categoryImage || "",
     });
-
     setPreviewImage(
       cat.categoryImage ? `${IMAGE_URL}/${cat.categoryImage}` : null
     );
@@ -110,7 +109,10 @@ const Category = () => {
 
     const payload = new FormData();
     payload.append("categoryName", formData.categoryName);
-    payload.append("oldImage", formData.oldImage); // 🔥 required
+    payload.append(
+      "oldImage",
+      formData.categoryImage ? formData.oldImage : categoryImageFromState(editId)
+    );
 
     // Subcategories
     const subs = formData.subCategoryNames
@@ -184,7 +186,7 @@ const Category = () => {
                       className="w-30 h-16 rounded object-cover border"
                     />
                   ) : (
-                    <span>—</span>
+                    <span>No Image</span>
                   )}
                 </td>
 
@@ -260,7 +262,7 @@ const Category = () => {
                       onClick={removeOldImage}
                       className="absolute top-0 right-0 bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center"
                     >
-                      ×
+                      x
                     </button>
                   </div>
                 )}
@@ -281,7 +283,7 @@ const Category = () => {
                       }
                       className="absolute top-0 right-0 bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center"
                     >
-                      ×
+                      x
                     </button>
                   </div>
                 )}
