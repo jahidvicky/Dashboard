@@ -136,6 +136,12 @@ const VendorProductOrder = () => {
                         </div>
                     </div>
                 ))}
+                {/* Show when no data */}
+                {allData.length === 0 && (
+                    <div className="text-center text-gray-600 font-semibold mt-5 mb-5 text-lg">
+                        No orders found
+                    </div>
+                )}
             </div>
             {/* Pagination */}
             {allData.length > 0 && (
