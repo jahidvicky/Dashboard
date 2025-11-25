@@ -6,10 +6,10 @@ import API, { IMAGE_URL } from "../../API/Api";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import { IoIosCloseCircle } from "react-icons/io";
 
-// 👇 Fixed category id for Contact Lenses
+//  Fixed category id for Contact Lenses
 const CONTACT_LENS_CATEGORY_ID = "6915735feeb23fa59c7d532b";
 
-// 👇 Only these fields vendor can edit after product is Approved
+//  Only these fields vendor can edit after product is Approved
 const APPROVED_EDITABLE_FIELDS = [
   "product_price",
   "product_sale_price",
@@ -698,8 +698,8 @@ const Products = () => {
                       pro.productStatus !== "Rejected"
                     }
                     className={`bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 hover:cursor-pointer text-center ${pro.isSentForApproval && pro.productStatus !== "Rejected"
-                        ? "opacity-60 cursor-not-allowed"
-                        : ""
+                      ? "opacity-60 cursor-not-allowed"
+                      : ""
                       }`}
                     title={
                       pro.isSentForApproval && pro.productStatus !== "Rejected"
@@ -721,12 +721,12 @@ const Products = () => {
                         pro.productStatus !== "Rejected")
                     }
                     className={`px-3 py-1 rounded text-white ${pro.productStatus === "Approved"
-                        ? "bg-[#f00000] opacity-60 cursor-not-allowed"
-                        : pro.productStatus === "Rejected"
-                          ? "bg-yellow-500 hover:bg-yellow-600"
-                          : pro.isSentForApproval
-                            ? "bg-[#f00000] opacity-60 cursor-not-allowed"
-                            : "bg-[#f00000] hover:bg-red-700"
+                      ? "bg-[#f00000] opacity-60 cursor-not-allowed"
+                      : pro.productStatus === "Rejected"
+                        ? "bg-yellow-500 hover:bg-yellow-600"
+                        : pro.isSentForApproval
+                          ? "bg-[#f00000] opacity-60 cursor-not-allowed"
+                          : "bg-[#f00000] hover:bg-red-700"
                       }`}
                     title={
                       pro.productStatus === "Approved"
@@ -1164,8 +1164,8 @@ const Products = () => {
                         onChange={handleChange}
                         placeholder="e.g., Metal, Plastic"
                         className={`w-full border p-2 rounded ${isApprovedEditing
-                            ? "bg-gray-100 cursor-not-allowed"
-                            : ""
+                          ? "bg-gray-100 cursor-not-allowed"
+                          : ""
                           }`}
                       />
                     </div>
@@ -1181,8 +1181,8 @@ const Products = () => {
                         onChange={handleChange}
                         placeholder="e.g., Round, Square"
                         className={`w-full border p-2 rounded ${isApprovedEditing
-                            ? "bg-gray-100 cursor-not-allowed"
-                            : ""
+                          ? "bg-gray-100 cursor-not-allowed"
+                          : ""
                           }`}
                       />
                     </div>
@@ -1198,8 +1198,8 @@ const Products = () => {
                         onChange={handleChange}
                         placeholder="e.g., Round, Square, Oval, Heart..."
                         className={`w-full border p-2 rounded ${isApprovedEditing
-                            ? "bg-gray-100 cursor-not-allowed"
-                            : ""
+                          ? "bg-gray-100 cursor-not-allowed"
+                          : ""
                           }`}
                       />
                     </div>
@@ -1215,8 +1215,8 @@ const Products = () => {
                         onChange={handleChange}
                         placeholder="e.g., Black, Silver"
                         className={`w-full border p-2 rounded ${isApprovedEditing
-                            ? "bg-gray-100 cursor-not-allowed"
-                            : ""
+                          ? "bg-gray-100 cursor-not-allowed"
+                          : ""
                           }`}
                       />
                     </div>
@@ -1232,8 +1232,8 @@ const Products = () => {
                         onChange={handleChange}
                         placeholder="e.g., Regular, Wide"
                         className={`w-full border p-2 rounded ${isApprovedEditing
-                            ? "bg-gray-100 cursor-not-allowed"
-                            : ""
+                          ? "bg-gray-100 cursor-not-allowed"
+                          : ""
                           }`}
                       />
                     </div>
@@ -1260,8 +1260,8 @@ const Products = () => {
                         onChange={handleChange}
                         placeholder="Daily/Monthly"
                         className={`w-full border p-2 rounded ${isApprovedEditing
-                            ? "bg-gray-100 cursor-not-allowed"
-                            : ""
+                          ? "bg-gray-100 cursor-not-allowed"
+                          : ""
                           }`}
                       />
                     </div>
@@ -1277,8 +1277,8 @@ const Products = () => {
                         onChange={handleChange}
                         placeholder="e.g., Silicone Hydrogel"
                         className={`w-full border p-2 rounded ${isApprovedEditing
-                            ? "bg-gray-100 cursor-not-allowed"
-                            : ""
+                          ? "bg-gray-100 cursor-not-allowed"
+                          : ""
                           }`}
                       />
                     </div>
@@ -1294,8 +1294,8 @@ const Products = () => {
                         onChange={handleChange}
                         placeholder="e.g., Bausch & Lomb"
                         className={`w-full border p-2 rounded ${isApprovedEditing
-                            ? "bg-gray-100 cursor-not-allowed"
-                            : ""
+                          ? "bg-gray-100 cursor-not-allowed"
+                          : ""
                           }`}
                       />
                     </div>
@@ -1311,8 +1311,8 @@ const Products = () => {
                         onChange={handleChange}
                         placeholder="e.g., 40"
                         className={`w-full border p-2 rounded ${isApprovedEditing
-                            ? "bg-gray-100 cursor-not-allowed"
-                            : ""
+                          ? "bg-gray-100 cursor-not-allowed"
+                          : ""
                           }`}
                       />
                     </div>
@@ -1347,8 +1347,8 @@ const Products = () => {
                               setLensPacks(updated);
                             }}
                             className={`w-full border p-2 rounded ${isApprovedEditing
-                                ? "bg-gray-100 cursor-not-allowed"
-                                : ""
+                              ? "bg-gray-100 cursor-not-allowed"
+                              : ""
                               }`}
                             placeholder="Ex: 30, 90"
                           />
@@ -1368,8 +1368,8 @@ const Products = () => {
                               setLensPacks(updated);
                             }}
                             className={`w-full border p-2 rounded ${isApprovedEditing
-                                ? "bg-gray-100 cursor-not-allowed"
-                                : ""
+                              ? "bg-gray-100 cursor-not-allowed"
+                              : ""
                               }`}
                             placeholder="Ex: 499"
                           />
@@ -1389,8 +1389,8 @@ const Products = () => {
                               setLensPacks(updated);
                             }}
                             className={`w-full border p-2 rounded ${isApprovedEditing
-                                ? "bg-gray-100 cursor-not-allowed"
-                                : ""
+                              ? "bg-gray-100 cursor-not-allowed"
+                              : ""
                               }`}
                             placeholder="Ex: 399"
                           />
@@ -1423,8 +1423,8 @@ const Products = () => {
                           setLensPacks(updated);
                         }}
                         className={`mt-2 text-red-600 ${isApprovedEditing
-                            ? "opacity-60 cursor-not-allowed"
-                            : ""
+                          ? "opacity-60 cursor-not-allowed"
+                          : ""
                           }`}
                       >
                         Remove Pack
@@ -1447,8 +1447,8 @@ const Products = () => {
                       ])
                     }
                     className={`bg-blue-600 text-white px-3 py-1 rounded ${isApprovedEditing
-                        ? "opacity-60 cursor-not-allowed"
-                        : "hover:bg-blue-700"
+                      ? "opacity-60 cursor-not-allowed"
+                      : "hover:bg-blue-700"
                       }`}
                   >
                     + Add Pack Size
@@ -1474,8 +1474,8 @@ const Products = () => {
                       onChange={handleChange}
                       placeholder="e.g., Anti-Reflective"
                       className={`w-full border p-2 rounded ${isApprovedEditing
-                          ? "bg-gray-100 cursor-not-allowed"
-                          : ""
+                        ? "bg-gray-100 cursor-not-allowed"
+                        : ""
                         }`}
                     />
                   </div>
@@ -1491,8 +1491,8 @@ const Products = () => {
                       onChange={handleChange}
                       placeholder="Description"
                       className={`w-full border p-2 rounded ${isApprovedEditing
-                          ? "bg-gray-100 cursor-not-allowed"
-                          : ""
+                        ? "bg-gray-100 cursor-not-allowed"
+                        : ""
                         }`}
                     />
                   </div>
@@ -1634,8 +1634,8 @@ const Products = () => {
                               setColorVariants(updated);
                             }}
                             className={`border p-2 rounded w-full capitalize ${isApprovedEditing
-                                ? "bg-gray-100 cursor-not-allowed"
-                                : ""
+                              ? "bg-gray-100 cursor-not-allowed"
+                              : ""
                               }`}
                           />
                         </div>
@@ -1648,8 +1648,8 @@ const Products = () => {
                           }
                           disabled={isApprovedEditing}
                           className={`text-[#f00000] text-sm ml-2 ${isApprovedEditing
-                              ? "opacity-60 cursor-not-allowed"
-                              : "hover:underline"
+                            ? "opacity-60 cursor-not-allowed"
+                            : "hover:underline"
                             }`}
                         >
                           Remove
@@ -1793,8 +1793,8 @@ const Products = () => {
                     ])
                   }
                   className={`bg-blue-600 text-white px-3 py-1 rounded ${isApprovedEditing
-                      ? "opacity-60 cursor-not-allowed"
-                      : "hover:bg-blue-700"
+                    ? "opacity-60 cursor-not-allowed"
+                    : "hover:bg-blue-700"
                     }`}
                 >
                   + Add Color Variant
