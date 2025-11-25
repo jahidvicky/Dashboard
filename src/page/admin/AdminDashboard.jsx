@@ -27,6 +27,7 @@ export default function AdminDashboard() {
     { name: "Doctor Schedule", path: "/admin/doctor-schedule" },
     { name: "Admin Order", path: "/admin/admin-order" },
     { name: "Chat", path: "/admin/chat" },
+    { name: "Support Chat", path: "/admin/supportChat" },
     { name: "Admin Policy", path: "/admin/privacy-policy" },
 
   ];
