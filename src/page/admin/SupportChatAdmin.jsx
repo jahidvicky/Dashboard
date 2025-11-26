@@ -12,69 +12,51 @@ export default function SupportChatAdmin() {
     const [activeTab, setActiveTab] = useState("active");
 
     const chatEndRef = useRef(null);
-    const scrollToBottom = () =>
-        chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const scrollToBottom = () => chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
 
     useEffect(() => scrollToBottom(), [messages]);
 
-    // Initial chat load
+    // Load all chats initially
     useEffect(() => {
         fetch(`${CHAT_API_URL}/support`)
-            .then((res) => res.json())
-            .then((data) => setChats(data.chats));
+            .then(res => res.json())
+            .then(data => setChats(data.chats));
     }, []);
 
-    // Global socket connection
+    // Initialize Socket
     useEffect(() => {
-        if (!socket) socket = io(SOCKET_URL);
+        if (!socket) {
+            socket = io(SOCKET_URL, {
+                path: "/socket.io/",
+                transports: ["websocket"],
+            });
+        }
 
-        socket.on("newChat", (newChat) => {
-            setChats((prev) => [...prev, newChat]);
-        });
-
-        socket.on("chatClosed", (closedChat) => {
-            setChats((prev) =>
-                prev.map((c) => (c._id === closedChat._id ? closedChat : c))
-            );
-            setSelectedChat((prev) =>
-                prev && prev._id === closedChat._id ? closedChat : prev
-            );
-        });
-
-        socket.on("ratingSubmitted", (ratedChat) => {
-            setChats((prev) =>
-                prev.map((c) => (c._id === ratedChat._id ? ratedChat : c))
-            );
-            setSelectedChat((prev) =>
-                prev && prev._id === ratedChat._id ? ratedChat : prev
-            );
+        socket.on("newChat", newChat => {
+            setChats(prev => [...prev, newChat]);
         });
 
         return () => {
             socket.off("newChat");
-            socket.off("chatClosed");
-            socket.off("ratingSubmitted");
         };
     }, []);
 
-    // Messages listener for selected chat
+    // Listen for messages on selected chat
     useEffect(() => {
         if (!selectedChat) return;
 
         socket.emit("admin:join", { chatId: selectedChat._id });
 
-        socket.on("newMessage", (msg) => {
-            setMessages((prev) => [...prev, msg]);
+        const messageHandler = (msg) => {
+            if (msg.chatId !== selectedChat._id) return;
+            console.log("SOCKET RECEIVED:", msg);
+            setMessages(prev => [...prev, msg]);
+        };
 
-            setChats((prev) =>
-                prev.map((c) =>
-                    c._id === selectedChat._id ? { ...c, updatedAt: new Date() } : c
-                )
-            );
-        });
+        socket.on("newMessage", messageHandler);
 
         return () => {
-            socket.off("newMessage");
+            socket.off("newMessage", messageHandler);
         };
     }, [selectedChat]);
 
@@ -88,95 +70,106 @@ export default function SupportChatAdmin() {
 
     const sendMessage = (e) => {
         e.preventDefault();
-        if (!input.trim() || !selectedChat || selectedChat.status === "closed")
-            return;
+        if (!input.trim() || !selectedChat || selectedChat.status === "closed") return;
 
         socket.emit("admin:sendMessage", {
             chatId: selectedChat._id,
             text: input.trim(),
+            sender: "admin"
         });
-
-        socket.emit("admin:typing", { chatId: selectedChat._id });
 
         setInput("");
     };
 
-    const filteredChats = chats.filter((chat) =>
-        activeTab === "active" ? chat.status !== "closed" : chat.status === "closed"
+    const filteredChats = chats.filter(chat =>
+        activeTab === "active"
+            ? chat.status !== "closed"
+            : chat.status === "closed"
     );
 
     return (
         <div className="flex h-[85vh] border rounded-xl bg-white shadow-lg">
+
             {/* Sidebar */}
             <div className="w-1/3 border-r p-3 overflow-y-auto bg-gray-50">
+
                 {/* Tabs */}
                 <div className="flex gap-2 mb-3">
                     <button
-                        className={`flex-1 py-2 rounded-md text-sm font-semibold ${activeTab === "active"
-                            ? "bg-red-600 text-white"
-                            : "bg-gray-200 text-gray-700"
-                            }`}
+                        className={`flex-1 py-2 rounded-md text-sm font-semibold 
+                        ${activeTab === "active" ? "bg-red-600 text-white" : "bg-gray-200 text-gray-700"}`}
                         onClick={() => setActiveTab("active")}
                     >
                         Active Chats
                     </button>
                     <button
-                        className={`flex-1 py-2 rounded-md text-sm font-semibold ${activeTab === "closed"
-                            ? "bg-red-600 text-white"
-                            : "bg-gray-200 text-gray-700"
-                            }`}
+                        className={`flex-1 py-2 rounded-md text-sm font-semibold 
+                        ${activeTab === "closed" ? "bg-red-600 text-white" : "bg-gray-200 text-gray-700"}`}
                         onClick={() => setActiveTab("closed")}
                     >
                         Closed Chats
                     </button>
                 </div>
 
-                {/* Chat list */}
+                {/* Chat List */}
                 {filteredChats.length === 0 ? (
-                    <p className="text-gray-500 text-sm text-center mt-4">
-                        No chats found
-                    </p>
+                    <p className="text-gray-500 text-sm text-center mt-4">No chats found</p>
                 ) : (
-                    filteredChats.map((chat) => (
+                    filteredChats.map(chat => (
                         <div
                             key={chat._id}
                             onClick={() => loadChat(chat)}
-                            className={`p-3 rounded-lg cursor-pointer mb-2 ${selectedChat?._id === chat._id
-                                ? "bg-red-500 text-white"
-                                : "bg-gray-100 hover:bg-gray-200"
-                                }`}
+                            className={`p-3 rounded-lg cursor-pointer mb-2 transition 
+                            ${selectedChat?._id === chat._id
+                                    ? "bg-red-500 text-white"
+                                    : "bg-gray-100 hover:bg-gray-200"}`}
                         >
                             <p className="font-medium">{chat.name}</p>
+
                             <p className="text-xs">{chat.email}</p>
+
                             <p className="text-xs">Reason: {chat.reason}</p>
-                            <p className="text-xs mt-1 font-semibold">
-                                Status: {chat.status}
-                            </p>
-                            {chat.status === "closed" && chat.rating && (
-                                <p className="text-yellow-500 text-xs mt-1">
+
+                            {chat.rating ? (
+                                <p className="text-xs text-yellow-500 font-semibold">
                                     Rating: {chat.rating}/5
                                 </p>
+                            ) : (
+                                <p className="text-xs text-gray-400 italic">
+                                    No Rating
+                                </p>
                             )}
+
+                            <p className="text-xs mt-1 font-semibold">Status: {chat.status}</p>
+
                         </div>
                     ))
                 )}
             </div>
 
-            {/* Chat window */}
+            {/* Chat Window */}
             <div className="flex-1 flex flex-col">
                 <div className="p-3 border-b font-semibold text-gray-700">
                     {selectedChat ? selectedChat.name : "Select a chat"}
                 </div>
 
+                {/* Messages */}
                 <div className="flex-1 p-3 overflow-y-auto space-y-2 text-sm bg-gray-100">
                     {messages
-                        .filter((m) => m.sender === "user" || m.sender === "admin")
+                        .filter(m =>
+                            m.sender !== "system" &&
+                            !(m.sender === "ai" && m.text.startsWith("Hello! It seems like we just started"))
+                        )
                         .map((m, i) => (
                             <div
                                 key={i}
                                 className={`px-3 py-2 rounded-xl max-w-[75%] ${m.sender === "admin"
                                     ? "bg-blue-600 text-white ml-auto"
-                                    : "bg-gray-300 text-black"
+                                    : m.sender === "ai"
+                                        ? "bg-gray-200 text-black"
+                                        : m.sender === "system"
+                                            ? "bg-yellow-200 text-gray-900 text-center mx-auto text-xs"
+                                            : "bg-red-600 text-white"
                                     }`}
                             >
                                 {m.text}
@@ -185,11 +178,9 @@ export default function SupportChatAdmin() {
                     <div ref={chatEndRef} />
                 </div>
 
+                {/* Input Section */}
                 {selectedChat && (
-                    <form
-                        onSubmit={sendMessage}
-                        className="p-3 border-t flex gap-2 bg-white"
-                    >
+                    <form onSubmit={sendMessage} className="p-3 border-t flex gap-2 bg-white">
                         <input
                             className="flex-1 border rounded px-3 py-2 text-sm"
                             placeholder={
