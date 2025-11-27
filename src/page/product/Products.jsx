@@ -40,6 +40,10 @@ const Products = () => {
     face_shape: "",
     frame_color: "",
     frame_fit: "",
+    lens_width: "",
+    bridge_width: "",
+    lens_hieght: "",
+    temple_length: "",
     gender: "",
     product_lens_title1: "",
     product_lens_description1: "",
@@ -197,6 +201,10 @@ const Products = () => {
       face_shape: product.face_shape || "",
       frame_color: product.frame_color || "",
       frame_fit: product.frame_fit || "",
+      lens_width: product.lens_width || "",
+      bridge_width: product.bridge_width || "",
+      lens_hieght: product.lens_hieght || "",
+      temple_length: product.temple_length || "",
       product_lens_title1: product.product_lens_title1 || "",
       product_lens_description1: product.product_lens_description1 || "",
       product_lens_title2: product.product_lens_title2 || "",
@@ -321,6 +329,10 @@ const Products = () => {
         "face_shape",
         "frame_color",
         "frame_fit",
+        "lens_width",
+        "bridge_width",
+        "lens_hieght",
+        "temple_length",
         "lens_type",
         "material",
         "manufacturer",
@@ -868,7 +880,7 @@ const Products = () => {
               {/* Sunglasses Fields */}
               {formData.cat_id !== "6915735feeb23fa59c7d532b" && (
                 <div>
-                  <h4 className="text-gray-700 font-semibold mb-3">Frame Details</h4>
+                  <h4 className="text-black font-bold mt-5 mb-3">Frame Details</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-gray-700 font-medium mb-2">
@@ -932,6 +944,58 @@ const Products = () => {
                         value={formData.frame_fit}
                         onChange={handleChange}
                         placeholder="e.g., Regular, Wide"
+                        className="w-full border p-2 rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Lens Width
+                      </label>
+                      <input
+                        type="text"
+                        name="lens_width"
+                        value={formData.lens_width}
+                        onChange={handleChange}
+                        placeholder="e.g., 30mm, 1.85in"
+                        className="w-full border p-2 rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Bridge Width
+                      </label>
+                      <input
+                        type="text"
+                        name="bridge_width"
+                        value={formData.bridge_width}
+                        onChange={handleChange}
+                        placeholder="e.g., 15 mm / 0.59 in"
+                        className="w-full border p-2 rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Lens Hieght
+                      </label>
+                      <input
+                        type="text"
+                        name="lens_hieght"
+                        value={formData.lens_hieght}
+                        onChange={handleChange}
+                        placeholder="e.g., 35.5 mm / 1.40 in"
+                        className="w-full border p-2 rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Temple Length
+                      </label>
+                      <input
+                        type="text"
+                        name="temple_length"
+                        value={formData.temple_length}
+                        onChange={handleChange}
+                        placeholder="e.g., 125 mm / 4.92 in"
                         className="w-full border p-2 rounded"
                       />
                     </div>
