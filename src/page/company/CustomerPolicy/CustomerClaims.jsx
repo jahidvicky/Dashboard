@@ -209,7 +209,7 @@ const CustomerClaims = () => {
                                                 {claim.status === "Rejected" ? "Rejected" : "Reject"}
                                             </button>
                                             <button
-                                                onClick={() => navigate(`/company/claims/${claim._id}`)}
+                                                onClick={() => navigate(`/admin/claims/${claim._id}`)}
                                                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition cursor-pointer"
                                             >
                                                 View Details

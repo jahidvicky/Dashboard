@@ -15,6 +15,8 @@ export default function AdminDashboard() {
     { name: "Vendor", path: "/admin/vendor" },
     { name: "Vendor Product", path: "/admin/vendor-product" },
     { name: "Insurence Company", path: "/admin/company" },
+    { name: "Customer Policies", path: "/admin/customer-policy" },
+    { name: "Customer Claims", path: "/admin/customer-claims" },
     { name: "Eye Services", path: "/admin/eye-services" },
     { name: "Eye Check", path: "/admin/eyeCheck" },
     { name: "Eyewear Tips", path: "/admin/eyewearTips" },
@@ -29,7 +31,6 @@ export default function AdminDashboard() {
     { name: "Chat", path: "/admin/chat" },
     { name: "Support Chat", path: "/admin/supportChat" },
     { name: "Admin Policy", path: "/admin/privacy-policy" },
-
   ];
 
   return (
@@ -41,10 +42,11 @@ export default function AdminDashboard() {
             <Link
               key={item.path}
               to={item.path}
-              className={`block px-4 py-2 rounded border-b border-gray-200 hover:bg-red-500 hover:text-white hover:cursor-pointer ${location.pathname === item.path
-                ? "bg-[#f00000] text-white"
-                : "text-gray-700"
-                }`}
+              className={`block px-4 py-2 rounded border-b border-gray-200 hover:bg-red-500 hover:text-white hover:cursor-pointer ${
+                location.pathname === item.path
+                  ? "bg-[#f00000] text-white"
+                  : "text-gray-700"
+              }`}
             >
               {item.name}
             </Link>
