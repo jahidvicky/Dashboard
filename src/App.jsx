@@ -69,9 +69,7 @@ const AdminOrderUpdate = lazy(() =>
   import("./page/ordderTracking/AdminOrderUpdate")
 );
 
-const AddPolicy = lazy(() =>
-  import("./page/insurance/AddPolicy")
-);
+const AddPolicy = lazy(() => import("./page/insurance/AddPolicy"));
 
 function App() {
   return (
@@ -107,6 +105,9 @@ function App() {
             <Route path="vendor/:id" element={<VendorDetails />} />
             <Route path="company" element={<AdminCompanyDetails />} />
             <Route path="company/:id" element={<AdminCompanyDetailsPage />} />
+            <Route path="customer-policy" element={<CustomerPolicies />} />
+            <Route path="customer-claims" element={<CustomerClaims />} />
+            <Route path="claims/:claimId" element={<ClaimDetails />} />
             <Route path="testimonials" element={<Testimonials />} />
             <Route path="eyewearTips" element={<EyewearTips />} />
             <Route path="inquiries" element={<Inquiry />} />
@@ -140,7 +141,10 @@ function App() {
             <Route path="profile" element={<UpdateVendorProfile />} />
             <Route path="faq" element={<VendorHome />} />
             <Route path="chat" element={<VendorChat />} />
-            <Route path="discount-product" element={<VendorProductDiscount />} />
+            <Route
+              path="discount-product"
+              element={<VendorProductDiscount />}
+            />
             <Route path="privacy-policy" element={<VendorPrivacyPolicy />} />
             <Route path="order-details" element={<VendorOrderDetails />} />
           </Route>
@@ -163,9 +167,7 @@ function App() {
             <Route path="faq" element={<CompanyHome />} />
             <Route path="add-policy" element={<AddPolicy />} />
             <Route path="chat" element={<InsuranceChat />} />
-            <Route path="customer-policy" element={<CustomerPolicies />} />
-            <Route path="customer-claims" element={<CustomerClaims />} />
-            <Route path="claims/:claimId" element={<ClaimDetails />} />
+
             <Route path="privacy-policy" element={<CompanyPrivacyPolicy />} />
           </Route>
 
