@@ -15,10 +15,10 @@ const CustomerPolicies = () => {
 
   const fetchPolicies = async () => {
     try {
-      const res = await API.get(`/companyPolicies/${companyId}`);
+      const res = await API.get(`/getAllPolicies`);
       const data = res.data.policies || [];
       console.log(data);
-      
+
 
       // Add expiry check
       const updatedPolicies = data.map((item) => {
