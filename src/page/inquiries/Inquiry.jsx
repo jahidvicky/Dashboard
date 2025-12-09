@@ -200,39 +200,53 @@ const Inquiry = () => {
                             <th className="px-4 py-2">Action</th>
                         </tr>
                     </thead>
+
                     <tbody>
-                        {currentInquiries.map((data, index) => (
-                            <tr key={index}>
-                                <td className="border px-4 py-2">{data.inquiryNumber}</td>
-                                <td className="border px-4 py-2">{data.userType}</td>
-                                <td className="border px-4 py-2">{data.name}</td>
-                                <td className="border px-4 py-2 break-words">{data.email}</td>
-                                <td className="border px-4 py-2">
-                                    {data.userType === "company"
-                                        ? data.registrationNumber
-                                        : data.businessNumber}
-                                </td>
-                                <td className="border px-4 py-2">{data.inquiryStatus}</td>
-                                <td className="border px-4 py-2">
-                                    <button
-                                        onClick={() => {
-                                            setSelectedInquiry(data);
-                                            setShowResponse(true);
-                                        }}
-                                        disabled={data.inquiryStatus === "close"}
-                                        className={`text-white p-2 rounded transition ${data.inquiryStatus === "close"
-                                            ? "bg-[#f00000] cursor-not-allowed"
-                                            : "bg-[#f00000] hover:bg-red-700 cursor-pointer"
-                                            }`}
-                                    >
-                                        Send Response
-                                    </button>
+                        {currentInquiries.length === 0 ? (
+                            <tr>
+                                <td
+                                    colSpan="7"
+                                    className="text-center py-8 text-gray-600 text-lg"
+                                >
+                                    No inquiries found.
                                 </td>
                             </tr>
-                        ))}
+                        ) : (
+                            currentInquiries.map((data, index) => (
+                                <tr key={index}>
+                                    <td className="border px-4 py-2">{data.inquiryNumber}</td>
+                                    <td className="border px-4 py-2">{data.userType}</td>
+                                    <td className="border px-4 py-2">{data.name}</td>
+                                    <td className="border px-4 py-2 break-words">{data.email}</td>
+                                    <td className="border px-4 py-2">
+                                        {data.userType === "company"
+                                            ? data.registrationNumber
+                                            : data.businessNumber}
+                                    </td>
+                                    <td className="border px-4 py-2">{data.inquiryStatus}</td>
+                                    <td className="border px-4 py-2">
+                                        <button
+                                            onClick={() => {
+                                                setSelectedInquiry(data);
+                                                setShowResponse(true);
+                                            }}
+                                            disabled={data.inquiryStatus === "close"}
+                                            className={`text-white p-2 rounded transition ${data.inquiryStatus === "close"
+                                                ? "bg-[#f00000] cursor-not-allowed"
+                                                : "bg-[#f00000] hover:bg-red-700 cursor-pointer"
+                                                }`}
+                                        >
+                                            Send Response
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>
+
+
 
             {/* Pagination Controls */}
             {totalPages > 1 && (

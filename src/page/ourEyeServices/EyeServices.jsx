@@ -15,6 +15,8 @@ const EyeService = () => {
     })
 
     const [eyeServiceData, setEyeServiceData] = useState([])
+    const [imagePreview, setImagePreview] = useState(null);
+
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1)
@@ -27,22 +29,42 @@ const EyeService = () => {
     }
 
     const handleFileChange = (e) => {
-        setFormData((prev) => ({
-            ...prev,
-            image: e.target.files[0],
-        }));
+        const file = e.target.files[0];
+
+        if (file) {
+            setFormData(prev => ({ ...prev, image: file }));
+            setImagePreview(URL.createObjectURL(file)); // Preview new file
+        }
     };
+
 
     const handleUpdateClick = (service) => {
         setModalType("update")
         setShowModal(true)
+
         setFormData({
             id: service._id,
             heading: service.heading,
             description: service.description,
-            image: null
+            image: null // new upload (optional)
         })
-    }
+
+        // Show old image preview
+        setImagePreview(
+            service.image
+                ? (service.image.startsWith("http")
+                    ? service.image
+                    : IMAGE_URL + service.image)
+                : null
+        );
+    };
+
+    const handleRemoveImage = () => {
+        setImagePreview(null);
+        setFormData(prev => ({ ...prev, image: null }));
+    };
+
+
 
     // Delete API
     const handleDelete = async (id) => {
@@ -219,13 +241,16 @@ const EyeService = () => {
             </div>
 
             {/* Modal */}
+            {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 backdrop-blur-sm bg-black/40 flex justify-center items-center z-50">
                     <div className="bg-white rounded-lg shadow-lg w-96 p-6 relative">
                         <h2 className="text-xl font-bold mb-4">
                             {modalType === "add" ? "Add Eye Service" : "Update Eye Service"}
                         </h2>
+
                         <form onSubmit={handleSubmit} className="space-y-3">
+
                             <input
                                 type="text"
                                 name='heading'
@@ -240,26 +265,48 @@ const EyeService = () => {
                                 onChange={handleChange}
                                 value={formData.description}
                                 className="border p-2 w-full rounded mt-4"
-                                placeholder='Description'>
-                            </textarea>
+                                placeholder='Description'
+                            />
 
+                            {/* Image Preview */}
+                            {imagePreview && (
+                                <div className="relative w-32 h-32 mb-2">
+                                    <img
+                                        src={imagePreview}
+                                        alt="Preview"
+                                        className="w-full h-full object-cover rounded border"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleRemoveImage}
+                                        className="absolute top-0 right-0 bg-red-600 text-white rounded-full px-2 py-0.5 text-sm"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Upload Input */}
                             <input
                                 type="file"
                                 onChange={handleFileChange}
                                 name='image'
                                 className="border p-2 w-full rounded mt-3"
+                                required={modalType === "add" && !imagePreview}
                             />
 
                             <div className="flex justify-between mt-4">
                                 <button
-                                    onClick={() => setShowModal(false)}
+                                    onClick={() => { setShowModal(false); setImagePreview(null); }}
                                     className="bg-gray-500 text-white px-4 py-2 rounded hover:cursor-pointer"
-                                    type="button">
+                                    type="button"
+                                >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="bg-green-600 text-white px-4 py-2 rounded hover:cursor-pointer">
+                                    className="bg-green-600 text-white px-4 py-2 rounded hover:cursor-pointer"
+                                >
                                     Submit
                                 </button>
                             </div>
@@ -267,6 +314,7 @@ const EyeService = () => {
                     </div>
                 </div>
             )}
+
         </div>
     )
 }

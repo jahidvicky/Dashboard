@@ -15,27 +15,52 @@ const Disclaimer = () => {
         image: null
     })
     const [expanded, setExpanded] = useState({}); // track expanded
+    const [imagePreview, setImagePreview] = useState(null);
+
 
 
     //File Change
     const handleFileChange = (e) => {
-        setFormData((prev) => ({
-            ...prev,
-            image: e.target.files[0]
-        }))
-    }
+        const file = e.target.files[0];
+
+        if (file) {
+            setFormData((prev) => ({
+                ...prev,
+                image: file,
+            }));
+
+            setImagePreview(URL.createObjectURL(file)); // preview
+        }
+    };
+
 
 
     //handle update change
     const handleUpdateClick = (disc) => {
-        setModalType("update")
+        setModalType("update");
         setFormData({
             id: disc._id,
             description: disc.description,
             image: null
-        })
-        setShowModal(true)
-    }
+        });
+
+        setImagePreview(
+            disc.image
+                ? (disc.image.startsWith("http")
+                    ? disc.image
+                    : IMAGE_URL + disc.image)
+                : null
+        );
+
+        setShowModal(true);
+    };
+
+    const handleRemoveImage = () => {
+        setFormData((prev) => ({ ...prev, image: null }));
+        setImagePreview(null);
+    };
+
+
 
 
     //Get API
@@ -242,15 +267,39 @@ const Disclaimer = () => {
                                 onChange={(e) => { setFormData({ ...formData, [e.target.name]: e.target.value }) }}
                             >
                             </textarea>
-
                             <div>
                                 <label className="block text-gray-700">Image</label>
+
+                                {/* Preview Box */}
+                                {imagePreview && (
+                                    <div className="relative w-32 h-32 mb-2">
+                                        <img
+                                            src={imagePreview}
+                                            alt="Preview"
+                                            className="w-full h-full object-cover rounded border"
+                                        />
+
+                                        {/* Delete Button */}
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveImage}
+                                            className="absolute top-0 right-0 bg-red-600 text-white rounded-full px-2 py-0.5 text-sm"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* Upload Input */}
                                 <input
                                     type="file"
                                     name="image"
                                     onChange={handleFileChange}
-                                    className="w-full border rounded p-2" />
+                                    className="w-full border rounded p-2"
+                                    required={modalType === "add" && !imagePreview}
+                                />
                             </div>
+
 
                             <div className="flex justify-between mt-4">
                                 <button

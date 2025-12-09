@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaStar } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { RiEdit2Fill } from "react-icons/ri";
 import API, { IMAGE_URL } from '../../API/Api';
@@ -16,6 +16,9 @@ function Testimonial() {
         rating: "",
     });
     const [testimonialData, setTestimonialData] = useState([]);
+    const [ratingError, setRatingError] = useState("");
+    const [imagePreview, setImagePreview] = useState(null);
+
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
@@ -26,31 +29,76 @@ function Testimonial() {
     const currentData = testimonialData.slice(indexOfFirst, indexOfLast);
 
     const handleChange = (e) => {
+        let { name, value } = e.target;
+
+        if (name === "rating") {
+            if (value === "") {
+                setRatingError("Rating is required");
+            } else if (value < 1) {
+                setRatingError("Rating cannot be less than 1");
+                value = 1;
+            } else if (value > 5) {
+                setRatingError("Rating cannot be more than 5");
+                value = 5;
+            } else {
+                setRatingError(""); // clear error
+            }
+        }
+
         setFormData({
-            ...formData, [e.target.name]: e.target.value
+            ...formData,
+            [name]: value
         });
     };
 
     const handleUpdateClick = (testimonial) => {
         setModalType("update");
         setShowModal(true);
+
         setFormData({
             id: testimonial._id,
             fullName: testimonial.fullName,
             heading: testimonial.heading,
             description: testimonial.description,
-            image: testimonial.image,
+            image: testimonial.image, // keep original
             rating: testimonial.rating
         });
+
+        // Show old image preview
+        setImagePreview(
+            testimonial.image
+                ? (testimonial.image.startsWith("http")
+                    ? testimonial.image
+                    : IMAGE_URL + testimonial.image)
+                : null
+        );
     };
+
 
     // For image upload
     const handleFileChange = (e) => {
-        setFormData((prev) => ({
-            ...prev,
-            image: e.target.files[0]
-        }));
+        const file = e.target.files[0];
+
+        if (file) {
+            setFormData((prev) => ({
+                ...prev,
+                image: file
+            }));
+
+            // Preview
+            setImagePreview(URL.createObjectURL(file));
+        }
     };
+
+    const handleRemoveImage = () => {
+        setFormData(prev => ({
+            ...prev,
+            image: null
+        }));
+        setImagePreview(null);
+    };
+
+
 
     // Get API
     const fetchTestimonial = async () => {
@@ -142,6 +190,7 @@ function Testimonial() {
             setShowModal(false);
             setFormData({ fullName: "", heading: "", description: "", image: null, rating: "" });
             fetchTestimonial();
+            setImagePreview(null);
         } catch (error) {
             console.error("Submit Error:", error);
         }
@@ -185,7 +234,11 @@ function Testimonial() {
                                 className="w-16 h-16 object-cover rounded"
                             />
                         )}
-                        <p>{data.rating}</p>
+                        <div className="flex text-yellow-500">
+                            {[...Array(Math.max(1, Math.min(5, data.rating)))].map((_, i) => (
+                                <FaStar key={i} />
+                            ))}
+                        </div>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => handleUpdateClick(data)}
@@ -222,7 +275,7 @@ function Testimonial() {
 
             {/* Modal */}
             {showModal && (
-                <div className='fixed inset-0 backdrop-blur-sm flex justify-center items-center'>
+                <div className="fixed inset-0 backdrop-blur-sm flex justify-center items-start h-screen overflow-y-auto py-28">
                     <div className='bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative'>
                         <h2 className="text-xl font-bold mb-4">
                             {modalType === "add" ? "Add Testimonial" : "Update Testimonial"}
@@ -268,14 +321,36 @@ function Testimonial() {
 
                             <div>
                                 <label className='block text-gray-700'>Image</label>
+
+                                {/* Image Preview */}
+                                {imagePreview && (
+                                    <div className="relative w-32 h-32 mb-2">
+                                        <img
+                                            src={imagePreview}
+                                            alt="Preview"
+                                            className="w-full h-full object-cover rounded border"
+                                        />
+                                        {/* Delete button */}
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveImage}
+                                            className="absolute top-0 right-0 bg-red-500 text-white rounded-full px-2 py-0.5 text-sm"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* Upload New Image */}
                                 <input
                                     type="file"
                                     name='image'
                                     onChange={handleFileChange}
                                     className="w-full border rounded p-2 focus:outline-none focus:border-red-500"
-                                    required={modalType === "add"}
+                                    required={modalType === "add" && !imagePreview}
                                 />
                             </div>
+
 
                             <div>
                                 <label className='block text-gray-700'>Rating</label>
@@ -284,12 +359,19 @@ function Testimonial() {
                                     name='rating'
                                     value={formData.rating}
                                     onChange={handleChange}
-                                    className="w-full border rounded p-2 focus:outline-none focus:border-red-500"
+                                    placeholder='Enter rating between 1 to 5'
+                                    className={`w-full border rounded p-2 focus:outline-none focus:border-red-500 ${ratingError ? "border-red-500" : ""
+                                        }`}
                                     min="1"
                                     max="5"
                                     required
                                 />
+
+                                {ratingError && (
+                                    <p className="text-red-500 text-sm mt-1">{ratingError}</p>
+                                )}
                             </div>
+
 
                             <div className="flex justify-between mt-4">
                                 <button

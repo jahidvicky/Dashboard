@@ -14,6 +14,8 @@ const BrandSection = () => {
         image: "",
         brand: ""
     });
+    const [imagePreview, setImagePreview] = useState(null);
+
 
     // pagination state
     const [currentPage, setCurrentPage] = useState(1);
@@ -68,22 +70,48 @@ const BrandSection = () => {
     };
 
     const handleImageChange = (e) => {
+        const file = e.target.files[0];
+
+        if (file) {
+            setFormData((prev) => ({
+                ...prev,
+                image: file,
+            }));
+
+            // Preview
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
+    const handleRemoveImage = () => {
         setFormData((prev) => ({
             ...prev,
-            image: e.target.files[0],
+            image: null,
         }));
+        setImagePreview(null);
     };
+
+
 
     const handleUpdateClick = (tip) => {
         setModalType("update");
         setShowModal(true);
+
         setFormData({
             id: tip._id,
             type: tip.type,
             brand: tip.brand,
-            image: null,
+            image: null,   // new image not uploaded yet
         });
+
+        // Show existing image as preview
+        setImagePreview(
+            tip.image
+                ? (tip.image.startsWith("http") ? tip.image : IMAGE_URL + tip.image)
+                : null
+        );
     };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -119,6 +147,7 @@ const BrandSection = () => {
             }
 
             setShowModal(false);
+            setImagePreview(null);
             setFormData({ id: null, type: "", brand: "", image: null });
             fetchBrand();
         } catch (error) {
@@ -265,6 +294,26 @@ const BrandSection = () => {
                                 <label className="block mb-1 font-medium text-gray-700">
                                     Upload Image
                                 </label>
+
+                                {/* Image Preview */}
+                                {imagePreview && (
+                                    <div className="relative w-32 h-32 mb-2">
+                                        <img
+                                            src={imagePreview}
+                                            alt="Preview"
+                                            className="w-35 h-20 mb-2 rounded border"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveImage}
+                                            className="absolute top-0 right-0 bg-red-500 text-white rounded-full px-2 py-0.5 text-sm"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* Upload Input */}
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -275,12 +324,17 @@ const BrandSection = () => {
 
                             <div className="flex justify-between mt-4">
                                 <button
-                                    onClick={() => setShowModal(false)}
+                                    onClick={() => {
+                                        setShowModal(false);
+                                        setImagePreview(null);   // RESET preview here
+                                        setFormData({ id: null, type: "", brand: "", image: null });
+                                    }}
                                     className="bg-gray-500 text-white px-4 py-2 rounded hover:cursor-pointer"
                                     type="button"
                                 >
                                     Cancel
                                 </button>
+
                                 <button
                                     type="submit"
                                     className="bg-green-600 text-white px-4 py-2 rounded hover:cursor-pointer"

@@ -21,6 +21,9 @@ const DoctorSchedule = () => {
         }
     });
 
+    const [imagePreview, setImagePreview] = useState(null);
+
+
     const handleChange = (e) => {
         setFormData({
             ...formData,
@@ -79,25 +82,32 @@ const DoctorSchedule = () => {
         setModalType("update");
         setShowModal(true);
 
-        let firstDay = "";
-        let firstTimes = [];
-
-        if (doctor.schedule?.length > 0) {
-            firstDay = doctor.schedule[0].day || "";
-            firstTimes = doctor.schedule[0].times || [];
-        }
+        let firstDay = doctor.schedule?.[0]?.day || "";
+        let firstTimes = doctor.schedule?.[0]?.times || [];
 
         setFormData({
             id: doctor._id,
             doctor_name: doctor.doctor_name || "",
             specialization: doctor.specialization || "",
             exam_section: doctor.exam_section || "",
-            schedule: {
-                day: firstDay,
-                times: firstTimes
-            }
+            schedule: { day: firstDay, times: firstTimes },
+            image: null
         });
-    }
+
+        // Show old image preview
+        setImagePreview(
+            doctor.image
+                ? (doctor.image.startsWith("http")
+                    ? doctor.image
+                    : IMAGE_URL + doctor.image)
+                : null
+        );
+    };
+
+    const handleRemoveImage = () => {
+        setFormData((prev) => ({ ...prev, image: null }));
+        setImagePreview(null);
+    };
 
 
     // add a new time input
@@ -126,11 +136,18 @@ const DoctorSchedule = () => {
 
     // Handle file input
     const handleFileChange = (e) => {
-        setFormData((prev) => ({
-            ...prev,
-            image: e.target.files[0],
-        }));
+        const file = e.target.files[0];
+
+        if (file) {
+            setFormData((prev) => ({
+                ...prev,
+                image: file,
+            }));
+
+            setImagePreview(URL.createObjectURL(file)); // preview new image
+        }
     };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -245,11 +262,6 @@ const DoctorSchedule = () => {
                             />
                         )}
                         <h1>{data.specialization}</h1>
-                        {/* <h1>
-                            {Array.isArray(data.exams)
-                                ? data.exams.map((exam) => exam?.examName || exam).join(", ")
-                                : data.exams}
-                        </h1> */}
                         <h1>
                             {Array.isArray(data.exam_section) ? data.exam_section.join(", ") : data.exam_section}
                         </h1>
@@ -281,10 +293,14 @@ const DoctorSchedule = () => {
 
             {/* Modal */}
             {showModal && (
-                <div className='fixed inset-0 backdrop-blur-sm flex justify-center items-center'>
-                    <div className='bg-white rounded-lg shadow-lg w-[500px] p-6 relative'>
-                        <h2 className="text-xl font-bold mb-4">{modalType === "add" ? "Add Doctor Schedule" : "Edit Doctor Schedule"}</h2>
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center overflow-y-auto py-6 pt-40">
+                    <div className="bg-white rounded-lg shadow-lg w-[500px] max-h-[85vh] overflow-y-auto p-6 relative">
+                        <h2 className="text-xl font-bold mb-4">
+                            {modalType === "add" ? "Add Doctor Schedule" : "Edit Doctor Schedule"}
+                        </h2>
+
                         <form onSubmit={handleSubmit} className="space-y-3">
+
                             <input
                                 type="text"
                                 name='doctor_name'
@@ -293,12 +309,38 @@ const DoctorSchedule = () => {
                                 className="border p-2 w-full rounded"
                                 onChange={handleChange}
                             />
-                            <input
-                                type="file"
-                                name='image'
-                                className="border p-2 w-full rounded"
-                                onChange={handleFileChange}
-                            />
+
+                            {/* IMAGE PREVIEW BLOCK */}
+                            <div>
+                                <label className="block text-gray-700 mb-1">Doctor Image</label>
+
+                                {imagePreview && (
+                                    <div className="relative w-32 h-32 mb-3">
+                                        <img
+                                            src={imagePreview}
+                                            alt="preview"
+                                            className="w-full h-full object-cover rounded border"
+                                        />
+
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveImage}
+                                            className="absolute top-0 right-0 bg-red-600 text-white rounded-full px-2 py-0.5 text-sm"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                )}
+
+                                <input
+                                    type="file"
+                                    name="image"
+                                    onChange={handleFileChange}
+                                    className="border p-2 w-full rounded"
+                                    required={modalType === "add" && !imagePreview}
+                                />
+                            </div>
+
                             <input
                                 type="text"
                                 name='specialization'
@@ -308,49 +350,40 @@ const DoctorSchedule = () => {
                                 onChange={handleChange}
                             />
 
-                            <div>
-                                <select
-                                    name="exam_section"
-                                    value={formData.exam_section}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            exam_section: e.target.value,
-                                        })
-                                    }
-                                    className="w-full border rounded p-2"
-                                >
-                                    <option>Select Exam</option>
-                                    {eyeExam.map((exam) => (
-                                        <option key={exam._id} value={exam.examName}>
-                                            {exam.examName}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            <select
+                                name="exam_section"
+                                value={formData.exam_section}
+                                onChange={(e) => setFormData({ ...formData, exam_section: e.target.value })}
+                                className="border p-2 w-full rounded"
+                            >
+                                <option value="">Select Exam</option>
+                                {eyeExam.map((exam) => (
+                                    <option key={exam._id} value={exam.examName}>
+                                        {exam.examName}
+                                    </option>
+                                ))}
+                            </select>
 
-                            <div>
-                                <select className="border p-2 w-full rounded"
-                                    value={formData.schedule.day}
-                                    onChange={(e) => setFormData({
+                            <select
+                                className="border p-2 w-full rounded"
+                                value={formData.schedule.day}
+                                onChange={(e) =>
+                                    setFormData({
                                         ...formData,
-                                        schedule: {
-                                            ...formData.schedule,
-                                            day: e.target.value
-                                        }
-                                    })}>
-                                    <option value="">Select any Day</option>
-                                    <option>Monday</option>
-                                    <option>Tuesday</option>
-                                    <option>Wednesday</option>
-                                    <option>Thursday</option>
-                                    <option>Friday</option>
-                                    <option>Saturday</option>
-                                    <option>Sunday</option>
-                                </select>
-                            </div>
+                                        schedule: { ...formData.schedule, day: e.target.value },
+                                    })
+                                }
+                            >
+                                <option value="">Select Day</option>
+                                <option>Monday</option>
+                                <option>Tuesday</option>
+                                <option>Wednesday</option>
+                                <option>Thursday</option>
+                                <option>Friday</option>
+                                <option>Saturday</option>
+                                <option>Sunday</option>
+                            </select>
 
-                            {/* Times Input Fields */}
                             <div className="space-y-2">
                                 {formData.schedule.times.map((time, index) => (
                                     <input
@@ -361,6 +394,7 @@ const DoctorSchedule = () => {
                                         onChange={(e) => handleTimeChange(e.target.value, index)}
                                     />
                                 ))}
+
                                 <button
                                     type="button"
                                     className="bg-blue-500 text-white px-3 py-1 rounded hover:cursor-pointer"
@@ -373,16 +407,21 @@ const DoctorSchedule = () => {
                             <div className="flex justify-between mt-4">
                                 <button
                                     type='button'
-                                    onClick={() => setShowModal(false)}
+                                    onClick={() => {
+                                        setShowModal(false);
+                                        setImagePreview(null);
+                                    }}
                                     className='bg-gray-500 text-white px-4 py-2 rounded hover:cursor-pointer'>
                                     Cancel
                                 </button>
+
                                 <button
                                     type='submit'
                                     className="bg-green-600 text-white px-4 py-2 rounded hover:cursor-pointer">
                                     Submit
                                 </button>
                             </div>
+
                         </form>
                     </div>
                 </div>

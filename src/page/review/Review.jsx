@@ -8,6 +8,8 @@ function Review() {
   const [isEditing, setIsEditing] = useState(false);
   const [currentId, setCurrentId] = useState(null);
   const [expanded, setExpanded] = useState({}); // track expanded reviews
+  const [imagePreview, setImagePreview] = useState(null);
+
 
   const [formData, setFormData] = useState({
     description: "",
@@ -40,8 +42,13 @@ function Review() {
   };
 
   const handleFileChange = (e) => {
-    setImage(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file)); // preview new image
+    }
   };
+
 
   // Add or Update Review
   const handleSubmit = async (e) => {
@@ -88,11 +95,27 @@ function Review() {
       frames: review.frames,
       customer: review.customer,
     });
+
     setImage(null);
     setCurrentId(review._id);
     setIsEditing(true);
+
+    // Load existing image preview
+    setImagePreview(
+      review.image
+        ? (review.image.startsWith("http") ? review.image : IMAGE_URL + review.image)
+        : null
+    );
+
     setShowModal(true);
   };
+
+  const handleRemoveImage = () => {
+    setImage(null);
+    setImagePreview(null);
+  };
+
+
 
   // Toggle description expand
   const toggleExpand = (id) => {
@@ -181,12 +204,14 @@ function Review() {
       </div>
 
       {/* Modal */}
+      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 backdrop-blur-sm flex justify-center items-center">
           <div className="bg-white rounded-lg shadow-lg w-96 p-6 relative">
             <h2 className="text-xl font-bold mb-4">
               {isEditing ? "Update Review" : "Add Review"}
             </h2>
+
             <form onSubmit={handleSubmit} className="space-y-3">
               <textarea
                 type="text"
@@ -197,6 +222,7 @@ function Review() {
                 className="border p-2 w-full rounded"
                 required
               />
+
               <input
                 type="number"
                 name="followers"
@@ -206,6 +232,7 @@ function Review() {
                 className="border p-2 w-full rounded"
                 required
               />
+
               <input
                 type="number"
                 name="frames"
@@ -215,6 +242,7 @@ function Review() {
                 className="border p-2 w-full rounded"
                 required
               />
+
               <input
                 type="number"
                 name="customer"
@@ -224,21 +252,50 @@ function Review() {
                 className="border p-2 w-full rounded"
                 required
               />
-              <input
-                type="file"
-                name="image"
-                onChange={handleFileChange}
-                className="border p-2 w-full rounded"
-              />
+
+              {/* Image with Preview */}
+              <div>
+                <label className="block mb-1 text-gray-700">Image</label>
+
+                {imagePreview && (
+                  <div className="relative w-32 h-32 mb-3">
+                    <img
+                      src={imagePreview}
+                      alt="preview"
+                      className="w-full h-full object-cover rounded border"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute top-0 right-0 bg-red-600 text-white rounded-full px-2 py-0.5 text-sm"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+
+                <input
+                  type="file"
+                  name="image"
+                  onChange={handleFileChange}
+                  className="border p-2 w-full rounded"
+                  required={!isEditing && !imagePreview}
+                />
+              </div>
 
               <div className="flex justify-between mt-4">
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    setImagePreview(null);
+                  }}
                   className="bg-gray-500 text-white px-4 py-2 rounded hover:cursor-pointer"
                 >
                   Cancel
                 </button>
+
                 <button
                   type="submit"
                   className="bg-green-600 text-white px-4 py-2 rounded hover:cursor-pointer"
@@ -250,6 +307,7 @@ function Review() {
           </div>
         </div>
       )}
+
     </div>
   );
 }

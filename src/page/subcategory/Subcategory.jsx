@@ -86,27 +86,27 @@ const Subcategory = () => {
   // =============================
   // Delete Subcategory
   // =============================
-  const handleDelete = (id) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "This will remove the subcategory permanently.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await API.delete(`/deletesubcategory/${id}`);
-          Swal.fire("Deleted!", "Subcategory deleted!", "success");
-          fetchSubcategories();
-        } catch {
-          Swal.fire("Error", "Failed to delete", "error");
-        }
-      }
-    });
-  };
+  // const handleDelete = (id) => {
+  //   Swal.fire({
+  //     title: "Are you sure?",
+  //     text: "This will remove the subcategory permanently.",
+  //     icon: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonColor: "#d33",
+  //     cancelButtonColor: "#3085d6",
+  //     confirmButtonText: "Yes, delete it!",
+  //   }).then(async (result) => {
+  //     if (result.isConfirmed) {
+  //       try {
+  //         await API.delete(`/deletesubcategory/${id}`);
+  //         Swal.fire("Deleted!", "Subcategory deleted!", "success");
+  //         fetchSubcategories();
+  //       } catch {
+  //         Swal.fire("Error", "Failed to delete", "error");
+  //       }
+  //     }
+  //   });
+  // };
 
   // =============================
   // Submit Form
@@ -172,7 +172,7 @@ const Subcategory = () => {
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Description</th>
               <th className="px-4 py-2">Image</th>
-              <th className="px-4 py-2">Actions</th>
+              <th className="px-4 py-2">Action</th>
             </tr>
           </thead>
 
@@ -205,12 +205,12 @@ const Subcategory = () => {
                     <FaEdit />
                   </button>
 
-                  <button
+                  {/* <button
                     onClick={() => handleDelete(data._id)}
                     className="bg-red-600 text-white px-3 py-1 rounded"
                   >
                     <FaTrash />
-                  </button>
+                  </button> */}
                 </td>
               </tr>
             ))}

@@ -31,7 +31,7 @@ export default function AdminPrivacyPolicy() {
                         ].map((item, idx) => (
                             <p
                                 key={idx}
-                                className="text-sm px-3 py-1 rounded-md bg-[#f00000] border border-red-700 text-black hover:bg-red-800/40 transition"
+                                className="text-sm px-3 py-1 rounded-md text-[#f00000] border border-red-700 hover:bg-red-800/40  transition"
                             >
                                 {item}
                             </p>
