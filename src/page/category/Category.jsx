@@ -82,16 +82,16 @@ const Category = () => {
     setPreviewImage(null);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this category?")) return;
-    try {
-      await API.delete(`/deletecategory/${id}`);
-      setCategories((prev) => prev.filter((c) => c._id !== id));
-      toast.success("Deleted successfully");
-    } catch {
-      toast.error("Delete failed");
-    }
-  };
+  // const handleDelete = async (id) => {
+  //   if (!window.confirm("Delete this category?")) return;
+  //   try {
+  //     await API.delete(`/deletecategory/${id}`);
+  //     setCategories((prev) => prev.filter((c) => c._id !== id));
+  //     toast.success("Deleted successfully");
+  //   } catch {
+  //     toast.error("Delete failed");
+  //   }
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -161,7 +161,7 @@ const Category = () => {
             <tr>
               <th className="px-6 py-3">Image</th>
               <th className="px-6 py-3">Category Name</th>
-              <th className="px-6 py-3 text-center">Actions</th>
+              <th className="px-6 py-3 text-center">Action</th>
             </tr>
           </thead>
 
@@ -196,13 +196,13 @@ const Category = () => {
                     <FaEdit />
                     Edit
                   </button>
-                  <button
+                  {/* <button
                     onClick={() => handleDelete(cat._id)}
                     className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 flex items-center gap-1"
                   >
                     <FaTrash />
                     Delete
-                  </button>
+                  </button> */}
                 </td>
               </tr>
             ))}
