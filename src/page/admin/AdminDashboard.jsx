@@ -24,6 +24,7 @@ export default function AdminDashboard() {
     { name: "Review", path: "/admin/review" },
     { name: "Testimonial", path: "/admin/testimonials" },
     { name: "FAQ", path: "/admin/faq" },
+    { name: "Frame Donation", path: "/admin/frameDonation" },
     { name: "Eye Exam", path: "/admin/eye-exam" },
     { name: "All Appointments", path: "/admin/appointments" },
     { name: "Doctor Schedule", path: "/admin/doctor-schedule" },
@@ -42,11 +43,10 @@ export default function AdminDashboard() {
             <Link
               key={item.path}
               to={item.path}
-              className={`block px-4 py-2 rounded border-b border-gray-200 hover:bg-red-500 hover:text-white hover:cursor-pointer ${
-                location.pathname === item.path
+              className={`block px-4 py-2 rounded border-b border-gray-200 hover:bg-red-500 hover:text-white hover:cursor-pointer ${location.pathname === item.path
                   ? "bg-[#f00000] text-white"
                   : "text-gray-700"
-              }`}
+                }`}
             >
               {item.name}
             </Link>
