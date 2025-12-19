@@ -21,7 +21,7 @@ const Products = () => {
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedBrandType, setSelectedBrandType] = useState("");
   const [lensPacks, setLensPacks] = useState([
-    { packSize: "", oldPrice: "", salePrice: "", isBestValue: false }
+    { packSize: "", oldPrice: "", salePrice: "", isBestValue: false },
   ]);
 
   const [formData, setFormData] = useState({
@@ -30,6 +30,7 @@ const Products = () => {
     subCat_id: "",
     subCategoryName: "",
     product_name: "",
+    unit: "",
     product_size: [],
     product_color: [],
     product_price: "",
@@ -66,7 +67,7 @@ const Products = () => {
       const res = await API.get("/getAllProduct");
       setProducts(res.data.products || []);
     } catch (err) {
-      console.error(err)
+      console.error(err);
     }
   };
 
@@ -76,7 +77,7 @@ const Products = () => {
       const res = await API.get("/getcategories");
       setCategory(res.data.categories || []);
     } catch (err) {
-      console.error(err)
+      console.error(err);
     }
   };
 
@@ -96,8 +97,12 @@ const Products = () => {
 
   // Pagination + Filtering Logic
   const filteredProducts = products.filter((pro) => {
-    const matchCategory = filterCategory ? pro.cat_id?.toString() === filterCategory : true;
-    const matchSubCategory = filterSubCategory ? pro.subCat_id?.toString() === filterSubCategory : true;
+    const matchCategory = filterCategory
+      ? pro.cat_id?.toString() === filterCategory
+      : true;
+    const matchSubCategory = filterSubCategory
+      ? pro.subCat_id?.toString() === filterSubCategory
+      : true;
 
     return matchCategory && matchSubCategory;
   });
@@ -144,6 +149,7 @@ const Products = () => {
       subCat_id: "",
       subCategoryName: "",
       product_name: "",
+      unit: "",
       product_size: [],
       product_color: [],
       product_price: "",
@@ -173,7 +179,9 @@ const Products = () => {
     setEditId(null);
     setOpen(true);
     setColorVariants([]);
-    setLensPacks([{ packSize: "", oldPrice: "", salePrice: "", isBestValue: false }]);
+    setLensPacks([
+      { packSize: "", oldPrice: "", salePrice: "", isBestValue: false },
+    ]);
   };
 
   const openEditModal = (product) => {
@@ -184,12 +192,17 @@ const Products = () => {
       subCat_id: product.subCat_id || "",
       subCategoryName: product.subCategoryName || "",
       product_name: product.product_name || "",
+      unit:
+        product.cat_id === "6915735feeb23fa59c7d532b"
+          ? ""
+          : product.unit || "Piece",
+
       isBestSeller: product.isBestSeller || false,
       isTrending: product.isTrending || false,
       product_size: product.product_size
         ? product.product_size.flatMap((item) =>
-          item.split(",").map((s) => s.trim())
-        )
+            item.split(",").map((s) => s.trim())
+          )
         : [],
       product_color: product.product_color || [],
       product_price: product.product_price || "",
@@ -222,7 +235,6 @@ const Products = () => {
         ? product.contactLens_packs
         : [{ packSize: "", oldPrice: "", salePrice: "", isBestValue: false }]
     );
-
 
     //  Prefill Color Variants from product_variants
     if (product.product_variants && product.product_variants.length > 0) {
@@ -300,6 +312,13 @@ const Products = () => {
       Swal.fire("Error", "Please select a category", "error");
       return;
     }
+    //  FORCE UNIT FOR GLASSES & SUNGLASSES
+    if (formData.cat_id !== "6915735feeb23fa59c7d532b") {
+      formData.unit = "Piece";
+    } else {
+      delete formData.unit; // contact lens → no unit
+    }
+
     if (!formData.product_name) {
       Swal.fire("Error", "Product name is required", "error");
       return;
@@ -341,6 +360,7 @@ const Products = () => {
         "product_lens_description1",
         "product_lens_title2",
         "product_lens_description2",
+        "unit",
       ].forEach((field) => {
         if (formData[field]) payload.append(field, formData[field]);
       });
@@ -368,9 +388,8 @@ const Products = () => {
       const colorDataArray = colorVariants.map((variant) => ({
         colorName: variant.colorName.trim(),
         images:
-          variant.existingImages?.map((img) =>
-            img.replace(IMAGE_URL, "")
-          ) || [],
+          variant.existingImages?.map((img) => img.replace(IMAGE_URL, "")) ||
+          [],
       }));
       payload.append("colorData", JSON.stringify(colorDataArray));
 
@@ -508,7 +527,8 @@ const Products = () => {
                   {pro.subCategoryName}
                 </td>
                 <td className="border px-4 py-2">
-                  {pro?.product_image_collection?.length || pro?.product_variants?.[0]?.images?.length ? (
+                  {pro?.product_image_collection?.length ||
+                  pro?.product_variants?.[0]?.images?.length ? (
                     <div className="flex flex-wrap gap-1 justify-center">
                       {/* Show only the first available image */}
                       <img
@@ -517,14 +537,11 @@ const Products = () => {
                             pro?.product_image_collection?.[0] ||
                             pro?.product_variants?.[0]?.images?.[0]
                           ).startsWith("http")
-                            ? (
-                              pro?.product_image_collection?.[0] ||
+                            ? pro?.product_image_collection?.[0] ||
                               pro?.product_variants?.[0]?.images?.[0]
-                            )
-                            : IMAGE_URL + (
-                              pro?.product_image_collection?.[0] ||
-                              pro?.product_variants?.[0]?.images?.[0]
-                            )
+                            : IMAGE_URL +
+                              (pro?.product_image_collection?.[0] ||
+                                pro?.product_variants?.[0]?.images?.[0])
                         }
                         alt="product"
                         className="w-20 h-12 object-cover rounded"
@@ -559,8 +576,9 @@ const Products = () => {
         {[...Array(totalPages)].map((_, i) => (
           <button
             key={i}
-            className={`px-3 py-1 border rounded hover:cursor-pointer ${currentPage === i + 1 ? "bg-blue-500 text-white" : ""
-              }`}
+            className={`px-3 py-1 border rounded hover:cursor-pointer ${
+              currentPage === i + 1 ? "bg-blue-500 text-white" : ""
+            }`}
             onClick={() => handlePageChange(i + 1)}
           >
             {i + 1}
@@ -594,6 +612,10 @@ const Products = () => {
                       cat_sec: selectedCat?.categoryName || "",
                       subCat_id: "",
                       subCategoryName: "",
+                      unit:
+                        selectedCat?._id === "6915735feeb23fa59c7d532b"
+                          ? ""
+                          : "Piece",
                     });
                   }}
                   className="w-full border rounded p-2"
@@ -649,7 +671,8 @@ const Products = () => {
               {formData.cat_id === "6915735feeb23fa59c7d532b" && (
                 <div>
                   <label className="block text-gray-700 font-medium mb-2">
-                    Contact Lenses Brand <span className="text-gray-500">(Optional)</span>
+                    Contact Lenses Brand{" "}
+                    <span className="text-gray-500">(Optional)</span>
                   </label>
                   <select
                     value={selectedBrand}
@@ -676,7 +699,8 @@ const Products = () => {
               {formData.cat_id !== "6915735feeb23fa59c7d532b" && (
                 <div>
                   <label className="block text-gray-700 font-medium mb-2">
-                    Glasses Brand <span className="text-gray-500">(Optional)</span>
+                    Glasses Brand{" "}
+                    <span className="text-gray-500">(Optional)</span>
                   </label>
                   <select
                     value={selectedBrand}
@@ -721,7 +745,10 @@ const Products = () => {
                 </label>
                 <div className="flex gap-4">
                   {["S", "M", "L"].map((size) => (
-                    <label key={size} className="flex items-center gap-1 cursor-pointer">
+                    <label
+                      key={size}
+                      className="flex items-center gap-1 cursor-pointer"
+                    >
                       <input
                         type="checkbox"
                         value={size}
@@ -800,6 +827,22 @@ const Products = () => {
                 </div>
               </div>
 
+              {/* Unit – Glasses & Sunglasses only */}
+              {formData.cat_id !== "6915735feeb23fa59c7d532b" && (
+                <div>
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Unit
+                  </label>
+
+                  <input
+                    type="text"
+                    value="Piece"
+                    readOnly
+                    className="w-full border p-2 rounded bg-gray-100 cursor-not-allowed"
+                  />
+                </div>
+              )}
+
               {/* Stock Availability */}
               <div>
                 <label className="block text-gray-700 font-medium mb-2">
@@ -850,14 +893,16 @@ const Products = () => {
 
               {/* Best Seller & Trending */}
               <div className="grid grid-cols-2 gap-4 mt-4">
-
                 {/* Best Seller */}
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={formData.isBestSeller}
                     onChange={(e) =>
-                      setFormData({ ...formData, isBestSeller: e.target.checked })
+                      setFormData({
+                        ...formData,
+                        isBestSeller: e.target.checked,
+                      })
                     }
                   />
                   <span className="font-medium">Best Seller</span>
@@ -874,14 +919,14 @@ const Products = () => {
                   />
                   <span className="font-medium">Trending Product</span>
                 </label>
-
               </div>
-
 
               {/* Sunglasses Fields */}
               {formData.cat_id !== "6915735feeb23fa59c7d532b" && (
                 <div>
-                  <h4 className="text-black font-bold mt-5 mb-3">Frame Details</h4>
+                  <h4 className="text-black font-bold mt-5 mb-3">
+                    Frame Details
+                  </h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-gray-700 font-medium mb-2">
@@ -1007,7 +1052,9 @@ const Products = () => {
               {/* Contact Lens Fields */}
               {formData.cat_id === "6915735feeb23fa59c7d532b" && (
                 <div>
-                  <h4 className="text-gray-700 font-semibold mb-3">Contact Lens Details</h4>
+                  <h4 className="text-gray-700 font-semibold mb-3">
+                    Contact Lens Details
+                  </h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-gray-700 font-medium mb-2">
@@ -1068,7 +1115,9 @@ const Products = () => {
               {/* Contact Lens Packs Section */}
               {formData.cat_id === "6915735feeb23fa59c7d532b" && (
                 <div className="mt-4 border-t pt-4">
-                  <h4 className="text-gray-700 font-semibold mb-3">Contact Lens Packs</h4>
+                  <h4 className="text-gray-700 font-semibold mb-3">
+                    Contact Lens Packs
+                  </h4>
 
                   {lensPacks.map((pack, index) => (
                     <div
@@ -1077,7 +1126,9 @@ const Products = () => {
                     >
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-gray-700 font-medium mb-1">Pack Size</label>
+                          <label className="block text-gray-700 font-medium mb-1">
+                            Pack Size
+                          </label>
                           <input
                             type="number"
                             value={pack.packSize}
@@ -1092,7 +1143,9 @@ const Products = () => {
                         </div>
 
                         <div>
-                          <label className="block text-gray-700 font-medium mb-1">Old Price</label>
+                          <label className="block text-gray-700 font-medium mb-1">
+                            Old Price
+                          </label>
                           <input
                             type="number"
                             value={pack.oldPrice}
@@ -1107,7 +1160,9 @@ const Products = () => {
                         </div>
 
                         <div>
-                          <label className="block text-gray-700 font-medium mb-1">Sale Price</label>
+                          <label className="block text-gray-700 font-medium mb-1">
+                            Sale Price
+                          </label>
                           <input
                             type="number"
                             value={pack.salePrice}
@@ -1132,13 +1187,17 @@ const Products = () => {
                             setLensPacks(updated);
                           }}
                         />
-                        <span className="text-sm font-medium">Best Value Pack</span>
+                        <span className="text-sm font-medium">
+                          Best Value Pack
+                        </span>
                       </label>
 
                       <button
                         type="button"
                         onClick={() => {
-                          const updated = lensPacks.filter((_, i) => i !== index);
+                          const updated = lensPacks.filter(
+                            (_, i) => i !== index
+                          );
                           setLensPacks(updated);
                         }}
                         className="mt-2 text-red-600"
@@ -1153,7 +1212,12 @@ const Products = () => {
                     onClick={() =>
                       setLensPacks([
                         ...lensPacks,
-                        { packSize: "", oldPrice: "", salePrice: "", isBestValue: false },
+                        {
+                          packSize: "",
+                          oldPrice: "",
+                          salePrice: "",
+                          isBestValue: false,
+                        },
                       ])
                     }
                     className="bg-blue-600 text-white px-3 py-1 rounded"
@@ -1163,10 +1227,11 @@ const Products = () => {
                 </div>
               )}
 
-
               {/* Lens Fields */}
               <div>
-                <h4 className="text-gray-700 font-semibold mb-3">Lens Details</h4>
+                <h4 className="text-gray-700 font-semibold mb-3">
+                  Lens Details
+                </h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-gray-700 font-medium mb-2">
@@ -1294,7 +1359,9 @@ const Products = () => {
 
               {/*  Color Variants Section */}
               <div className="mt-4 border-t pt-4">
-                <h4 className="text-gray-700 font-semibold mb-3">Color Variants</h4>
+                <h4 className="text-gray-700 font-semibold mb-3">
+                  Color Variants
+                </h4>
 
                 {colorVariants.map((variant, index) => {
                   //  Check valid color name or hex for preview
@@ -1330,7 +1397,9 @@ const Products = () => {
                         <button
                           type="button"
                           onClick={() =>
-                            setColorVariants(colorVariants.filter((_, i) => i !== index))
+                            setColorVariants(
+                              colorVariants.filter((_, i) => i !== index)
+                            )
                           }
                           className="text-[#f00000] text-sm hover:underline ml-2"
                         >
@@ -1341,7 +1410,8 @@ const Products = () => {
                       {/*  Upload color images */}
                       <div>
                         <label className="block text-gray-700 font-medium mb-2">
-                          Upload Images for {variant.colorName || `Color ${index + 1}`}
+                          Upload Images for{" "}
+                          {variant.colorName || `Color ${index + 1}`}
                         </label>
                         <input
                           type="file"
@@ -1354,13 +1424,20 @@ const Products = () => {
 
                             // 🚨 Require color name before allowing file upload
                             if (!variant.colorName.trim()) {
-                              Swal.fire("Error", "Please enter color name before uploading images!", "error");
+                              Swal.fire(
+                                "Error",
+                                "Please enter color name before uploading images!",
+                                "error"
+                              );
                               e.target.value = "";
                               return;
                             }
 
                             const newFiles = Array.from(e.target.files);
-                            variant.files = [...(variant.files || []), ...newFiles];
+                            variant.files = [
+                              ...(variant.files || []),
+                              ...newFiles,
+                            ];
                             setColorVariants(updated);
                           }}
                           className="w-full border p-2 rounded"
@@ -1368,12 +1445,15 @@ const Products = () => {
                       </div>
 
                       {/*  Color preview label */}
-                      {(variant.existingImages?.length > 0 || variant.files?.length > 0) && (
+                      {(variant.existingImages?.length > 0 ||
+                        variant.files?.length > 0) && (
                         <div className="flex items-center gap-2 mt-4 mb-2">
                           <span
                             className="w-5 h-5 rounded-full border border-gray-400"
                             style={{
-                              backgroundColor: isValidColor ? variant.colorName : "transparent",
+                              backgroundColor: isValidColor
+                                ? variant.colorName
+                                : "transparent",
                             }}
                             title={
                               isValidColor
@@ -1383,7 +1463,10 @@ const Products = () => {
                           ></span>
                           <h4 className="text-gray-800 font-semibold">
                             {variant.colorName
-                              ? `${variant.colorName.charAt(0).toUpperCase() + variant.colorName.slice(1)} Images`
+                              ? `${
+                                  variant.colorName.charAt(0).toUpperCase() +
+                                  variant.colorName.slice(1)
+                                } Images`
                               : "Color Images"}
                           </h4>
                         </div>
@@ -1404,9 +1487,9 @@ const Products = () => {
                               type="button"
                               onClick={() => {
                                 const updated = [...colorVariants];
-                                updated[index].existingImages = updated[index].existingImages.filter(
-                                  (_, idx) => idx !== i
-                                );
+                                updated[index].existingImages = updated[
+                                  index
+                                ].existingImages.filter((_, idx) => idx !== i);
                                 setColorVariants(updated);
                               }}
                               className="absolute -top-1 -right-1 bg-[#f00000] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-700 opacity-90"
@@ -1432,7 +1515,8 @@ const Products = () => {
                       </div>
 
                       {/*  Add more images button */}
-                      {(variant.existingImages?.length > 0 || variant.files?.length > 0) && (
+                      {(variant.existingImages?.length > 0 ||
+                        variant.files?.length > 0) && (
                         <div className="mt-3">
                           <button
                             type="button"
@@ -1465,7 +1549,10 @@ const Products = () => {
                 <button
                   type="button"
                   onClick={() =>
-                    setColorVariants([...colorVariants, { colorName: "", files: [], existingImages: [] }])
+                    setColorVariants([
+                      ...colorVariants,
+                      { colorName: "", files: [], existingImages: [] },
+                    ])
                   }
                   className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
                 >
