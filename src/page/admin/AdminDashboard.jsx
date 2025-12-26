@@ -9,6 +9,7 @@ export default function AdminDashboard() {
     { name: "Category", path: "/admin/category" },
     { name: "Sub-Category", path: "/admin/subCategory" },
     { name: "Product", path: "/admin/product" },
+    { name: "Inventory Management", path: "/admin/inventory" },
     { name: "All Brands", path: "/admin/brand" },
     { name: "coupon", path: "/admin/coupons" },
     { name: "Inquiries", path: "/admin/inquiries" },
@@ -44,8 +45,8 @@ export default function AdminDashboard() {
               key={item.path}
               to={item.path}
               className={`block px-4 py-2 rounded border-b border-gray-200 hover:bg-red-500 hover:text-white hover:cursor-pointer ${location.pathname === item.path
-                  ? "bg-[#f00000] text-white"
-                  : "text-gray-700"
+                ? "bg-[#f00000] text-white"
+                : "text-gray-700"
                 }`}
             >
               {item.name}

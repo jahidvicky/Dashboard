@@ -1062,7 +1062,7 @@ const Products = () => {
               </div>
 
               {/* Stock */}
-              <div>
+              {/* <div>
                 <label className="block text-gray-700 font-medium mb-2">
                   Stock Availability
                 </label>
@@ -1074,7 +1074,7 @@ const Products = () => {
                   placeholder="Enter stock quantity"
                   className="w-full border p-2 rounded"
                 />
-              </div>
+              </div> */}
 
               {/* Description */}
               <div>

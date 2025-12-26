@@ -11,17 +11,18 @@ const AdminOrderUpdate = () => {
     const [showModal, setShowModal] = useState(false);
     const [allData, setAllData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [ordersPerPage] = useState(8);
+    const ordersPerPage = 8;
 
     const navigate = useNavigate();
 
-    // Fetch all orders
+    /* ================= FETCH ORDERS ================= */
+
     const fetchOrders = async () => {
         try {
             const { data } = await API.get("/allOrder");
             setAllData(data.orders || []);
         } catch (err) {
-            console.log(err);
+            console.error(err);
         }
     };
 
@@ -29,7 +30,8 @@ const AdminOrderUpdate = () => {
         fetchOrders();
     }, []);
 
-    // Update order status
+    /* ================= UPDATE ORDER ================= */
+
     const updateOrder = async () => {
         if (!orderId) {
             Swal.fire("Missing Order ID", "Order ID is required.", "warning");
@@ -38,14 +40,18 @@ const AdminOrderUpdate = () => {
 
         try {
             const { data } = await API.put(
-                `/order/updateOrderStatus/${orderId}/status`,
-                { status, trackingNumber, deliveryDate }
+                `/order/updateOrderStatus/${orderId}`,
+                {
+                    status,
+                    trackingNumber,
+                    deliveryDate,
+                }
             );
 
             Swal.fire({
                 icon: "success",
-                title: "Success",
-                text: data.message || "Order updated successfully!",
+                title: "Order Updated",
+                text: data.message,
                 timer: 2000,
                 showConfirmButton: false,
             });
@@ -61,82 +67,75 @@ const AdminOrderUpdate = () => {
         }
     };
 
-    // Pagination logic
+    /* ================= PAGINATION ================= */
+
     const totalPages = Math.ceil(allData.length / ordersPerPage);
     const indexOfLast = currentPage * ordersPerPage;
     const indexOfFirst = indexOfLast - ordersPerPage;
     const currentOrders = allData.slice(indexOfFirst, indexOfLast);
 
+    /* ================= RENDER ================= */
+
     return (
         <div className="p-4">
             <h2 className="text-2xl font-bold mb-4">Admin Orders</h2>
 
-            {/* Desktop Table */}
-            <div className="hidden md:block relative overflow-y-auto max-h-[560px] w-full mt-6 border rounded-lg">
-                <div className="grid grid-cols-6 text-center bg-black text-white font-semibold py-3 px-4 sticky top-0 z-10">
+            {/* Orders Table */}
+            <div className="hidden md:block overflow-y-auto max-h-[560px] border rounded-lg">
+                <div className="grid grid-cols-6 bg-black text-white py-3 text-center font-semibold sticky top-0">
                     <div>ORDER ID</div>
                     <div>USER ID</div>
                     <div>STATUS</div>
-                    <div>TRACKING NO.</div>
+                    <div>TRACKING</div>
                     <div>DATE</div>
                     <div>ACTIONS</div>
                 </div>
 
                 {currentOrders.length === 0 ? (
-                    <div className="text-center py-10 text-gray-500 text-lg">
+                    <div className="text-center py-10 text-gray-500">
                         No Orders Found
                     </div>
                 ) : (
-                    currentOrders.map((data, idx) => (
+                    currentOrders.map((order, idx) => (
                         <div
-                            key={idx}
-                            className={`grid grid-cols-6 text-center items-center px-4 py-3 border-b border-gray-200 text-sm hover:bg-gray-100 ${idx % 2 === 0 ? "bg-gray-50" : "bg-white"
+                            key={order._id}
+                            className={`grid grid-cols-6 text-center items-center py-3 border-b text-sm ${idx % 2 === 0 ? "bg-gray-50" : "bg-white"
                                 }`}
                         >
-                            <div className="break-words whitespace-normal">{data._id}</div>
-                            <div className="break-words whitespace-normal ml-4">
-                                {data.userId}
-                            </div>
-                            <div>{data.orderStatus}</div>
-                            <div>{data.trackingNumber || "-"}</div>
+                            <div>{order._id}</div>
+                            <div>{order.userId}</div>
+                            <div className="font-semibold">{order.orderStatus}</div>
+                            <div>{order.trackingNumber || "-"}</div>
                             <div>
-                                {data.deliveryDate
-                                    ? new Date(data.deliveryDate).toISOString().split("T")[0]
-                                    : new Date(data.updatedAt).toISOString().split("T")[0]}
+                                {new Date(order.updatedAt).toISOString().split("T")[0]}
                             </div>
-                            <div className="flex gap-2 justify-center">
+                            <div className="flex justify-center gap-2">
                                 <button
                                     onClick={() => {
-                                        setOrderId(data._id);
-                                        setStatus(data.orderStatus);
-                                        setTrackingNumber(data.trackingNumber || "");
-
-                                        const now = new Date();
-                                        const pad = (n) => n.toString().padStart(2, "0");
-                                        const localDateTime = `${now.getFullYear()}-${pad(
-                                            now.getMonth() + 1
-                                        )}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(
-                                            now.getMinutes()
-                                        )}`;
-
+                                        setOrderId(order._id);
+                                        setStatus(order.orderStatus);
+                                        setTrackingNumber(order.trackingNumber || "");
                                         setDeliveryDate(
-                                            data.deliveryDate
-                                                ? new Date(data.deliveryDate).toISOString().slice(0, 16)
-                                                : localDateTime
+                                            order.deliveryDate
+                                                ? new Date(order.deliveryDate)
+                                                    .toISOString()
+                                                    .slice(0, 16)
+                                                : ""
                                         );
-
                                         setShowModal(true);
                                     }}
-                                    className="bg-blue-500 px-4 py-2 rounded-xl text-white hover:bg-blue-600 transition hover:cursor-pointer"
+                                    className="bg-blue-600 text-white px-4 py-2 rounded"
                                 >
-                                    Change Status
+                                    Update
                                 </button>
 
                                 <button
-                                    onClick={() => navigate(`/admin/order-details/${data._id}`)}
-                                    className="bg-green-600 px-4 py-2 rounded-xl text-white hover:bg-green-700 transition hover:cursor-pointer"
+                                    onClick={() =>
+                                        navigate(`/admin/order-details/${order._id}`)
+                                    }
+                                    className="bg-green-600 text-white px-4 py-2 rounded"
                                 >
-                                    View Details
+                                    View
                                 </button>
                             </div>
                         </div>
@@ -145,15 +144,15 @@ const AdminOrderUpdate = () => {
             </div>
 
             {/* Pagination */}
-            {allData.length > 0 && (
-                <div className="flex justify-center mt-6 gap-2 flex-wrap">
+            {totalPages > 1 && (
+                <div className="flex justify-center mt-4 gap-2">
                     {[...Array(totalPages)].map((_, i) => (
                         <button
                             key={i}
                             onClick={() => setCurrentPage(i + 1)}
-                            className={`px-3 py-1 rounded-lg border hover:cursor-pointer ${currentPage === i + 1
-                                ? "bg-blue-600 text-white font-semibold"
-                                : "bg-gray-100 hover:bg-gray-200"
+                            className={`px-3 py-1 rounded ${currentPage === i + 1
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-gray-200"
                                 }`}
                         >
                             {i + 1}
@@ -162,61 +161,57 @@ const AdminOrderUpdate = () => {
                 </div>
             )}
 
-
-            {/* Modal */}
+            {/* MODAL */}
             {showModal && (
-                <div className="fixed inset-0 backdrop-blur-sm flex justify-center items-center z-50">
-                    <div className="bg-white rounded-lg shadow-lg w-[500px] p-6 relative">
-                        <h3 className="text-lg font-bold mb-2">
-                            Update Order {orderId ? `#${orderId}` : "(Loading...)"}
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                    <div className="bg-white w-[450px] rounded-lg p-6">
+                        <h3 className="text-lg font-bold mb-4">
+                            Update Order #{orderId}
                         </h3>
 
-                        <div className="flex flex-wrap gap-4 mt-4">
-                            <select
-                                className="border p-2 w-full rounded"
-                                value={status}
-                                onChange={(e) => setStatus(e.target.value)}
+                        {/* STATUS */}
+                        <select
+                            className="border p-2 w-full rounded mb-3"
+                            value={status}
+                            onChange={(e) => setStatus(e.target.value)}
+                        >
+                            <option value="Placed">Placed</option>
+                            <option value="Sent To Lab">Sent To Lab</option>
+                            <option value="Received From Lab">
+                                Received From Lab
+                            </option>
+                            <option value="Delivered">Delivered</option>
+                        </select>
+
+                        {/* TRACKING */}
+                        <input
+                            className="border p-2 w-full rounded mb-3"
+                            placeholder="Tracking Number"
+                            value={trackingNumber}
+                            onChange={(e) => setTrackingNumber(e.target.value)}
+                        />
+
+                        {/* DELIVERY DATE */}
+                        <input
+                            className="border p-2 w-full rounded mb-4"
+                            type="datetime-local"
+                            value={deliveryDate}
+                            onChange={(e) => setDeliveryDate(e.target.value)}
+                        />
+
+                        <div className="flex justify-between">
+                            <button
+                                onClick={updateOrder}
+                                className="bg-green-600 text-white px-4 py-2 rounded"
                             >
-                                <option>Placed</option>
-                                <option>Processing</option>
-                                <option>Shipped</option>
-                                <option>Delivered</option>
-                                <option>Cancelled</option>
-                                <option>Returned</option>
-                            </select>
-
-                            <input
-                                className="border p-2 w-full rounded"
-                                placeholder="Tracking Number"
-                                value={trackingNumber}
-                                onChange={(e) => setTrackingNumber(e.target.value)}
-                                disabled
-                            />
-
-                            <input
-                                className="border p-2 w-full rounded"
-                                type="datetime-local"
-                                value={deliveryDate}
-                                onChange={(e) => setDeliveryDate(e.target.value)}
-                                disabled
-                            />
-
-                            <div className="flex justify-between mt-4 gap-6 w-full">
-                                <button
-                                    className="bg-green-600 text-white px-4 py-2 rounded hover:cursor-pointer"
-                                    onClick={updateOrder}
-                                    disabled={!status || !trackingNumber || !deliveryDate}
-                                >
-                                    Update
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowModal(false)}
-                                    className="bg-gray-500 text-white px-4 py-2 rounded hover:cursor-pointer"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
+                                Update
+                            </button>
+                            <button
+                                onClick={() => setShowModal(false)}
+                                className="bg-gray-500 text-white px-4 py-2 rounded"
+                            >
+                                Cancel
+                            </button>
                         </div>
                     </div>
                 </div>

@@ -54,7 +54,6 @@ const Products = () => {
     material: "",
     manufacturer: "",
     water_content: "",
-    stockAvailability: "",
     brand_id: "",
     isBestSeller: false,
     isTrending: false,
@@ -168,7 +167,6 @@ const Products = () => {
       material: "",
       manufacturer: "",
       water_content: "",
-      stockAvailability: "",
       brand_id: "",
       isBestSeller: false,
       isTrending: false,
@@ -201,8 +199,8 @@ const Products = () => {
       isTrending: product.isTrending || false,
       product_size: product.product_size
         ? product.product_size.flatMap((item) =>
-            item.split(",").map((s) => s.trim())
-          )
+          item.split(",").map((s) => s.trim())
+        )
         : [],
       product_color: product.product_color || [],
       product_price: product.product_price || "",
@@ -330,7 +328,6 @@ const Products = () => {
 
     try {
       const payload = new FormData();
-      const stockValue = Number(formData.stockAvailability);
 
       //  Basic product fields
       [
@@ -365,7 +362,7 @@ const Products = () => {
         if (formData[field]) payload.append(field, formData[field]);
       });
 
-      payload.append("stockAvailability", isNaN(stockValue) ? 0 : stockValue);
+      // payload.append("stockAvailability", isNaN(stockValue) ? 0 : stockValue);
       payload.append("brand_id", selectedBrand || "");
       payload.append("isBestSeller", formData.isBestSeller);
       payload.append("isTrending", formData.isTrending);
@@ -528,7 +525,7 @@ const Products = () => {
                 </td>
                 <td className="border px-4 py-2">
                   {pro?.product_image_collection?.length ||
-                  pro?.product_variants?.[0]?.images?.length ? (
+                    pro?.product_variants?.[0]?.images?.length ? (
                     <div className="flex flex-wrap gap-1 justify-center">
                       {/* Show only the first available image */}
                       <img
@@ -538,10 +535,10 @@ const Products = () => {
                             pro?.product_variants?.[0]?.images?.[0]
                           ).startsWith("http")
                             ? pro?.product_image_collection?.[0] ||
-                              pro?.product_variants?.[0]?.images?.[0]
+                            pro?.product_variants?.[0]?.images?.[0]
                             : IMAGE_URL +
-                              (pro?.product_image_collection?.[0] ||
-                                pro?.product_variants?.[0]?.images?.[0])
+                            (pro?.product_image_collection?.[0] ||
+                              pro?.product_variants?.[0]?.images?.[0])
                         }
                         alt="product"
                         className="w-20 h-12 object-cover rounded"
@@ -576,9 +573,8 @@ const Products = () => {
         {[...Array(totalPages)].map((_, i) => (
           <button
             key={i}
-            className={`px-3 py-1 border rounded hover:cursor-pointer ${
-              currentPage === i + 1 ? "bg-blue-500 text-white" : ""
-            }`}
+            className={`px-3 py-1 border rounded hover:cursor-pointer ${currentPage === i + 1 ? "bg-blue-500 text-white" : ""
+              }`}
             onClick={() => handlePageChange(i + 1)}
           >
             {i + 1}
@@ -843,20 +839,6 @@ const Products = () => {
                 </div>
               )}
 
-              {/* Stock Availability */}
-              <div>
-                <label className="block text-gray-700 font-medium mb-2">
-                  Stock Availability
-                </label>
-                <input
-                  type="number"
-                  name="stockAvailability"
-                  value={formData.stockAvailability || ""}
-                  onChange={handleChange}
-                  placeholder="Enter stock quantity"
-                  className="w-full border p-2 rounded"
-                />
-              </div>
 
               {/* Product Description */}
               <div>
@@ -1447,30 +1429,29 @@ const Products = () => {
                       {/*  Color preview label */}
                       {(variant.existingImages?.length > 0 ||
                         variant.files?.length > 0) && (
-                        <div className="flex items-center gap-2 mt-4 mb-2">
-                          <span
-                            className="w-5 h-5 rounded-full border border-gray-400"
-                            style={{
-                              backgroundColor: isValidColor
-                                ? variant.colorName
-                                : "transparent",
-                            }}
-                            title={
-                              isValidColor
-                                ? variant.colorName
-                                : "Invalid color name or code"
-                            }
-                          ></span>
-                          <h4 className="text-gray-800 font-semibold">
-                            {variant.colorName
-                              ? `${
-                                  variant.colorName.charAt(0).toUpperCase() +
-                                  variant.colorName.slice(1)
+                          <div className="flex items-center gap-2 mt-4 mb-2">
+                            <span
+                              className="w-5 h-5 rounded-full border border-gray-400"
+                              style={{
+                                backgroundColor: isValidColor
+                                  ? variant.colorName
+                                  : "transparent",
+                              }}
+                              title={
+                                isValidColor
+                                  ? variant.colorName
+                                  : "Invalid color name or code"
+                              }
+                            ></span>
+                            <h4 className="text-gray-800 font-semibold">
+                              {variant.colorName
+                                ? `${variant.colorName.charAt(0).toUpperCase() +
+                                variant.colorName.slice(1)
                                 } Images`
-                              : "Color Images"}
-                          </h4>
-                        </div>
-                      )}
+                                : "Color Images"}
+                            </h4>
+                          </div>
+                        )}
 
                       {/*  Preview Section (Existing + New) */}
                       <div className="flex flex-wrap gap-2 mt-2">
@@ -1517,31 +1498,31 @@ const Products = () => {
                       {/*  Add more images button */}
                       {(variant.existingImages?.length > 0 ||
                         variant.files?.length > 0) && (
-                        <div className="mt-3">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const input = document.createElement("input");
-                              input.type = "file";
-                              input.multiple = true;
-                              input.accept = "image/*";
-                              input.onchange = (e) => {
-                                const updated = [...colorVariants];
-                                const newFiles = Array.from(e.target.files);
-                                updated[index].files = [
-                                  ...(updated[index].files || []),
-                                  ...newFiles,
-                                ];
-                                setColorVariants(updated);
-                              };
-                              input.click();
-                            }}
-                            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 mt-2"
-                          >
-                            + Add More Images
-                          </button>
-                        </div>
-                      )}
+                          <div className="mt-3">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const input = document.createElement("input");
+                                input.type = "file";
+                                input.multiple = true;
+                                input.accept = "image/*";
+                                input.onchange = (e) => {
+                                  const updated = [...colorVariants];
+                                  const newFiles = Array.from(e.target.files);
+                                  updated[index].files = [
+                                    ...(updated[index].files || []),
+                                    ...newFiles,
+                                  ];
+                                  setColorVariants(updated);
+                                };
+                                input.click();
+                              }}
+                              className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 mt-2"
+                            >
+                              + Add More Images
+                            </button>
+                          </div>
+                        )}
                     </div>
                   );
                 })}
