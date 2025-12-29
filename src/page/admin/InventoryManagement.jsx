@@ -27,7 +27,7 @@ const InventoryManagement = () => {
     // ─────────────────────────────
     useEffect(() => {
         const fetchProducts = async () => {
-            const res = await API.get("/getallproduct");
+            const res = await API.get("/getAllproduct");
             setProducts(res.data.products || []);
         };
         fetchProducts();
@@ -58,10 +58,37 @@ const InventoryManagement = () => {
             return;
         }
 
+        if (!eastChecked && !westChecked) {
+            Swal.fire(
+                "Required",
+                "Please select at least one location (East or West)",
+                "warning"
+            );
+            return;
+        }
+
+        if (eastChecked && (!eastQty || Number(eastQty) <= 0)) {
+            Swal.fire(
+                "Required",
+                "Please enter a valid quantity for East",
+                "warning"
+            );
+            return;
+        }
+
+        if (westChecked && (!westQty || Number(westQty) <= 0)) {
+            Swal.fire(
+                "Required",
+                "Please enter a valid quantity for West",
+                "warning"
+            );
+            return;
+        }
+
         try {
             setLoading(true);
 
-            if (eastChecked && eastQty > 0) {
+            if (eastChecked) {
                 await API.post("/inventory/add-stock", {
                     productId,
                     location: "east",
@@ -69,7 +96,7 @@ const InventoryManagement = () => {
                 });
             }
 
-            if (westChecked && westQty > 0) {
+            if (westChecked) {
                 await API.post("/inventory/add-stock", {
                     productId,
                     location: "west",
@@ -79,7 +106,6 @@ const InventoryManagement = () => {
 
             Swal.fire("Success", "Stock added successfully", "success");
 
-            // reset
             setProductId("");
             setEastQty("");
             setWestQty("");
@@ -87,26 +113,32 @@ const InventoryManagement = () => {
             setWestChecked(false);
             setShowAddPopup(false);
 
-            fetchInventory(); // refresh table
+            fetchInventory();
         } catch (err) {
             Swal.fire(
                 "Failed",
                 err.response?.data?.message || "Failed to add stock",
                 "error"
             );
-        }
-        finally {
+        } finally {
             setLoading(false);
         }
     };
+
 
     // ─────────────────────────────
     // HELPERS
     // ─────────────────────────────
     const isLowStock = (item) => {
-        const totalAvailable = item.rawStock + item.finishedStock;
+        const totalAvailable =
+            (item.rawStock || 0) +
+            (item.inProcessing || 0) +
+            (item.finishedStock || 0) -
+            (item.orderedStock || 0);
+
         return totalAvailable <= 5;
     };
+
 
     const filteredInventory =
         locationFilter === "all"
@@ -263,17 +295,21 @@ const InventoryManagement = () => {
                                     {item.orderedStock || 0}
                                 </td>
                                 <td className="border p-2 font-medium text-center">
-                                    {item.finishedStock > 0 ? (
-                                        "Ready"
-                                    ) : item.orderedStock > 0
-                                        ? "Ordered"
-                                        : item.inProcessing > 0 ? (
-                                            "With Lab"
-                                        ) : item.rawStock > 0 ? (
-                                            "Raw"
-                                        ) : (
-                                            "Out"
-                                        )}
+                                    {(() => {
+                                        const usableFinished =
+                                            (item.finishedStock || 0) - (item.orderedStock || 0);
+
+                                        if (usableFinished > 0) return "Ready";
+
+                                        if (item.orderedStock > 0) return "Ordered";
+
+                                        if (item.inProcessing > 0) return "With Lab";
+
+                                        if (item.rawStock > 0) return "Raw";
+
+                                        return "Out";
+                                    })()}
+
                                 </td>
 
                                 <td className="border p-2 text-center">
@@ -295,7 +331,7 @@ const InventoryManagement = () => {
                                         </button>
                                     )}
 
-                                    {item.finishedStock > 0 && (
+                                    {(item.finishedStock - item.orderedStock) > 0 && (
                                         <span className="px-2 py-1 rounded bg-green-100 text-green-700 text-sm">
                                             Completed
                                         </span>
@@ -410,14 +446,16 @@ const InventoryManagement = () => {
                             {eastChecked && (
                                 <input
                                     type="number"
+                                    min="1"
+                                    required
                                     placeholder="Quantity"
                                     value={eastQty}
-                                    onChange={(e) =>
-                                        setEastQty(e.target.value)
-                                    }
-                                    className="border p-1 rounded w-32"
+                                    onChange={(e) => setEastQty(e.target.value)}
+                                    className={`border p-1 rounded w-32 ${(!eastQty || Number(eastQty) <= 0) ? "border-red-500" : ""
+                                        }`}
                                 />
                             )}
+
                         </div>
 
                         {/* WEST */}
@@ -433,12 +471,13 @@ const InventoryManagement = () => {
                             {westChecked && (
                                 <input
                                     type="number"
+                                    min="1"
+                                    required
                                     placeholder="Quantity"
                                     value={westQty}
-                                    onChange={(e) =>
-                                        setWestQty(e.target.value)
-                                    }
-                                    className="border p-1 rounded w-32"
+                                    onChange={(e) => setWestQty(e.target.value)}
+                                    className={`border p-1 rounded w-32 ${(!westQty || Number(westQty) <= 0) ? "border-red-500" : ""
+                                        }`}
                                 />
                             )}
                         </div>

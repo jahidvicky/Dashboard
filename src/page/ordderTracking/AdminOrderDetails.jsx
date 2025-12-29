@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 const AdminOrderDetails = () => {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
+  const [orderHistory, setOrderHistory] = useState([]);
 
   const fetchOrderDetails = async () => {
     try {
@@ -16,9 +17,6 @@ const AdminOrderDetails = () => {
     }
   };
 
-  useEffect(() => {
-    fetchOrderDetails();
-  }, [id]);
 
   if (!order) {
     return (
@@ -27,6 +25,22 @@ const AdminOrderDetails = () => {
       </div>
     );
   }
+
+  const fetchOrderHistory = async () => {
+    try {
+      const { data } = await API.get(`/inventory/history?orderId=${id}`);
+      setOrderHistory(data.history || []);
+    } catch (err) {
+      console.log("Failed to load order history:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrderDetails();
+    fetchOrderHistory();
+  }, [id]);
+
+
 
   return (
     <motion.div
@@ -56,13 +70,56 @@ const AdminOrderDetails = () => {
         <h2 className="text-xl font-semibold mb-4 text-gray-700">
           Order Information
         </h2>
+
         <div className="grid grid-cols-2 gap-4 text-gray-700">
           <p><strong>Status:</strong> {order.orderStatus}</p>
-          <p><strong>Tracking Number:</strong> {order.trackingNumber}</p>
-          <p><strong>Payment Method:</strong> {order.paymentMethod}</p>
-          <p><strong>Total:</strong> ${order.total}</p>
-          <p><strong>Subtotal:</strong> ${order.subtotal}</p>
-          <p><strong>Tax:</strong> ${order.tax}</p>
+
+          {order.trackingNumber && (
+            <p><strong>Tracking Number:</strong> {order.trackingNumber}</p>
+          )}
+
+          {order.deliveryDate && (
+            <p><strong>Delivery Date:</strong> {new Date(order.deliveryDate).toLocaleString()}</p>
+          )}
+
+          {order.paymentMethod && (
+            <p><strong>Payment Method:</strong> {order.paymentMethod}</p>
+          )}
+
+          {order.paymentStatus && (
+            <p><strong>Payment Status:</strong> {order.paymentStatus}</p>
+          )}
+
+          {order.subtotal && (
+            <p><strong>Subtotal:</strong> ${order.subtotal}</p>
+          )}
+
+          {order.shipping && (
+            <p><strong>Shipping:</strong> ${order.shipping}</p>
+          )}
+
+          {order.tax && (
+            <p><strong>Tax:</strong> ${order.tax}</p>
+          )}
+
+          {order.total && (
+            <p><strong>Total:</strong> ${order.total}</p>
+          )}
+
+          {order.email && <p><strong>Email:</strong> {order.email}</p>}
+
+          {order.location && (
+            <p><strong>Location:</strong> {order.location}</p>
+          )}
+
+          {order.transactionId && (
+            <p><strong>Transaction ID:</strong> {order.transactionId}</p>
+          )}
+
+          {order.userId && (
+            <p><strong>User ID:</strong> {order.userId}</p>
+          )}
+
           <p><strong>Created At:</strong> {new Date(order.createdAt).toLocaleString()}</p>
           <p><strong>Updated At:</strong> {new Date(order.updatedAt).toLocaleString()}</p>
         </div>
@@ -75,27 +132,36 @@ const AdminOrderDetails = () => {
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-700">
-            Shipping Address
-          </h2>
-          <p><strong>Name:</strong> {order.shippingAddress?.fullName}</p>
-          <p><strong>Address:</strong> {order.shippingAddress?.address}</p>
-          <p><strong>City:</strong> {order.shippingAddress?.city}</p>
-          <p><strong>Province:</strong> {order.shippingAddress?.province}</p>
-          <p><strong>Postal Code:</strong> {order.shippingAddress?.postalCode}</p>
-        </div>
+        {order.shippingAddress && (
+          <div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">
+              Shipping Address
+            </h2>
 
-        <div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-700">
-            Billing Address
-          </h2>
-          <p><strong>Name:</strong> {order.billingAddress?.fullName}</p>
-          <p><strong>Address:</strong> {order.billingAddress?.address}</p>
-          <p><strong>City:</strong> {order.billingAddress?.city}</p>
-          <p><strong>Province:</strong> {order.billingAddress?.province}</p>
-          <p><strong>Postal Code:</strong> {order.billingAddress?.postalCode}</p>
-        </div>
+            {order.shippingAddress.fullName && <p><strong>Name:</strong> {order.shippingAddress.fullName}</p>}
+            {order.shippingAddress.address && <p><strong>Address:</strong> {order.shippingAddress.address}</p>}
+            {order.shippingAddress.city && <p><strong>City:</strong> {order.shippingAddress.city}</p>}
+            {order.shippingAddress.province && <p><strong>Province:</strong> {order.shippingAddress.province}</p>}
+            {order.shippingAddress.country && <p><strong>Country:</strong> {order.shippingAddress.country}</p>}
+            {order.shippingAddress.postalCode && <p><strong>Postal Code:</strong> {order.shippingAddress.postalCode}</p>}
+            {order.shippingAddress.phone && <p><strong>Phone:</strong> {order.shippingAddress.phone}</p>}
+          </div>
+        )}
+
+        {order.billingAddress && (
+          <div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">
+              Billing Address
+            </h2>
+
+            {order.billingAddress.fullName && <p><strong>Name:</strong> {order.billingAddress.fullName}</p>}
+            {order.billingAddress.address && <p><strong>Address:</strong> {order.billingAddress.address}</p>}
+            {order.billingAddress.city && <p><strong>City:</strong> {order.billingAddress.city}</p>}
+            {order.billingAddress.province && <p><strong>Province:</strong> {order.billingAddress.province}</p>}
+            {order.billingAddress.country && <p><strong>Country:</strong> {order.billingAddress.country}</p>}
+            {order.billingAddress.postalCode && <p><strong>Postal Code:</strong> {order.billingAddress.postalCode}</p>}
+          </div>
+        )}
       </motion.div>
 
       {/* Products Section */}
@@ -106,6 +172,7 @@ const AdminOrderDetails = () => {
         transition={{ delay: 0.3 }}
       >
         <h2 className="text-2xl font-semibold mb-6 text-gray-700">Products</h2>
+
         {order.cartItems.map((item, idx) => (
           <motion.div
             key={idx}
@@ -115,20 +182,33 @@ const AdminOrderDetails = () => {
             transition={{ delay: 0.1 * idx }}
           >
             <img
-              src={item.image}
+              src={
+                item.image?.startsWith("http")
+                  ? item.image
+                  : `${IMAGE_URL}/${item.image}`
+              }
               alt={item.name}
               className="w-32 h-32 object-contain border rounded"
             />
+
             <div className="flex-1 space-y-1">
               <h3 className="text-xl font-bold text-gray-800">{item.name}</h3>
+
               <p><strong>Product ID:</strong> {item.productId}</p>
               <p><strong>Quantity:</strong> {item.quantity}</p>
+
               <p><strong>Frame Color:</strong> {item.product_color?.join(", ") || "N/A"}</p>
               <p><strong>Size:</strong> {item.product_size?.join(", ") || "N/A"}</p>
 
+              <p><strong>Price:</strong> ${item.price}</p>
+
+              {item.status && (
+                <p><strong>Status:</strong> {item.status}</p>
+              )}
+
               {item.policy && (
                 <p>
-                  <strong>Policy:</strong> {item.policy.name} -{" "}
+                  <strong>Policy:</strong> {item.policy.name} {" "}
                   {item.policy.coverage} | Status: {item.policy.status}
                   <p>Policy Price: ${item.price}</p>
                   <p>
@@ -136,7 +216,6 @@ const AdminOrderDetails = () => {
                   </p>
                 </p>
               )}
-
             </div>
           </motion.div>
         ))}
@@ -156,9 +235,6 @@ const AdminOrderDetails = () => {
           .map((item, idx) => {
             const lens = item.lens;
             const enhancement = item.enhancement;
-            const lensType = item.lensType;
-            const thickness = item.thickness;
-            const tint = item.tint;
             const prescription = lens.lens.prescription;
 
             const fileUrl =
@@ -187,6 +263,7 @@ const AdminOrderDetails = () => {
                   <p><strong>Thickness:</strong> {lens.lens.thickness?.name || "N/A"}</p>
                   <p><strong>Tint:</strong> {lens.lens.tint?.name || lens.lens?.tint || "None"}</p>
                   <p><strong>Enhancement:</strong> {lens.lens.enhancement?.name || "None"}</p>
+
                   {enhancement && (
                     <>
                       <p><strong>Enhancement Description:</strong> {enhancement.description}</p>
@@ -196,6 +273,7 @@ const AdminOrderDetails = () => {
                       <p><strong>Old Price:</strong> {enhancement.oldPrice}</p>
                     </>
                   )}
+
                   <p><strong>Total Lens Price:</strong> ${lens.totalPrice || 0}</p>
                 </div>
 
@@ -216,6 +294,49 @@ const AdminOrderDetails = () => {
             );
           })}
       </motion.div>
+
+      {/* Tracking History */}
+      {order.trackingHistory?.length > 0 && (
+        <motion.div
+          className="bg-white shadow-md rounded-lg p-6 border-l-4 border-indigo-500"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+            Tracking History
+          </h2>
+
+          {order.trackingHistory.map((track, i) => (
+            <div key={i} className="border-b py-2">
+              <p><strong>Status:</strong> {track.status}</p>
+              <p><strong>Message:</strong> {track.message}</p>
+              <p><strong>Date:</strong> {new Date(track.updatedAt).toLocaleString()}</p>
+            </div>
+          ))}
+        </motion.div>
+      )}
+
+      {/* Order History */}
+      {orderHistory.length > 0 && (
+        <motion.div
+          className="bg-white shadow-md rounded-lg p-6 border-l-4 border-teal-500"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+            Order History
+          </h2>
+
+          {orderHistory.map((h, i) => (
+            <div key={i} className="border-b py-2">
+              <p><strong>Action:</strong> {h.action}</p>
+              <p><strong>Location:</strong> {h.location}</p>
+              <p><strong>Quantity:</strong> {h.quantity}</p>
+              <p><strong>Date:</strong> {new Date(h.createdAt).toLocaleString()}</p>
+            </div>
+          ))}
+        </motion.div>
+      )}
     </motion.div>
   );
 };
