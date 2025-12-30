@@ -17,15 +17,6 @@ const AdminOrderDetails = () => {
     }
   };
 
-
-  if (!order) {
-    return (
-      <div className="p-6 text-center text-gray-500 text-xl">
-        Loading order details...
-      </div>
-    );
-  }
-
   const fetchOrderHistory = async () => {
     try {
       const { data } = await API.get(`/inventory/history?orderId=${id}`);
@@ -39,6 +30,15 @@ const AdminOrderDetails = () => {
     fetchOrderDetails();
     fetchOrderHistory();
   }, [id]);
+
+
+  if (!order) {
+    return (
+      <div className="p-6 text-center text-gray-500 text-xl">
+        Loading order details...
+      </div>
+    );
+  }
 
 
 
