@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 const AdminOrderDetails = () => {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
-  const [orderHistory, setOrderHistory] = useState([]);
 
   const fetchOrderDetails = async () => {
     try {
@@ -17,18 +16,10 @@ const AdminOrderDetails = () => {
     }
   };
 
-  const fetchOrderHistory = async () => {
-    try {
-      const { data } = await API.get(`/inventory/history?orderId=${id}`);
-      setOrderHistory(data.history || []);
-    } catch (err) {
-      console.log("Failed to load order history:", err);
-    }
-  };
+
 
   useEffect(() => {
     fetchOrderDetails();
-    fetchOrderHistory();
   }, [id]);
 
 
@@ -311,28 +302,6 @@ const AdminOrderDetails = () => {
               <p><strong>Status:</strong> {track.status}</p>
               <p><strong>Message:</strong> {track.message}</p>
               <p><strong>Date:</strong> {new Date(track.updatedAt).toLocaleString()}</p>
-            </div>
-          ))}
-        </motion.div>
-      )}
-
-      {/* Order History */}
-      {orderHistory.length > 0 && (
-        <motion.div
-          className="bg-white shadow-md rounded-lg p-6 border-l-4 border-teal-500"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <h2 className="text-2xl font-semibold mb-4 text-gray-700">
-            Order History
-          </h2>
-
-          {orderHistory.map((h, i) => (
-            <div key={i} className="border-b py-2">
-              <p><strong>Action:</strong> {h.action}</p>
-              <p><strong>Location:</strong> {h.location}</p>
-              <p><strong>Quantity:</strong> {h.quantity}</p>
-              <p><strong>Date:</strong> {new Date(h.createdAt).toLocaleString()}</p>
             </div>
           ))}
         </motion.div>
