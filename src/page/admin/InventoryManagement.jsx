@@ -30,6 +30,16 @@ const InventoryManagement = ({ role = "admin" }) => {
   const [selectedProductHistory, setSelectedProductHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchLoading, setSearchLoading] = useState(false);
+
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      searchProducts(searchTerm);
+    }, 400); // debounce
+
+    return () => clearTimeout(delay);
+  }, [searchTerm]);
 
   const fetchProductHistory = async (productId, location) => {
     try {
@@ -70,6 +80,28 @@ const InventoryManagement = ({ role = "admin" }) => {
     fetchProducts();
   }, []);
 
+  const searchProducts = async (term) => {
+    if (!term.trim()) {
+      // fallback to all products
+      const res = await API.get("/getAllproduct");
+      setProducts(res.data.products || []);
+      return;
+    }
+
+    try {
+      setSearchLoading(true);
+
+      const { data } = await API.get(
+        `/products/search?search=${encodeURIComponent(term)}`
+      );
+
+      setProducts(data.products || []);
+    } catch (err) {
+      Swal.fire("Error", "Failed to search products", "error");
+    } finally {
+      setSearchLoading(false);
+    }
+  };
 
   // ─────────────────────────────
   // FETCH INVENTORY LIST
@@ -463,7 +495,19 @@ const InventoryManagement = ({ role = "admin" }) => {
               ×
             </button>
 
-            <h3 className="text-lg font-semibold mb-4">Add Stock</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Add Stock</h3>
+
+              <input
+                type="text"
+                placeholder="Search product..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                }}
+                className="border px-3 py-1 mr-5 rounded w-50 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              />
+            </div>
 
             {/* PRODUCT SELECT */}
             <div className="mb-4 border rounded">
@@ -489,20 +533,26 @@ const InventoryManagement = ({ role = "admin" }) => {
               </button>
 
               <div className="max-h-60 overflow-y-auto border-t">
-                {products.map((p) => (
-                  <div
-                    key={p._id}
-                    onClick={() => setProductId(p._id)}
-                    className={`flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-100 ${productId === p._id ? "bg-gray-200" : ""
-                      }`}
-                  >
-                    <img
-                      src={getProductImage(p)}
-                      className="w-15 h-10 object-contain rounded"
-                    />
-                    <span>{p.product_name}</span>
-                  </div>
-                ))}
+                {searchLoading ? (
+                  <p className="p-3 text-sm text-gray-500">Searching…</p>
+                ) : products.length === 0 ? (
+                  <p className="p-3 text-sm text-gray-500">No products found</p>
+                ) : (
+                  products.map((p) => (
+                    <div
+                      key={p._id}
+                      onClick={() => setProductId(p._id)}
+                      className={`flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-100 ${productId === p._id ? "bg-gray-200" : ""
+                        }`}
+                    >
+                      <img
+                        src={getProductImage(p)}
+                        className="w-15 h-10 object-contain rounded"
+                      />
+                      <span>{p.product_name}</span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
