@@ -7,7 +7,6 @@ import InsuranceChat from "./page/company/InsuranceChat";
 import Loader from "./page/loader/Loader";
 import CustomerPolicies from "./page/company/CustomerPolicy/CustomerPolicies";
 import CustomerClaims from "./page/company/CustomerPolicy/CustomerClaims";
-import VendorProductDiscount from "./page/vender/VendorProductDiscount";
 import CompanyPrivacyPolicy from "./page/company/CompanyPrivacyPolicy";
 import AdminPrivacyPolicy from "./page/admin/AdminPrivacyPolicy";
 import VendorPrivacyPolicy from "./page/vender/VendorPrivacyPolicy";
@@ -126,7 +125,10 @@ function App() {
             <Route path="brand" element={<BrandSection />} />
             <Route path="supportChat" element={<SupportChatAdmin />} />
             <Route path="frameDonation" element={<FrameDonation />} />
-            <Route path="inventory" element={<InventoryManagement />} />
+            <Route
+              path="inventory"
+              element={<InventoryManagement role="admin" />}
+            />
           </Route>
 
           {/* ------------ vendor ------------ */}
@@ -142,13 +144,17 @@ function App() {
             <Route path="home" element={<VendorHome />} />
             <Route path="product" element={<VendorProducts />} />
             <Route path="order" element={<VendorProductOrder />} />
+            <Route
+              path="inventory"
+              element={
+                <InventoryManagement
+                  role="vendor"
+                />
+              }
+            />
             <Route path="profile" element={<UpdateVendorProfile />} />
             <Route path="faq" element={<VendorHome />} />
             <Route path="chat" element={<VendorChat />} />
-            <Route
-              path="discount-product"
-              element={<VendorProductDiscount />}
-            />
             <Route path="privacy-policy" element={<VendorPrivacyPolicy />} />
             <Route path="order-details" element={<VendorOrderDetails />} />
           </Route>

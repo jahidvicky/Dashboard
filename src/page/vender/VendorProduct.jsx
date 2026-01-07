@@ -16,6 +16,24 @@ const APPROVED_EDITABLE_FIELDS = [
   "stockAvailability",
 ];
 
+const APPROVED_LOCKED_FIELDS = [
+  "cat_id",
+  "cat_sec",
+  "subCat_id",
+  "subCategoryName",
+  "product_name",
+  "product_description",
+  "productStatus",
+  "isResubmitted",
+  "isSentForApproval",
+  "brand_id",
+  "brand_type",
+  "isBestSeller",
+  "isTrending",
+  "product_size",
+];
+
+
 const Products = () => {
   // ---------- STATE: UI ----------
   const [open, setOpen] = useState(false);
@@ -166,7 +184,7 @@ const Products = () => {
     ) {
       Swal.fire(
         "Restricted",
-        "After approval, only Price, Sale Price & Stock can be edited.",
+        "After approval, only Price, Sale Price can be edited.",
         "warning"
       );
       return;
@@ -418,13 +436,6 @@ const Products = () => {
       let nextIsResubmitted = formData.isResubmitted;
       let nextIsSentForApproval = formData.isSentForApproval;
 
-      // If vendor edits an Approved product (even just price/stock/images) → back to Pending & Resubmitted
-      if (isApprovedEditing) {
-        nextProductStatus = "Pending";
-        nextIsResubmitted = true;
-        nextIsSentForApproval = false;
-      }
-
       // Basic product fields
       [
         "cat_id",
@@ -450,6 +461,10 @@ const Products = () => {
         "product_lens_title2",
         "product_lens_description2",
       ].forEach((field) => {
+
+        // Skip locked fields when editing an Approved product
+        if (isApprovedEditing && APPROVED_LOCKED_FIELDS.includes(field)) return;
+
         if (
           formData[field] !== undefined &&
           formData[field] !== null &&
@@ -459,30 +474,37 @@ const Products = () => {
         }
       });
 
+
+
+
       // Status fields
-      payload.append("productStatus", nextProductStatus);
-      payload.append("isResubmitted", nextIsResubmitted ? "true" : "false");
-      payload.append(
-        "isSentForApproval",
-        nextIsSentForApproval ? "true" : "false"
-      );
+      if (!isApprovedEditing) {
+        payload.append("productStatus", nextProductStatus);
+        payload.append("isResubmitted", nextIsResubmitted ? "true" : "false");
+        payload.append(
+          "isSentForApproval",
+          nextIsSentForApproval ? "true" : "false"
+        );
+      }
+
+
 
       // Stock, brand, flags
-      payload.append("stockAvailability", isNaN(stockValue) ? 0 : stockValue);
-      payload.append("brand_id", selectedBrand || "");
-      payload.append("brand_type", selectedBrandType || "");
-      payload.append(
-        "isBestSeller",
-        formData.isBestSeller ? "true" : "false"
-      );
+      if (!isApprovedEditing) {
+        payload.append("brand_id", selectedBrand || "");
+        payload.append("brand_type", selectedBrandType || "");
+      }
+
+      payload.append("isBestSeller", formData.isBestSeller ? "true" : "false");
       payload.append("isTrending", formData.isTrending ? "true" : "false");
 
       // Product sizes
-      if (formData.product_size?.length) {
+      if (!isApprovedEditing && formData.product_size?.length) {
         formData.product_size.forEach((size) =>
           payload.append("product_size[]", size)
         );
       }
+
 
       // Product colors
       if (formData.product_color?.length) {
@@ -818,7 +840,7 @@ const Products = () => {
             {isApprovedEditing && (
               <p className="text-xs text-red-600 mb-3">
                 This product is <b>Approved</b>. You can only change{" "}
-                <b>Price, Sale Price & Stock</b> and update images. Other
+                <b>Price, Sale Price</b> and update images. Other
                 fields are locked and will be reviewed by admin again.
               </p>
             )}
@@ -1061,21 +1083,6 @@ const Products = () => {
                 </div>
               </div>
 
-              {/* Stock */}
-              {/* <div>
-                <label className="block text-gray-700 font-medium mb-2">
-                  Stock Availability
-                </label>
-                <input
-                  type="number"
-                  name="stockAvailability"
-                  value={formData.stockAvailability || ""}
-                  onChange={handleChange}
-                  placeholder="Enter stock quantity"
-                  className="w-full border p-2 rounded"
-                />
-              </div> */}
-
               {/* Description */}
               <div>
                 <label className="block text-gray-700 font-medium mb-2">
@@ -1118,7 +1125,6 @@ const Products = () => {
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    disabled={isApprovedEditing}
                     checked={formData.isBestSeller}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -1133,7 +1139,6 @@ const Products = () => {
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    disabled={isApprovedEditing}
                     checked={formData.isTrending}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -1628,7 +1633,6 @@ const Products = () => {
                             type="text"
                             placeholder="Enter Color (e.g. Blue or #0000ff)"
                             value={variant.colorName}
-                            disabled={isApprovedEditing}
                             onChange={(e) => {
                               const updated = [...colorVariants];
                               updated[index].colorName = e.target.value;
@@ -1647,11 +1651,7 @@ const Products = () => {
                               colorVariants.filter((_, i) => i !== index)
                             )
                           }
-                          disabled={isApprovedEditing}
-                          className={`text-[#f00000] text-sm ml-2 ${isApprovedEditing
-                            ? "opacity-60 cursor-not-allowed"
-                            : "hover:underline"
-                            }`}
+                          className={`text-[#f00000] text-sm ml-2}`}
                         >
                           Remove
                         </button>
@@ -1786,16 +1786,13 @@ const Products = () => {
 
                 <button
                   type="button"
-                  disabled={isApprovedEditing}
                   onClick={() =>
                     setColorVariants([
                       ...colorVariants,
                       { colorName: "", files: [], existingImages: [] },
                     ])
                   }
-                  className={`bg-blue-600 text-white px-3 py-1 rounded ${isApprovedEditing
-                    ? "opacity-60 cursor-not-allowed"
-                    : "hover:bg-blue-700"
+                  className={`bg-blue-600 text-white px-3 py-1 rounded 
                     }`}
                 >
                   + Add Color Variant

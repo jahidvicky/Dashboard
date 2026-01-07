@@ -7,7 +7,7 @@ const VenderDashboard = () => {
     const menuItems = [
         { name: "Home", path: "/vendor/home" },
         { name: "Product", path: "/vendor/product" },
-        { name: "Discounted Product", path: "/vendor/discount-product" },
+        { name: "Inventory Management", path: "/vendor/inventory" },
         { name: "Order", path: "/vendor/order" },
         { name: "Profile", path: "/vendor/profile" },
         { name: "Chat", path: "/vendor/chat" },

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../../API/Api";
+import API, { IMAGE_URL } from "../../API/Api";
 import Swal from "sweetalert2";
 
 const VendorProductOrder = () => {
@@ -10,9 +10,10 @@ const VendorProductOrder = () => {
     const [deliveryDate, setDeliveryDate] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [allData, setAllData] = useState([]);
-    const navigate = useNavigate();
     const [currentPage, setCurrentPage] = useState(1);
     const [ordersPerPage] = useState(8);
+
+    const navigate = useNavigate();
 
     const fetchOrders = async () => {
         try {
@@ -31,7 +32,7 @@ const VendorProductOrder = () => {
         fetchOrders();
     }, []);
 
-    // Pagination logic
+    // Pagination
     const totalPages = Math.ceil(allData.length / ordersPerPage);
     const indexOfLast = currentPage * ordersPerPage;
     const indexOfFirst = indexOfLast - ordersPerPage;
@@ -72,77 +73,90 @@ const VendorProductOrder = () => {
         <div className="p-4">
             <h2 className="text-2xl font-bold mb-4">Vendor Orders</h2>
 
-            {/* Desktop Table */}
+            {/* Desktop table */}
             <div className="hidden md:block relative overflow-y-auto max-h-[560px] w-full mt-6 border rounded-lg">
-                <div className="grid grid-cols-7 text-center bg-black text-white font-semibold py-3 px-4 sticky top-0 z-10">
-                    <div className="text-lg">ORDER ID</div>
-                    <div className="text-lg">USER ID</div>
-                    <div className="text-lg">STATUS</div>
-                    <div className="text-lg">TRACKING NO.</div>
-                    <div className="text-lg">DATE</div>
-                    <div className="text-lg">ACTION</div>
-                    <div className="text-lg">DETAILS</div>
+                <div className="grid grid-cols-5 text-center bg-black text-white font-semibold py-3 px-4 sticky top-0 z-10">
+                    <div>PRODUCT</div>
+                    <div>STATUS</div>
+                    <div>TRACKING NO.</div>
+                    <div>DATE</div>
+                    <div>ACTIONS</div>
                 </div>
 
-                {currentOrders.map((data, idx) => (
-                    <div
-                        key={idx}
-                        className={`grid grid-cols-7 text-center items-center px-4 py-3 border-b border-gray-200 text-sm hover:bg-gray-100 
-            ${idx % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
-                    >
-                        <div className="break-words whitespace-normal text-sm font-medium text-gray-700">{data._id}</div>
-                        <div className="break-words whitespace-normal ml-3 text-sm text-gray-600">{data.userId}</div>
-                        <div className="text-sm text-gray-600">{data.orderStatus}</div>
-                        <div className="break-words whitespace-normal text-sm text-gray-600">{data.trackingNumber || "-"}</div>
-                        <div className="text-sm text-gray-600">
-                            {data.deliveryDate
-                                ? new Date(data.deliveryDate).toISOString().split("T")[0]
-                                : new Date(data.updatedAt).toISOString().split("T")[0]}
-                        </div>
-                        <div>
-                            <button
-                                onClick={() => {
-                                    setOrderId(data._id);
-                                    setStatus(data.orderStatus);
-                                    setTrackingNumber(data.trackingNumber || "");
-                                    const now = new Date();
-                                    const pad = (n) => n.toString().padStart(2, "0");
-                                    const localDateTime = `${now.getFullYear()}-${pad(
-                                        now.getMonth() + 1
-                                    )}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(
-                                        now.getMinutes()
-                                    )}`;
-                                    setDeliveryDate(
-                                        data.deliveryDate
-                                            ? new Date(data.deliveryDate).toISOString().slice(0, 16)
-                                            : localDateTime
-                                    );
-                                    setShowModal(true);
-                                }}
-                                className="bg-blue-500 px-3 py-1 h-10 rounded-xl text-white hover:bg-blue-600 transition"
-                            >
-                                Change Status
-                            </button>
-                        </div>
-                        <div>
-                            <button
-                                onClick={() =>
-                                    navigate("/vendor/order-details", { state: { order: data } })
-                                }
-                                className="bg-green-600 px-3 py-1 h-10 rounded-xl text-white hover:bg-green-700 transition"
-                            >
-                                View Details
-                            </button>
-                        </div>
+                {currentOrders.length === 0 ? (
+                    <div className="text-center py-10 text-gray-500 text-lg">
+                        No Orders Found
                     </div>
-                ))}
-                {/* Show when no data */}
-                {allData.length === 0 && (
-                    <div className="text-center text-gray-600 font-semibold mt-5 mb-5 text-lg">
-                        No orders found
-                    </div>
+                ) : (
+                    currentOrders.map((data, idx) => (
+                        <div
+                            key={idx}
+                            className={`grid grid-cols-5 text-center items-center px-4 py-3 border-b border-gray-200 text-sm hover:bg-gray-100 ${idx % 2 === 0 ? "bg-gray-50" : "bg-white"
+                                }`}
+                        >
+                            <div className="flex justify-center">
+                                <img
+                                    src={
+                                        data.cartItems?.[0]?.image?.startsWith("http")
+                                            ? data.cartItems[0].image
+                                            : `${IMAGE_URL}/${data.cartItems?.[0]?.image}`
+                                    }
+                                    alt="Product"
+                                    className="w-16 h-12 object-cover rounded-md border"
+                                />
+                            </div>
+
+                            <div>{data.orderStatus}</div>
+                            <div>{data.trackingNumber || "-"}</div>
+
+                            <div>
+                                {data.deliveryDate
+                                    ? new Date(data.deliveryDate).toISOString().split("T")[0]
+                                    : new Date(data.updatedAt).toISOString().split("T")[0]}
+                            </div>
+
+                            <div className="flex gap-2 justify-center">
+                                <button
+                                    onClick={() => {
+                                        setOrderId(data._id);
+                                        setStatus(data.orderStatus);
+                                        setTrackingNumber(data.trackingNumber || "");
+
+                                        const now = new Date();
+                                        const pad = n => n.toString().padStart(2, "0");
+                                        const localDateTime = `${now.getFullYear()}-${pad(
+                                            now.getMonth() + 1
+                                        )}-${pad(now.getDate())}T${pad(
+                                            now.getHours()
+                                        )}:${pad(now.getMinutes())}`;
+
+                                        setDeliveryDate(
+                                            data.deliveryDate
+                                                ? new Date(data.deliveryDate).toISOString().slice(0, 16)
+                                                : localDateTime
+                                        );
+
+                                        setShowModal(true);
+                                    }}
+                                    className="bg-blue-500 px-4 py-2 rounded-xl text-white hover:bg-blue-600 transition"
+                                >
+                                    Change Status
+                                </button>
+
+                                <button
+                                    onClick={() =>
+                                        navigate("/vendor/order-details", { state: { order: data } })
+                                    }
+                                    className="bg-green-600 px-4 py-2 rounded-xl text-white hover:bg-green-700 transition"
+                                >
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    ))
                 )}
             </div>
+
             {/* Pagination */}
             {allData.length > 0 && (
                 <div className="flex justify-center mt-6 gap-2 flex-wrap">
@@ -150,7 +164,7 @@ const VendorProductOrder = () => {
                         <button
                             key={i}
                             onClick={() => setCurrentPage(i + 1)}
-                            className={`px-3 py-1 rounded-lg border hover:cursor-pointer ${currentPage === i + 1
+                            className={`px-3 py-1 rounded-lg border ${currentPage === i + 1
                                 ? "bg-blue-600 text-white font-semibold"
                                 : "bg-gray-100 hover:bg-gray-200"
                                 }`}
@@ -161,68 +175,6 @@ const VendorProductOrder = () => {
                 </div>
             )}
 
-            {/* Mobile Cards */}
-            <div className="md:hidden flex flex-col gap-4 mt-6">
-                {currentOrders.map((data, idx) => (
-                    <div
-                        key={idx}
-                        className="bg-white shadow rounded-lg p-4 border hover:shadow-lg transition"
-                    >
-                        <p className="text-sm font-semibold text-gray-700 break-words">
-                            <span className="font-bold">ORDER ID:</span> {data._id}
-                        </p>
-                        <p className="text-sm text-gray-600 break-words">
-                            <span className="font-bold">USER ID:</span> {data.userId}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                            <span className="font-bold">Status:</span> {data.orderStatus}
-                        </p>
-                        <p className="text-sm text-gray-600 break-words">
-                            <span className="font-bold">Tracking:</span> {data.trackingNumber || "-"}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                            <span className="font-bold">Date:</span>{" "}
-                            {data.deliveryDate
-                                ? new Date(data.deliveryDate).toISOString().split("T")[0]
-                                : new Date(data.updatedAt).toISOString().split("T")[0]}
-                        </p>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                            <button
-                                onClick={() => {
-                                    setOrderId(data._id);
-                                    setStatus(data.orderStatus);
-                                    setTrackingNumber(data.trackingNumber || "");
-                                    const now = new Date();
-                                    const pad = (n) => n.toString().padStart(2, "0");
-                                    const localDateTime = `${now.getFullYear()}-${pad(
-                                        now.getMonth() + 1
-                                    )}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(
-                                        now.getMinutes()
-                                    )}`;
-                                    setDeliveryDate(
-                                        data.deliveryDate
-                                            ? new Date(data.deliveryDate).toISOString().slice(0, 16)
-                                            : localDateTime
-                                    );
-                                    setShowModal(true);
-                                }}
-                                className="bg-blue-500 px-3 py-1 rounded text-white hover:bg-blue-600 transition"
-                            >
-                                Change Status
-                            </button>
-                            <button
-                                onClick={() =>
-                                    navigate("/vendor/order-details", { state: { order: data } })
-                                }
-                                className="bg-green-600 px-3 py-1 rounded text-white hover:bg-green-700 transition"
-                            >
-                                View Details
-                            </button>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
             {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 backdrop-blur-sm flex justify-center items-center z-50">
@@ -231,11 +183,11 @@ const VendorProductOrder = () => {
                             Update Order {orderId ? `#${orderId}` : "(Loading...)"}
                         </h3>
 
-                        <div className="flex flex-wrap gap-4">
+                        <div className="flex flex-wrap gap-4 mt-4">
                             <select
                                 className="border p-2 w-full rounded"
                                 value={status}
-                                onChange={(e) => setStatus(e.target.value)}
+                                onChange={e => setStatus(e.target.value)}
                             >
                                 <option>Placed</option>
                                 <option>Processing</option>
@@ -249,30 +201,28 @@ const VendorProductOrder = () => {
                                 className="border p-2 w-full rounded"
                                 placeholder="Tracking Number"
                                 value={trackingNumber}
-                                onChange={(e) => setTrackingNumber(e.target.value)}
-                                disabled
+                                onChange={e => setTrackingNumber(e.target.value)}
                             />
 
                             <input
                                 className="border p-2 w-full rounded"
                                 type="datetime-local"
                                 value={deliveryDate}
-                                onChange={(e) => setDeliveryDate(e.target.value)}
-                                disabled
+                                onChange={e => setDeliveryDate(e.target.value)}
                             />
 
-                            <div className="flex justify-between mt-4 gap-6 w-full">
+                            <div className="flex justify-between mt-4 w-full">
                                 <button
-                                    className="bg-green-600 text-white px-4 py-2 rounded hover:cursor-pointer"
+                                    className="bg-green-600 text-white px-4 py-2 rounded"
                                     onClick={updateOrder}
-                                    disabled={!status || !trackingNumber || !deliveryDate}
+                                    disabled={!status}
                                 >
                                     Update
                                 </button>
+
                                 <button
-                                    type="button"
+                                    className="bg-gray-500 text-white px-4 py-2 rounded"
                                     onClick={() => setShowModal(false)}
-                                    className="bg-gray-500 text-white px-4 py-2 rounded hover:cursor-pointer"
                                 >
                                     Cancel
                                 </button>

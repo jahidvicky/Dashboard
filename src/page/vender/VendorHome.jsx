@@ -130,12 +130,6 @@ export default function VendorHome() {
             Manage Products
           </Link>
           <Link
-            to="/vendor/discount-product"
-            className="bg-green-500 text-white text-center py-4 px-6 rounded-xl shadow hover:bg-green-600 transition hover:cursor-pointer"
-          >
-            Manage Discount
-          </Link>
-          <Link
             to="/vendor/order"
             className="bg-red-500 text-white text-center py-4 px-6 rounded-xl shadow hover:bg-red-600 transition hover:cursor-pointer"
           >

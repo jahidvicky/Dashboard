@@ -32,6 +32,8 @@ const AdminOrderDetails = () => {
   }
 
 
+  const lensItems = order.cartItems.filter(item => item.lens);
+
 
   return (
     <motion.div
@@ -213,7 +215,7 @@ const AdminOrderDetails = () => {
       </motion.div>
 
       {/* Lens Details Section */}
-      <motion.div
+      {/* <motion.div
         className="bg-white shadow-md rounded-lg p-6 border-l-4 border-orange-500"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -284,7 +286,113 @@ const AdminOrderDetails = () => {
               </motion.div>
             );
           })}
-      </motion.div>
+      </motion.div> */}
+
+      {lensItems.length > 0 && (
+        <motion.div
+          className="bg-white shadow-md rounded-lg p-6 border-l-4 border-orange-500"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+        >
+          <h2 className="text-2xl font-semibold mb-6 text-gray-700">
+            Lens Details
+          </h2>
+
+          {lensItems.map((item, idx) => {
+            const lens = item.lens;
+            const enhancement = item.enhancement;
+            const prescription = lens?.lens?.prescription;
+
+            const fileUrl =
+              prescription?.fileURL?.startsWith("http")
+                ? prescription.fileURL
+                : `${IMAGE_URL}${prescription?.fileName}`;
+
+            return (
+              <motion.div
+                key={idx}
+                className="border rounded-lg p-4 mb-4 hover:shadow-lg transition"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * idx }}
+              >
+                {lens?.selectedLens && (
+                  <h3 className="text-lg font-bold text-gray-800 mb-3">
+                    {lens.selectedLens}
+                  </h3>
+                )}
+
+                <div className="grid grid-cols-2 gap-3 text-gray-700">
+
+                  {lens?.lens?.prescriptionMethod && (
+                    <p><strong>Prescription Method:</strong> {lens.lens.prescriptionMethod}</p>
+                  )}
+
+                  {lens?.lens?.lensType?.name && (
+                    <p><strong>Lens Type:</strong> {lens.lens.lensType.name}</p>
+                  )}
+
+                  {lens?.lens?.lensType?.description && (
+                    <p><strong>Description:</strong> {lens.lens.lensType.description}</p>
+                  )}
+
+                  {lens?.lens?.lensType?.color?.name && (
+                    <p><strong>Color:</strong> {lens.lens.lensType.color.name}</p>
+                  )}
+
+                  {lens?.lens?.thickness?.name && (
+                    <p><strong>Thickness:</strong> {lens.lens.thickness.name}</p>
+                  )}
+
+                  {(lens?.lens?.tint?.name || lens?.lens?.tint) && (
+                    <p><strong>Tint:</strong> {lens.lens.tint?.name || lens.lens.tint}</p>
+                  )}
+
+                  {lens?.lens?.enhancement?.name && (
+                    <p><strong>Enhancement:</strong> {lens.lens.enhancement.name}</p>
+                  )}
+
+                  {enhancement?.description && (
+                    <p><strong>Enhancement Description:</strong> {enhancement.description}</p>
+                  )}
+
+                  {enhancement?.benefits?.length > 0 && (
+                    <p><strong>Benefits:</strong> {enhancement.benefits.join(", ")}</p>
+                  )}
+
+                  {enhancement?.discount && (
+                    <p><strong>Discount:</strong> {enhancement.discount}</p>
+                  )}
+
+                  {enhancement?.price && (
+                    <p><strong>Enhancement Price:</strong> {enhancement.price}</p>
+                  )}
+
+                  {lens?.totalPrice && (
+                    <p><strong>Total Lens Price:</strong> ${lens.totalPrice}</p>
+                  )}
+                </div>
+
+                {prescription && (
+                  <div className="mt-4">
+                    <strong>Prescription: </strong>
+                    <a
+                      href={fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block px-3 py-1 font-bold text-sm text-white bg-blue-600 rounded hover:bg-blue-700 transition"
+                    >
+                      View
+                    </a>
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      )}
+
 
       {/* Tracking History */}
       {order.trackingHistory?.length > 0 && (

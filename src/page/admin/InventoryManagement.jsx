@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import API, { IMAGE_URL } from "../../API/Api";
 import Swal from "sweetalert2";
 
-const InventoryManagement = () => {
+const InventoryManagement = ({ role = "admin" }) => {
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  const vendorId = user?._id;
+
   // ─────────────────────────────
   // STATES
   // ─────────────────────────────
@@ -34,7 +38,6 @@ const InventoryManagement = () => {
       const { data } = await API.get(
         `/inventory/history/${productId}?location=${location}`
       );
-
       setSelectedProductHistory(data.history || []);
       setHistoryPopup(true);
     } catch (err) {
@@ -50,17 +53,35 @@ const InventoryManagement = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       const res = await API.get("/getAllproduct");
-      setProducts(res.data.products || []);
+
+      const filtered = (res.data.products || []).filter(p => {
+        if (role === "admin")
+          return p.productStatus === "Approved" && p.createdBy === "admin";
+
+        if (role === "vendor")
+          return p.productStatus === "Approved" && p.createdBy === "vendor" && p.vendorID === vendorId;
+
+        return false;
+      });
+
+      setProducts(filtered);
     };
+
     fetchProducts();
   }, []);
+
 
   // ─────────────────────────────
   // FETCH INVENTORY LIST
   // ─────────────────────────────
   const fetchInventory = async () => {
     try {
-      const res = await API.get("/inventory/get-inventory");
+      const res = await API.get(
+        role === "admin"
+          ? "/inventory/get-inventory?createdBy=admin"
+          : `/inventory/get-inventory?vendorId=${vendorId}`
+      );
+
       setInventoryList(res.data.inventory || []);
     } catch (err) {
       Swal.fire("Failed", "Failed to fetch inventory", "error");
@@ -70,6 +91,7 @@ const InventoryManagement = () => {
   useEffect(() => {
     fetchInventory();
   }, []);
+
 
   // ─────────────────────────────
   // ADD STOCK HANDLER
@@ -115,6 +137,7 @@ const InventoryManagement = () => {
           productId,
           location: "east",
           quantity: Number(eastQty),
+          vendorId: role === "vendor" ? vendorId : undefined
         });
       }
 
@@ -123,6 +146,7 @@ const InventoryManagement = () => {
           productId,
           location: "west",
           quantity: Number(westQty),
+          vendorId: role === "vendor" ? vendorId : undefined
         });
       }
 
@@ -175,6 +199,7 @@ const InventoryManagement = () => {
       await API.post("/inventory/move-to-processing", {
         inventoryId,
         quantity: 1,
+        vendorId: role === "vendor" ? vendorId : undefined
       });
       fetchInventory();
     } catch (err) {
@@ -192,6 +217,7 @@ const InventoryManagement = () => {
         inventoryId,
         quantity: 1,
         location,
+        vendorId: role === "vendor" ? vendorId : undefined
       });
       fetchInventory();
     } catch (err) {
@@ -223,6 +249,7 @@ const InventoryManagement = () => {
 
         <button
           onClick={() => setShowAddPopup(true)}
+
           className="bg-black text-white px-4 py-2 rounded"
         >
           Add Stock
@@ -235,9 +262,8 @@ const InventoryManagement = () => {
           <button
             key={loc}
             onClick={() => setLocationFilter(loc)}
-            className={`px-3 py-1 rounded capitalize ${
-              locationFilter === loc ? "bg-black text-white" : "border"
-            }`}
+            className={`px-3 py-1 rounded capitalize ${locationFilter === loc ? "bg-black text-white" : "border"
+              }`}
           >
             {loc}
           </button>
@@ -467,9 +493,8 @@ const InventoryManagement = () => {
                   <div
                     key={p._id}
                     onClick={() => setProductId(p._id)}
-                    className={`flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-100 ${
-                      productId === p._id ? "bg-gray-200" : ""
-                    }`}
+                    className={`flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-100 ${productId === p._id ? "bg-gray-200" : ""
+                      }`}
                   >
                     <img
                       src={getProductImage(p)}
@@ -497,9 +522,8 @@ const InventoryManagement = () => {
                   placeholder="Quantity"
                   value={eastQty}
                   onChange={(e) => setEastQty(e.target.value)}
-                  className={`border p-1 rounded w-32 ${
-                    !eastQty || Number(eastQty) <= 0 ? "border-red-500" : ""
-                  }`}
+                  className={`border p-1 rounded w-32 ${!eastQty || Number(eastQty) <= 0 ? "border-red-500" : ""
+                    }`}
                 />
               )}
             </div>
@@ -520,9 +544,8 @@ const InventoryManagement = () => {
                   placeholder="Quantity"
                   value={westQty}
                   onChange={(e) => setWestQty(e.target.value)}
-                  className={`border p-1 rounded w-32 ${
-                    !westQty || Number(westQty) <= 0 ? "border-red-500" : ""
-                  }`}
+                  className={`border p-1 rounded w-32 ${!westQty || Number(westQty) <= 0 ? "border-red-500" : ""
+                    }`}
                 />
               )}
             </div>
