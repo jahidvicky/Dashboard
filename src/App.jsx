@@ -20,6 +20,7 @@ import BrandSection from "./page/Brand/BrandSection";
 import SupportChatAdmin from "./page/admin/SupportChatAdmin";
 import FrameDonation from "./page/frameDonation/FrameDonation";
 import InventoryManagement from "./page/admin/InventoryManagement";
+import ExchangeRequests from "./page/admin/ExchangeRequests";
 
 // ---------- lazy imports ----------
 const Login = lazy(() => import("./page/login/Login"));
@@ -125,6 +126,7 @@ function App() {
             <Route path="brand" element={<BrandSection />} />
             <Route path="supportChat" element={<SupportChatAdmin />} />
             <Route path="frameDonation" element={<FrameDonation />} />
+            <Route path="exchangeRequest" element={<ExchangeRequests />} />
             <Route
               path="inventory"
               element={<InventoryManagement role="admin" />}
