@@ -11,6 +11,7 @@ export default function AdminDashboard() {
     { name: "Product", path: "/admin/product" },
     { name: "Inventory Management", path: "/admin/inventory" },
     { name: "Manage Order", path: "/admin/admin-order" },
+    { name: "Exchange Request", path: "/admin/exchangeRequest" },
     { name: "All Brands", path: "/admin/brand" },
     { name: "coupon", path: "/admin/coupons" },
     { name: "Inquiries", path: "/admin/inquiries" },
