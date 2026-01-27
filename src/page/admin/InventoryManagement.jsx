@@ -303,9 +303,9 @@ const InventoryManagement = ({ role = "admin" }) => {
       </div>
 
       {/* INVENTORY TABLE */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
         <table className="w-full border">
-          <thead className="bg-black text-white">
+          <thead className="bg-black text-white sticky top-0 z-10">
             <tr>
               <th className="border p-2">Product Image</th>
               <th className="border p-2">Product</th>
