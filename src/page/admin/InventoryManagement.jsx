@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import API, { IMAGE_URL } from "../../API/Api";
 import Swal from "sweetalert2";
 
-const InventoryManagement = ({ role = "admin" }) => {
+const InventoryManagement = () => {
 
   const user = JSON.parse(localStorage.getItem("user"));
   const vendorId = user?._id;
+  const role = user?.role;
 
   // ─────────────────────────────
   // STATES
@@ -73,7 +74,6 @@ const InventoryManagement = ({ role = "admin" }) => {
 
         return false;
       });
-
       setProducts(filtered);
     };
 
@@ -84,7 +84,22 @@ const InventoryManagement = ({ role = "admin" }) => {
     if (!term.trim()) {
       // fallback to all products
       const res = await API.get("/getAllproduct");
-      setProducts(res.data.products || []);
+
+      const filtered = (res.data.products || []).filter(p => {
+        if (role === "admin")
+          return p.productStatus === "Approved" && p.createdBy === "admin";
+
+        if (role === "vendor")
+          return (
+            p.productStatus === "Approved" &&
+            p.createdBy === "vendor" &&
+            p.vendorID === vendorId
+          );
+
+        return false;
+      });
+
+      setProducts(filtered || []);
       return;
     }
 
@@ -95,13 +110,28 @@ const InventoryManagement = ({ role = "admin" }) => {
         `/products/search?search=${encodeURIComponent(term)}`
       );
 
-      setProducts(data.products || []);
+      const filtered = (data.products || []).filter(p => {
+        if (role === "admin")
+          return p.productStatus === "Approved" && p.createdBy === "admin";
+
+        if (role === "vendor")
+          return (
+            p.productStatus === "Approved" &&
+            p.createdBy === "vendor" &&
+            p.vendorID === vendorId
+          );
+
+        return false;
+      });
+
+      setProducts(filtered);
     } catch (err) {
       Swal.fire("Error", "Failed to search products", "error");
     } finally {
       setSearchLoading(false);
     }
   };
+
 
   // ─────────────────────────────
   // FETCH INVENTORY LIST
@@ -450,7 +480,7 @@ const InventoryManagement = ({ role = "admin" }) => {
 
             {filteredInventory.length === 0 && (
               <tr>
-                <td colSpan="9" className="text-center p-4">
+                <td colSpan="11" className="text-center p-4">
                   No inventory found
                 </td>
               </tr>
