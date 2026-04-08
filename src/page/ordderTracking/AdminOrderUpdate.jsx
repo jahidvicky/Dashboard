@@ -12,6 +12,7 @@ const AdminOrderUpdate = () => {
     const [allData, setAllData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [ordersPerPage] = useState(8);
+    const [endOfDayLoading, setEndOfDayLoading] = useState(false);
 
     const navigate = useNavigate();
 
@@ -28,6 +29,76 @@ const AdminOrderUpdate = () => {
     useEffect(() => {
         fetchOrders();
     }, []);
+
+    // End of Day handler
+    const handleEndOfDay = async () => {
+        const confirmed = await Swal.fire({
+            icon: "warning",
+            title: "Run End of Day?",
+            html: "This will close all today's shipments with Loomis and generate the manifest.<br/><br/><strong>Only do this once per day after all shipments are created.</strong>",
+            showCancelButton: true,
+            confirmButtonText: "Yes, run End of Day",
+            cancelButtonText: "Cancel",
+            confirmButtonColor: "#7c3aed",
+            cancelButtonColor: "#6b7280",
+        });
+        if (!confirmed.isConfirmed) return;
+
+        try {
+            setEndOfDayLoading(true);
+            const { data } = await API.post("/shipping/end-of-day");
+
+            if (data.manifestNum) {
+                Swal.fire({
+                    icon: "success",
+                    title: "End of Day Complete",
+                    html: `Manifest number: <strong>${data.manifestNum}</strong><br/><span style="color:#6b7280;font-size:13px;">Print the manifest and hand one copy to the Loomis driver.</span>`,
+                    confirmButtonColor: "#7c3aed",
+                });
+            } else {
+                Swal.fire({
+                    icon: "info",
+                    title: "No Shipments Today",
+                    text: "No shipments were created today, so no manifest was generated.",
+                    confirmButtonColor: "#7c3aed",
+                });
+            }
+
+            await fetchOrders();
+        } catch (err) {
+            // ── Friendly error messages based on what went wrong ──────────
+            const serverMsg = err.response?.data?.error || err.response?.data?.message || "";
+
+            let title = "Something Went Wrong";
+            let text = "Please try again. If the problem continues, contact support.";
+
+            if (serverMsg.includes("At least one shipment required")) {
+                title = "No Shipments to Close";
+                text = "All of today's shipments have already been manifested, or no shipments were created today.";
+            } else if (serverMsg.includes("already manifested") || serverMsg.includes("already saved")) {
+                title = "Already Done Today";
+                text = "End of Day has already been run today. No action needed.";
+            } else if (serverMsg.includes("network") || err.code === "ERR_NETWORK") {
+                title = "Connection Problem";
+                text = "Could not reach the server. Please check your internet and try again.";
+            } else if (err.response?.status === 500) {
+                title = "Server Error";
+                text = "Something went wrong on our end. Please wait a moment and try again.";
+            } else if (err.response?.status === 401 || err.response?.status === 403) {
+                title = "Not Authorized";
+                text = "You don't have permission to run End of Day. Please log in again.";
+            }
+
+            Swal.fire({
+                icon: "error",
+                title,
+                text,
+                confirmButtonColor: "#7c3aed",
+            });
+        } finally {
+            setEndOfDayLoading(false);
+        }
+    };
 
     // Update order status
     const updateOrder = async () => {
@@ -67,18 +138,38 @@ const AdminOrderUpdate = () => {
     const indexOfFirst = indexOfLast - ordersPerPage;
     const currentOrders = allData.slice(indexOfFirst, indexOfLast);
 
-
     return (
         <div className="p-4">
-            <h2 className="text-2xl font-bold mb-4">Admin Orders</h2>
+
+            {/* ── Header with End of Day button ── */}
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold">Admin Orders</h2>
+
+                <button
+                    onClick={handleEndOfDay}
+                    disabled={endOfDayLoading}
+                    className={`flex items-center gap-2 px-5 py-2 rounded-lg text-white font-semibold transition ${endOfDayLoading
+                        ? "bg-purple-300 cursor-not-allowed"
+                        : "bg-purple-600 hover:bg-purple-700"
+                        }`}
+                >
+                    {endOfDayLoading ? (
+                        <>
+                            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            Running...
+                        </>
+                    ) : (
+                        "Run End of Day"
+                    )}
+                </button>
+            </div>
 
             {/* Desktop Table */}
             <div className="hidden md:block relative overflow-y-auto max-h-[560px] w-full mt-6 border rounded-lg">
-                <div className="grid grid-cols-5 text-center bg-black text-white font-semibold py-3 px-4 sticky top-0 z-10">
+                <div className="grid grid-cols-4 text-center bg-black text-white font-semibold py-3 px-4 sticky top-0 z-10">
+                    <div>ORDER NUMBER.</div>
                     <div>PRODUCT</div>
                     <div>STATUS</div>
-                    <div>TRACKING NO.</div>
-                    <div>DATE</div>
                     <div>ACTIONS</div>
                 </div>
 
@@ -90,9 +181,10 @@ const AdminOrderUpdate = () => {
                     currentOrders.map((data, idx) => (
                         <div
                             key={idx}
-                            className={`grid grid-cols-5 text-center items-center px-4 py-3 border-b border-gray-200 text-sm hover:bg-gray-100 ${idx % 2 === 0 ? "bg-gray-50" : "bg-white"
+                            className={`grid grid-cols-4 text-center items-center px-4 py-3 border-b border-gray-200 text-sm hover:bg-gray-100 ${idx % 2 === 0 ? "bg-gray-50" : "bg-white"
                                 }`}
                         >
+                            <div>{data.orderNumber}</div>
                             <div className="flex justify-center">
                                 <img
                                     src={
@@ -104,44 +196,8 @@ const AdminOrderUpdate = () => {
                                     className="w-16 h-12 object-cover rounded-md border"
                                 />
                             </div>
-
-
-
                             <div>{data.orderStatus}</div>
-                            <div>{data.trackingNumber || "-"}</div>
-                            <div>
-                                {data.deliveryDate
-                                    ? new Date(data.deliveryDate).toISOString().split("T")[0]
-                                    : new Date(data.updatedAt).toISOString().split("T")[0]}
-                            </div>
                             <div className="flex gap-2 justify-center">
-                                <button
-                                    onClick={() => {
-                                        setOrderId(data._id);
-                                        setStatus(data.orderStatus);
-                                        setTrackingNumber(data.trackingNumber || "");
-
-                                        const now = new Date();
-                                        const pad = (n) => n.toString().padStart(2, "0");
-                                        const localDateTime = `${now.getFullYear()}-${pad(
-                                            now.getMonth() + 1
-                                        )}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(
-                                            now.getMinutes()
-                                        )}`;
-
-                                        setDeliveryDate(
-                                            data.deliveryDate
-                                                ? new Date(data.deliveryDate).toISOString().slice(0, 16)
-                                                : localDateTime
-                                        );
-
-                                        setShowModal(true);
-                                    }}
-                                    className="bg-blue-500 px-4 py-2 rounded-xl text-white hover:bg-blue-600 transition hover:cursor-pointer"
-                                >
-                                    Change Status
-                                </button>
-
                                 <button
                                     onClick={() => navigate(`/admin/order-details/${data._id}`)}
                                     className="bg-green-600 px-4 py-2 rounded-xl text-white hover:bg-green-700 transition hover:cursor-pointer"
@@ -171,7 +227,6 @@ const AdminOrderUpdate = () => {
                     ))}
                 </div>
             )}
-
 
             {/* Modal */}
             {showModal && (

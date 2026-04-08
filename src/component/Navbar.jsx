@@ -61,9 +61,10 @@ const Navbar = () => {
             {user && (
                 <div className="flex justify-between items-center">
                     {/* Logo */}
-                    <div>
+
+                    <Link to="/admin/home">
                         <img src={logo} alt="Logo" className="w-36 ml-4" />
-                    </div>
+                    </Link>
 
                     {/* Right side */}
                     <div className="flex items-center space-x-6">

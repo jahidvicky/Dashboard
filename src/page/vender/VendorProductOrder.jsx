@@ -1,30 +1,38 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API, { IMAGE_URL } from "../../API/Api";
-import Swal from "sweetalert2";
+
+// Status badge colors
+const getStatusColor = (status) => {
+    switch (status) {
+        case "Placed": return "bg-blue-100 text-blue-700";
+        case "Processing": return "bg-yellow-100 text-yellow-700";
+        case "Shipped": return "bg-purple-100 text-purple-700";
+        case "Delivered": return "bg-green-100 text-green-700";
+        case "Cancelled": return "bg-red-100 text-red-700";
+        case "Returned": return "bg-orange-100 text-orange-700";
+        default: return "bg-gray-100 text-gray-600";
+    }
+};
 
 const VendorProductOrder = () => {
-    const [orderId, setOrderId] = useState("");
-    const [status, setStatus] = useState("Placed");
-    const [trackingNumber, setTrackingNumber] = useState("");
-    const [deliveryDate, setDeliveryDate] = useState("");
-    const [showModal, setShowModal] = useState(false);
     const [allData, setAllData] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const [ordersPerPage] = useState(8);
+    const [filterStatus, setFilterStatus] = useState("");
+    const [ordersPerPage] = useState(10);
 
     const navigate = useNavigate();
 
     const fetchOrders = async () => {
+        setLoading(true);
         try {
             const { data } = await API.get("/vendor-orders");
             setAllData(data.orders || []);
         } catch (err) {
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Failed to load orders",
-            });
+            console.error("Failed to load orders:", err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -32,122 +40,149 @@ const VendorProductOrder = () => {
         fetchOrders();
     }, []);
 
+    // Filter by status
+    const filteredData = filterStatus
+        ? allData.filter((o) => o.orderStatus === filterStatus)
+        : allData;
+
     // Pagination
-    const totalPages = Math.ceil(allData.length / ordersPerPage);
+    const totalPages = Math.ceil(filteredData.length / ordersPerPage);
     const indexOfLast = currentPage * ordersPerPage;
     const indexOfFirst = indexOfLast - ordersPerPage;
-    const currentOrders = allData.slice(indexOfFirst, indexOfLast);
+    const currentOrders = filteredData.slice(indexOfFirst, indexOfLast);
 
-    const updateOrder = async () => {
-        if (!orderId) {
-            Swal.fire("Missing Order ID", "Order ID is required.", "warning");
-            return;
-        }
-
-        try {
-            const { data } = await API.put(
-                `/order/updateOrderStatus/${orderId}/status`,
-                { status, trackingNumber, deliveryDate }
-            );
-
-            Swal.fire({
-                icon: "success",
-                title: "Success",
-                text: data.message || "Order updated successfully!",
-                timer: 2000,
-                showConfirmButton: false,
-            });
-
-            await fetchOrders();
-            setShowModal(false);
-        } catch (err) {
-            Swal.fire({
-                icon: "error",
-                title: "Update Failed",
-                text: err.response?.data?.message || "Failed to update order.",
-            });
-        }
-    };
+    if (loading) {
+        return (
+            <div className="p-8 flex items-center justify-center min-h-[50vh]">
+                <div className="flex flex-col items-center gap-3">
+                    <span className="w-10 h-10 rounded-full border-4 border-red-500 border-t-transparent animate-spin" />
+                    <p className="text-gray-500">Loading orders...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="p-4">
-            <h2 className="text-2xl font-bold mb-4">Vendor Orders</h2>
+        <div className="p-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-800">My Orders</h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Orders containing your products — read only view
+                    </p>
+                </div>
 
-            {/* Desktop table */}
-            <div className="hidden md:block relative overflow-y-auto max-h-[560px] w-full mt-6 border rounded-lg">
-                <div className="grid grid-cols-5 text-center bg-black text-white font-semibold py-3 px-4 sticky top-0 z-10">
-                    <div>PRODUCT</div>
-                    <div>STATUS</div>
-                    <div>TRACKING NO.</div>
-                    <div>DATE</div>
-                    <div>ACTIONS</div>
+                {/* Status Filter */}
+                <select
+                    value={filterStatus}
+                    onChange={(e) => {
+                        setFilterStatus(e.target.value);
+                        setCurrentPage(1);
+                    }}
+                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
+                >
+                    <option value="">All Statuses</option>
+                    <option value="Placed">Placed</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancelled</option>
+                    <option value="Returned">Returned</option>
+                </select>
+            </div>
+
+            {/* Info Banner */}
+            <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-800">
+                Order fulfillment and shipping are managed by the admin team.
+                Contact admin via <strong>Chat</strong> if you have questions about a specific order.
+            </div>
+
+            {/* Table */}
+            <div className="hidden md:block relative overflow-y-auto max-h-[560px] w-full border rounded-xl bg-white shadow-sm">
+                {/* Header */}
+                <div className="grid grid-cols-6 text-center bg-gray-800 text-white font-semibold py-3 px-4 sticky top-0 z-10 text-sm rounded-t-xl">
+                    <div>Order #</div>
+                    <div>Product</div>
+                    <div>Date</div>
+                    <div>Total</div>
+                    <div>Status</div>
+                    <div>Action</div>
                 </div>
 
                 {currentOrders.length === 0 ? (
-                    <div className="text-center py-10 text-gray-500 text-lg">
-                        No Orders Found
+                    <div className="text-center py-16 text-gray-400">
+                        <p className="text-4xl mb-3">📦</p>
+                        <p className="text-lg font-medium">No orders found</p>
+                        <p className="text-sm mt-1">
+                            {filterStatus
+                                ? `No orders with status "${filterStatus}"`
+                                : "Orders will appear here once customers purchase your products"}
+                        </p>
                     </div>
                 ) : (
-                    currentOrders.map((data, idx) => (
+                    currentOrders.map((order, idx) => (
                         <div
-                            key={idx}
-                            className={`grid grid-cols-5 text-center items-center px-4 py-3 border-b border-gray-200 text-sm hover:bg-gray-100 ${idx % 2 === 0 ? "bg-gray-50" : "bg-white"
+                            key={order._id}
+                            className={`grid grid-cols-6 text-center items-center px-4 py-3 border-b border-gray-100 text-sm hover:bg-gray-50 transition ${idx % 2 === 0 ? "bg-white" : "bg-gray-50/50"
                                 }`}
                         >
+                            {/* Order Number */}
+                            <div className="font-mono text-xs text-gray-600 truncate px-1">
+                                #{order.orderNumber || order._id?.slice(-8)}
+                            </div>
+
+                            {/* Product Image */}
                             <div className="flex justify-center">
                                 <img
                                     src={
-                                        data.cartItems?.[0]?.image?.startsWith("http")
-                                            ? data.cartItems[0].image
-                                            : `${IMAGE_URL}/${data.cartItems?.[0]?.image}`
+                                        order.cartItems?.[0]?.image?.startsWith("http")
+                                            ? order.cartItems[0].image
+                                            : `${IMAGE_URL}/${order.cartItems?.[0]?.image}`
                                     }
                                     alt="Product"
-                                    className="w-16 h-12 object-cover rounded-md border"
+                                    className="w-14 h-10 object-cover rounded-lg border"
+                                    onError={(e) => {
+                                        e.target.src = "";
+                                        e.target.style.display = "none";
+                                    }}
                                 />
                             </div>
 
-                            <div>{data.orderStatus}</div>
-                            <div>{data.trackingNumber || "-"}</div>
-
-                            <div>
-                                {data.deliveryDate
-                                    ? new Date(data.deliveryDate).toISOString().split("T")[0]
-                                    : new Date(data.updatedAt).toISOString().split("T")[0]}
+                            {/* Date */}
+                            <div className="text-gray-600 text-xs">
+                                {new Date(order.createdAt).toLocaleDateString("en-CA", {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                })}
                             </div>
 
-                            <div className="flex gap-2 justify-center">
-                                <button
-                                    onClick={() => {
-                                        setOrderId(data._id);
-                                        setStatus(data.orderStatus);
-                                        setTrackingNumber(data.trackingNumber || "");
+                            {/* Total */}
+                            <div className="font-semibold text-gray-800">
+                                ${order.total?.toFixed(2) || "—"}
+                            </div>
 
-                                        const now = new Date();
-                                        const pad = n => n.toString().padStart(2, "0");
-                                        const localDateTime = `${now.getFullYear()}-${pad(
-                                            now.getMonth() + 1
-                                        )}-${pad(now.getDate())}T${pad(
-                                            now.getHours()
-                                        )}:${pad(now.getMinutes())}`;
-
-                                        setDeliveryDate(
-                                            data.deliveryDate
-                                                ? new Date(data.deliveryDate).toISOString().slice(0, 16)
-                                                : localDateTime
-                                        );
-
-                                        setShowModal(true);
-                                    }}
-                                    className="bg-blue-500 px-4 py-2 rounded-xl text-white hover:bg-blue-600 transition"
+                            {/* Status */}
+                            <div className="flex justify-center">
+                                <span
+                                    className={`text-xs font-semibold px-3 py-1 rounded-full ${getStatusColor(
+                                        order.orderStatus
+                                    )}`}
                                 >
-                                    Change Status
-                                </button>
+                                    {order.orderStatus}
+                                </span>
+                            </div>
 
+                            {/* Action */}
+                            <div className="flex justify-center">
                                 <button
                                     onClick={() =>
-                                        navigate("/vendor/order-details", { state: { order: data } })
+                                        navigate("/vendor/order-details", {
+                                            state: { order },
+                                        })
                                     }
-                                    className="bg-green-600 px-4 py-2 rounded-xl text-white hover:bg-green-700 transition"
+                                    className="bg-gray-800 text-white px-4 py-1.5 rounded-lg text-xs hover:bg-gray-700 transition"
                                 >
                                     View Details
                                 </button>
@@ -157,78 +192,89 @@ const VendorProductOrder = () => {
                 )}
             </div>
 
+            {/* Mobile Cards */}
+            <div className="md:hidden space-y-4">
+                {currentOrders.length === 0 ? (
+                    <div className="text-center py-10 text-gray-400">
+                        No orders found.
+                    </div>
+                ) : (
+                    currentOrders.map((order) => (
+                        <div
+                            key={order._id}
+                            className="bg-white border rounded-xl p-4 shadow-sm"
+                        >
+                            <div className="flex items-center gap-3 mb-3">
+                                <img
+                                    src={
+                                        order.cartItems?.[0]?.image?.startsWith("http")
+                                            ? order.cartItems[0].image
+                                            : `${IMAGE_URL}/${order.cartItems?.[0]?.image}`
+                                    }
+                                    alt="Product"
+                                    className="w-14 h-14 object-cover rounded-lg border"
+                                />
+                                <div className="flex-1">
+                                    <p className="font-mono text-xs text-gray-500">
+                                        #{order.orderNumber || order._id?.slice(-8)}
+                                    </p>
+                                    <p className="font-bold text-gray-800">
+                                        ${order.total?.toFixed(2) || "—"}
+                                    </p>
+                                    <p className="text-xs text-gray-400">
+                                        {new Date(order.createdAt).toLocaleDateString()}
+                                    </p>
+                                </div>
+                                <span
+                                    className={`text-xs font-semibold px-2 py-1 rounded-full ${getStatusColor(
+                                        order.orderStatus
+                                    )}`}
+                                >
+                                    {order.orderStatus}
+                                </span>
+                            </div>
+                            <button
+                                onClick={() =>
+                                    navigate("/vendor/order-details", { state: { order } })
+                                }
+                                className="w-full bg-gray-800 text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-700 transition"
+                            >
+                                View Details
+                            </button>
+                        </div>
+                    ))
+                )}
+            </div>
+
             {/* Pagination */}
-            {allData.length > 0 && (
+            {filteredData.length > ordersPerPage && (
                 <div className="flex justify-center mt-6 gap-2 flex-wrap">
+                    <button
+                        onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-100"
+                    >
+                        ← Prev
+                    </button>
                     {[...Array(totalPages)].map((_, i) => (
                         <button
                             key={i}
                             onClick={() => setCurrentPage(i + 1)}
-                            className={`px-3 py-1 rounded-lg border ${currentPage === i + 1
-                                ? "bg-blue-600 text-white font-semibold"
-                                : "bg-gray-100 hover:bg-gray-200"
+                            className={`px-3 py-1 rounded-lg border text-sm ${currentPage === i + 1
+                                ? "bg-[#f00000] text-white font-semibold border-[#f00000]"
+                                : "bg-white hover:bg-gray-100"
                                 }`}
                         >
                             {i + 1}
                         </button>
                     ))}
-                </div>
-            )}
-
-            {/* Modal */}
-            {showModal && (
-                <div className="fixed inset-0 backdrop-blur-sm flex justify-center items-center z-50">
-                    <div className="bg-white rounded-lg shadow-lg w-[500px] p-6 relative">
-                        <h3 className="text-lg font-bold mb-2">
-                            Update Order {orderId ? `#${orderId}` : "(Loading...)"}
-                        </h3>
-
-                        <div className="flex flex-wrap gap-4 mt-4">
-                            <select
-                                className="border p-2 w-full rounded"
-                                value={status}
-                                onChange={e => setStatus(e.target.value)}
-                            >
-                                <option>Placed</option>
-                                <option>Processing</option>
-                                <option>Shipped</option>
-                                <option>Delivered</option>
-                                <option>Cancelled</option>
-                                <option>Returned</option>
-                            </select>
-
-                            <input
-                                className="border p-2 w-full rounded"
-                                placeholder="Tracking Number"
-                                value={trackingNumber}
-                                onChange={e => setTrackingNumber(e.target.value)}
-                            />
-
-                            <input
-                                className="border p-2 w-full rounded"
-                                type="datetime-local"
-                                value={deliveryDate}
-                                onChange={e => setDeliveryDate(e.target.value)}
-                            />
-
-                            <div className="flex justify-between mt-4 w-full">
-                                <button
-                                    className="bg-green-600 text-white px-4 py-2 rounded"
-                                    onClick={updateOrder}
-                                    disabled={!status}
-                                >
-                                    Update
-                                </button>
-
-                                <button
-                                    className="bg-gray-500 text-white px-4 py-2 rounded"
-                                    onClick={() => setShowModal(false)}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <button
+                        onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-100"
+                    >
+                        Next →
+                    </button>
                 </div>
             )}
         </div>

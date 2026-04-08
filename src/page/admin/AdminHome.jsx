@@ -3,11 +3,12 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../authContext/AuthContext";
 import { List, Package, MessageSquare, BadgeQuestionMark, Building2, IdCardLanyard } from "lucide-react";
 import API from "../../API/Api";
+import AnalogClock from "../../component/AnalogClock";
 
 export default function AdminHome() {
     const [totalCategories, setTotalCategories] = useState([]);
     const [totalProducts, setTotalProducts] = useState([]);
-    const [totalReviews, setTotalReviews] = useState([]);
+    const [totalOrders, setTotalOrders] = useState([]);
     const [totalVendor, setTotalVendor] = useState([]);
     const [totalCompany, setTotalCompany] = useState([]);
     const [totalInquiries, setTotalInquiries] = useState([]);
@@ -31,12 +32,12 @@ export default function AdminHome() {
         }
     }
 
-    const getTotalReviews = async () => {
+    const getTotalOrders = async () => {
         try {
-            const res = await API.get("/getreview")
-            setTotalReviews(res.data.reviews);
+            const res = await API.get("/allOrder")
+            setTotalOrders(res.data.orders);
         } catch (err) {
-            console.log("Failed to fetch Reviews : ", err)
+            console.log("Failed to fetch Orders : ", err)
         }
     }
 
@@ -70,22 +71,40 @@ export default function AdminHome() {
     useEffect(() => {
         getTotalCategories();
         getTotalProducts();
-        getTotalReviews();
+        getTotalOrders();
         getTotalVendor();
         getTotalCompany();
         getTotalInquiries();
     }, [])
 
+    const today = new Date().toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+    });
+
     return (
         <div className="p-8 bg-gray-50 min-h-screen">
             {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-800">
-                    Welcome back, {user?.name || "Admin"}
-                </h1>
-                <p className="text-gray-600 mt-2">
-                    Manage your platform content and settings here.
-                </p>
+            <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+                {/* Left Section */}
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-800">
+                        Welcome back, {user?.name || "Admin"}
+                    </h1>
+                    <p className="text-gray-600 mt-2">
+                        Manage your platform content and settings here.
+                    </p>
+                </div>
+
+                {/* Right Section */}
+                <div className="text-left sm:text-right">
+                    {/* <p className="text-sm mb-1 text-gray-800">{currentTime}</p> */}
+                    <AnalogClock />
+                    <p className="text-sm font-bold text-gray-800">{today}</p>
+                </div>
             </div>
 
             {/* Stats Section */}
@@ -109,9 +128,9 @@ export default function AdminHome() {
                 <div className="bg-white p-6  border border-red-200 rounded-2xl shadow-red-600 hover:shadow-lg transition">
                     <div className="flex items-center gap-3">
                         <MessageSquare className="text-yellow-500" size={28} />
-                        <h2 className="text-lg font-semibold">Reviews</h2>
+                        <h2 className="text-lg font-semibold">Order</h2>
                     </div>
-                    <p className="text-2xl font-bold mt-4">{totalReviews?.length}</p>
+                    <p className="text-2xl font-bold mt-4">{totalOrders?.length}</p>
                 </div>
 
                 <div className="bg-white p-6  border border-red-200 rounded-2xl shadow-red-600 hover:shadow-lg transition">
@@ -125,7 +144,7 @@ export default function AdminHome() {
                 <div className="bg-white p-6  border border-red-200 rounded-2xl shadow-red-600 hover:shadow-lg transition">
                     <div className="flex items-center gap-3">
                         <Building2 className="text-yellow-500" size={28} />
-                        <h2 className="text-lg font-semibold">Company</h2>
+                        <h2 className="text-lg font-semibold">Insurance Company</h2>
                     </div>
                     <p className="text-2xl font-bold mt-4">{totalCompany?.length}</p>
                 </div>
@@ -173,6 +192,12 @@ export default function AdminHome() {
                         className="bg-purple-500 text-white text-center py-4 px-6 rounded-xl shadow hover:bg-purple-600 transition hover:cursor-pointer"
                     >
                         Manage Vendor
+                    </Link>
+                    <Link
+                        to="/admin/return-requests"
+                        className="bg-orange-500 text-white text-center py-4 px-6 rounded-xl shadow hover:bg-orange-600 transition hover:cursor-pointer"
+                    >
+                        Return Requests
                     </Link>
                 </div>
             </div>
