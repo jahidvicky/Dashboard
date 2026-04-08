@@ -1,14 +1,15 @@
-import React from 'react'
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import React from "react";
+import { Link, Outlet, useLocation } from "react-router-dom";
 
 const VenderDashboard = () => {
     const location = useLocation();
 
     const menuItems = [
-        { name: "Home", path: "/vendor/home" },
-        { name: "Product", path: "/vendor/product" },
-        { name: "Inventory Management", path: "/vendor/inventory" },
-        { name: "Order", path: "/vendor/order" },
+        { name: "Dashboard", path: "/vendor/home" },
+        { name: "My Products", path: "/vendor/product" },
+        { name: "Inventory", path: "/vendor/inventory" },
+        { name: "Orders", path: "/vendor/order" },
+        { name: "Sales Report", path: "/vendor/sales" },
         { name: "Profile", path: "/vendor/profile" },
         { name: "Chat", path: "/vendor/chat" },
         { name: "Vendor Policy", path: "/vendor/privacy-policy" },
@@ -23,7 +24,7 @@ const VenderDashboard = () => {
                         <Link
                             key={item.path}
                             to={item.path}
-                            className={`block px-4 py-2 rounded border-b border-gray-200 hover:bg-red-500 hover:text-white hover:cursor-pointer ${location.pathname === item.path
+                            className={`block px-4 py-2 rounded border-b border-gray-200 hover:bg-red-500 hover:text-white hover:cursor-pointer transition ${location.pathname === item.path
                                 ? "bg-[#f00000] text-white"
                                 : "text-gray-700"
                                 }`}

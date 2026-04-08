@@ -56,6 +56,10 @@ const Products = () => {
     water_content: "",
     brand_id: "",
     isBestSeller: false,
+    weight: "",
+    length: "",
+    width: "",
+    height: "",
     isTrending: false,
   });
   const [editId, setEditId] = useState(null);
@@ -170,6 +174,10 @@ const Products = () => {
       brand_id: "",
       isBestSeller: false,
       isTrending: false,
+      weight: "",
+      length: "",
+      width: "",
+      height: "",
     });
     setKeptImages([]);
     setLensImage1(null);
@@ -225,6 +233,10 @@ const Products = () => {
       manufacturer: product.manufacturer || "",
       water_content: product.water_content || "",
       stockAvailability: product.stockAvailability || "",
+      weight: product.weight || "",
+      length: product.length || "",
+      width: product.width || "",
+      height: product.height || "",
     });
 
     // Prefill Lens Packs
@@ -358,6 +370,10 @@ const Products = () => {
         "product_lens_title2",
         "product_lens_description2",
         "unit",
+        "weight",
+        "length",
+        "width",
+        "height",
       ].forEach((field) => {
         if (formData[field]) payload.append(field, formData[field]);
       });
@@ -1028,6 +1044,78 @@ const Products = () => {
                       />
                     </div>
                   </div>
+
+                </div>
+              )}
+
+              {/* Shipping Dimensions — shown for all non-contact-lens products */}
+              {formData.cat_id !== "6915735feeb23fa59c7d532b" && (
+                <div>
+                  <h4 className="text-black font-bold mt-5 mb-3">
+                    Shipping Dimensions
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Weight (lbs)
+                      </label>
+                      <input
+                        type="number"
+                        name="weight"
+                        value={formData.weight}
+                        onChange={handleChange}
+                        placeholder="e.g., 0.5"
+                        step="0.1"
+                        min="0.1"
+                        className="w-full border p-2 rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Length (inches)
+                      </label>
+                      <input
+                        type="number"
+                        name="length"
+                        value={formData.length}
+                        onChange={handleChange}
+                        placeholder="e.g., 10"
+                        step="0.1"
+                        min="0.1"
+                        className="w-full border p-2 rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Width (inches)
+                      </label>
+                      <input
+                        type="number"
+                        name="width"
+                        value={formData.width}
+                        onChange={handleChange}
+                        placeholder="e.g., 8"
+                        step="0.1"
+                        min="0.1"
+                        className="w-full border p-2 rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Height (inches)
+                      </label>
+                      <input
+                        type="number"
+                        name="height"
+                        value={formData.height}
+                        onChange={handleChange}
+                        placeholder="e.g., 6"
+                        step="0.1"
+                        min="0.1"
+                        className="w-full border p-2 rounded"
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -1211,7 +1299,7 @@ const Products = () => {
 
               {/* Lens Fields */}
               <div>
-                <h4 className="text-gray-700 font-semibold mb-3">
+                <h4 className="text-black font-semibold mb-3">
                   Lens Details
                 </h4>
                 <div className="grid grid-cols-2 gap-4">

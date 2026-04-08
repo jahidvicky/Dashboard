@@ -82,17 +82,6 @@ const Category = () => {
     setPreviewImage(null);
   };
 
-  // const handleDelete = async (id) => {
-  //   if (!window.confirm("Delete this category?")) return;
-  //   try {
-  //     await API.delete(`/deletecategory/${id}`);
-  //     setCategories((prev) => prev.filter((c) => c._id !== id));
-  //     toast.success("Deleted successfully");
-  //   } catch {
-  //     toast.error("Delete failed");
-  //   }
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 

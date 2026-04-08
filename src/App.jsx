@@ -21,6 +21,10 @@ import SupportChatAdmin from "./page/admin/SupportChatAdmin";
 import FrameDonation from "./page/frameDonation/FrameDonation";
 import InventoryManagement from "./page/admin/InventoryManagement";
 import ExchangeRequests from "./page/admin/ExchangeRequests";
+import ManifestViewer from "./component/ManifestViewer";
+import AdminReturnRequests from "./page/admin/AdminReturnRequests";
+import VendorSalesReport from "./page/vender/VendorSalesReport";
+import AdminVendorSalesReport from "./page/admin/AdminVendorSalesReport";
 
 // ---------- lazy imports ----------
 const Login = lazy(() => import("./page/login/Login"));
@@ -110,6 +114,7 @@ function App() {
             <Route path="customer-policy" element={<CustomerPolicies />} />
             <Route path="customer-claims" element={<CustomerClaims />} />
             <Route path="claims/:claimId" element={<ClaimDetails />} />
+            <Route path="return-requests" element={<AdminReturnRequests />} />
             <Route path="testimonials" element={<Testimonials />} />
             <Route path="eyewearTips" element={<EyewearTips />} />
             <Route path="inquiries" element={<Inquiry />} />
@@ -127,11 +132,14 @@ function App() {
             <Route path="supportChat" element={<SupportChatAdmin />} />
             <Route path="frameDonation" element={<FrameDonation />} />
             <Route path="exchangeRequest" element={<ExchangeRequests />} />
+            <Route path="vendor-sales" element={<AdminVendorSalesReport />} />
             <Route
               path="inventory"
               element={<InventoryManagement role="admin" />}
             />
           </Route>
+
+          <Route path="/manifest/:manifestNum" element={<ManifestViewer />} />
 
           {/* ------------ vendor ------------ */}
           <Route
@@ -146,19 +154,15 @@ function App() {
             <Route path="home" element={<VendorHome />} />
             <Route path="product" element={<VendorProducts />} />
             <Route path="order" element={<VendorProductOrder />} />
+            <Route path="order-details" element={<VendorOrderDetails />} />
+            <Route path="sales" element={<VendorSalesReport />} />
             <Route
               path="inventory"
-              element={
-                <InventoryManagement
-                  role="vendor"
-                />
-              }
+              element={<InventoryManagement role="vendor" />}
             />
             <Route path="profile" element={<UpdateVendorProfile />} />
-            <Route path="faq" element={<VendorHome />} />
             <Route path="chat" element={<VendorChat />} />
             <Route path="privacy-policy" element={<VendorPrivacyPolicy />} />
-            <Route path="order-details" element={<VendorOrderDetails />} />
           </Route>
 
           {/* ------------ company ------------ */}

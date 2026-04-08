@@ -63,7 +63,7 @@ const InventoryManagement = () => {
   // ─────────────────────────────
   useEffect(() => {
     const fetchProducts = async () => {
-      const res = await API.get("/getAllproduct");
+      const res = await API.get("/getAllProduct");
 
       const filtered = (res.data.products || []).filter(p => {
         if (role === "admin")
@@ -83,7 +83,7 @@ const InventoryManagement = () => {
   const searchProducts = async (term) => {
     if (!term.trim()) {
       // fallback to all products
-      const res = await API.get("/getAllproduct");
+      const res = await API.get("/getAllProduct");
 
       const filtered = (res.data.products || []).filter(p => {
         if (role === "admin")

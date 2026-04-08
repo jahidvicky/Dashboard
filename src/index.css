@@ -114,6 +114,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -123,31 +124,46 @@
 .input {
   @apply w-full p-2 mb-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500;
 }
+
 .file-input {
-  @apply block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 
-         file:rounded-full file:border-0 file:text-sm file:font-semibold 
-         file:bg-red-600 file:text-white hover:file:bg-red-700;
+  @apply block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-700;
 }
 
 .shadow-red {
-  box-shadow: 0 4px 6px rgb(228, 8, 8); /* red-500 */
+  box-shadow: 0 4px 6px rgb(228, 8, 8);
+  /* red-500 */
 }
 
 
 /* Keyframes for spinning */
 @keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes spin-slower {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes spin-fast {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Animation classes */
@@ -165,8 +181,17 @@
 
 /* Optional: pulse animation for inner dot */
 @keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.7; }
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
 }
 
 .animate-pulse {
