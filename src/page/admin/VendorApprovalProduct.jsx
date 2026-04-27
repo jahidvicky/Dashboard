@@ -519,8 +519,6 @@ const VendorApprovalProduct = () => {
                                                 Approve
                                             </button>
                                         )}
-
-                                        {/* Approved: no action buttons shown */}
                                     </td>
                                 </tr>
                             ))
@@ -693,7 +691,6 @@ const VendorApprovalProduct = () => {
                                 </button>
                             )}
 
-                            {/* Approved: no action buttons shown */}
                         </div>
                     </div>
                 </div>

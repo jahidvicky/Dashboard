@@ -7,7 +7,7 @@ export default function AdminReturnRequests() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("Requested");
     const [expandedRow, setExpandedRow] = useState(null);
-    const [lightboxImg, setLightboxImg] = useState(null); // <-- lightbox state
+    const [lightboxImg, setLightboxImg] = useState(null);
 
     const fetchReturnRequests = async () => {
         try {

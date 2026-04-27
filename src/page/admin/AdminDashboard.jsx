@@ -18,7 +18,7 @@ export default function AdminDashboard() {
     { name: "Vendor", path: "/admin/vendor" },
     { name: "Vendor Product", path: "/admin/vendor-product" },
     { name: "Vendor Sales Report", path: "/admin/vendor-sales" },
-    { name: "Insurence Company", path: "/admin/company" },
+    { name: "Insurance Company", path: "/admin/company" },
     { name: "Customer Policies", path: "/admin/customer-policy" },
     { name: "Customer Claims", path: "/admin/customer-claims" },
     { name: "Eye Services", path: "/admin/eye-services" },
