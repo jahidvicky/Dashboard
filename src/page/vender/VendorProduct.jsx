@@ -116,8 +116,35 @@ const VendorProducts = () => {
   // ── Fetchers ──────────────────────────────────────────────────────────────
   const fetchProducts = async () => {
     try {
-      const res = await API.get("/getVendorProduct");
-      setProducts(res.data.products || []);
+      const [productsRes, inventoryRes] = await Promise.all([
+        API.get("/getVendorProduct"),
+        API.get("/inventory/get-inventory"),
+      ]);
+
+      const rawProducts = productsRes.data.products || [];
+      const inventoryList = inventoryRes.data.inventory || [];
+
+      // Merge inventory stock into each product
+      const merged = rawProducts.map((pro) => {
+        const matched = inventoryList.find(
+          (inv) =>
+            (inv.productId?._id || inv.productId)?.toString() === pro._id?.toString()
+        );
+
+        if (matched) {
+          const totalAvailable =
+            (matched.rawStock || 0) +
+            (matched.inProcessing || 0) +
+            (matched.finishedStock || 0) -
+            (matched.orderedStock || 0);
+
+          return { ...pro, stockAvailability: Math.max(0, totalAvailable) };
+        }
+
+        return pro;
+      });
+
+      setProducts(merged);
     } catch (err) {
       console.error(err);
       Swal.fire("Error", "Failed to fetch vendor products", "error");
@@ -628,12 +655,12 @@ const VendorProducts = () => {
                   <td className="px-4 py-3 text-center text-gray-600">{pro.cat_sec}</td>
                   <td className="px-4 py-3 text-center text-gray-600">{pro.subCategoryName || "—"}</td>
                   <td className="px-4 py-3 text-center">
-                    {pro.stockAvailability != null ? (
+                    {pro.stockAvailability !== undefined && pro.stockAvailability !== null && pro.stockAvailability !== "" ? (
                       <span className={`font-semibold ${Number(pro.stockAvailability) < 5 ? "text-red-500" : "text-gray-700"}`}>
                         {pro.stockAvailability}
                       </span>
                     ) : (
-                      <span className="text-gray-400 text-xs">—</span>
+                      <span className="text-gray-400 text-xs">0</span>
                     )}
                   </td>
                   <td className="px-4 py-3">

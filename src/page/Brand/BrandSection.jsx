@@ -15,7 +15,7 @@ const BrandSection = () => {
         brand: ""
     });
     const [imagePreview, setImagePreview] = useState(null);
-
+    const [filterType, setFilterType] = useState("All");
 
     // pagination state
     const [currentPage, setCurrentPage] = useState(1);
@@ -71,40 +71,26 @@ const BrandSection = () => {
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
-
         if (file) {
-            setFormData((prev) => ({
-                ...prev,
-                image: file,
-            }));
-
-            // Preview
+            setFormData((prev) => ({ ...prev, image: file }));
             setImagePreview(URL.createObjectURL(file));
         }
     };
 
     const handleRemoveImage = () => {
-        setFormData((prev) => ({
-            ...prev,
-            image: null,
-        }));
+        setFormData((prev) => ({ ...prev, image: null }));
         setImagePreview(null);
     };
-
-
 
     const handleUpdateClick = (tip) => {
         setModalType("update");
         setShowModal(true);
-
         setFormData({
             id: tip._id,
             type: tip.type,
             brand: tip.brand,
-            image: null,   // new image not uploaded yet
+            image: null,
         });
-
-        // Show existing image as preview
         setImagePreview(
             tip.image
                 ? (tip.image.startsWith("http") ? tip.image : IMAGE_URL + tip.image)
@@ -112,40 +98,26 @@ const BrandSection = () => {
         );
     };
 
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const formDataToSend = new FormData();
             formDataToSend.append("type", formData.type);
             formDataToSend.append("brand", formData.brand);
-
             if (formData.image && formData.image instanceof File) {
                 formDataToSend.append("image", formData.image);
             }
-
             if (modalType === "add") {
                 await API.post("/addBrand", formDataToSend, {
                     headers: { "Content-Type": "multipart/form-data" },
                 });
-                Swal.fire({
-                    title: "Success!",
-                    text: "Brand created successfully",
-                    icon: "success",
-                    confirmButtonText: "OK",
-                });
+                Swal.fire({ title: "Success!", text: "Brand created successfully", icon: "success", confirmButtonText: "OK" });
             } else {
                 await API.put(`/updateBrand/${formData.id}`, formDataToSend, {
                     headers: { "Content-Type": "multipart/form-data" },
                 });
-                Swal.fire({
-                    title: "Success!",
-                    text: "Brand updated successfully",
-                    icon: "success",
-                    confirmButtonText: "OK",
-                });
+                Swal.fire({ title: "Success!", text: "Brand updated successfully", icon: "success", confirmButtonText: "OK" });
             }
-
             setShowModal(false);
             setImagePreview(null);
             setFormData({ id: null, type: "", brand: "", image: null });
@@ -155,21 +127,42 @@ const BrandSection = () => {
         }
     };
 
-    // Pagination logic
-    const totalPages = Math.ceil(brandData.length / itemsPerPage);
+    // NEW: filtered data based on filterType
+    const filteredData = filterType === "All"
+        ? brandData
+        : brandData.filter((item) => item.type === filterType);
+
+    // Pagination logic (now on filteredData)
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const currentItems = brandData.slice(startIndex, startIndex + itemsPerPage);
+    const currentItems = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
     return (
         <div>
-            <div className="flex justify-end">
+            <div className="flex justify-between items-center mb-4">
+                {/* NEW: Filter Buttons */}
+                <div className="flex gap-2">
+                    {["All", "Contact Lenses", "Glasses"].map((type) => (
+                        <button
+                            key={type}
+                            onClick={() => { setFilterType(type); setCurrentPage(1); }}
+                            className={`px-4 py-1.5 rounded-lg font-semibold text-sm border transition-all ${filterType === type
+                                ? "bg-red-600 text-white border-red-600"
+                                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                                }`}
+                        >
+                            {type}
+                        </button>
+                    ))}
+                </div>
+
                 <button
                     onClick={() => {
                         setShowModal(true);
                         setModalType("add");
                         setFormData({ id: null, brand: "", type: "", image: null });
                     }}
-                    className="bg-green-500 text-white px-3 py-1 text-xl font-semibold rounded-lg mb-4 hover:cursor-pointer flex items-center gap-2"
+                    className="bg-green-500 text-white px-3 py-1 text-xl font-semibold rounded-lg hover:cursor-pointer flex items-center gap-2"
                 >
                     <FaPlus /> Add Brand
                 </button>
@@ -195,11 +188,7 @@ const BrandSection = () => {
                         <h1>{data.brand}</h1>
                         {data.image && (
                             <img
-                                src={
-                                    data.image.startsWith("http")
-                                        ? data.image
-                                        : `${IMAGE_URL + data.image}`
-                                }
+                                src={data.image.startsWith("http") ? data.image : `${IMAGE_URL + data.image}`}
                                 alt={data.brand}
                                 className="max-w-25"
                             />
@@ -240,28 +229,19 @@ const BrandSection = () => {
                 </div>
             )}
 
-            {/* Modal */}
+            {/* Modal — unchanged */}
             {showModal && (
                 <div className="fixed inset-0 backdrop-blur-sm flex justify-center items-center z-50">
                     <div className="w-xl mx-auto bg-white shadow-lg rounded-2xl p-6 mt-10 border border-gray-200">
                         <h2 className="text-xl font-bold mb-4">
                             {modalType === "add" ? "Add Brand" : "Update Brand"}
                         </h2>
-
                         <form onSubmit={handleSubmit} className="space-y-5">
-                            {/* Dropdown for type */}
                             <div>
-                                <label className="block mb-1 font-medium text-gray-700">
-                                    Select Type
-                                </label>
+                                <label className="block mb-1 font-medium text-gray-700">Select Type</label>
                                 <select
                                     value={formData.type}
-                                    onChange={(e) =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            type: e.target.value,
-                                        }))
-                                    }
+                                    onChange={(e) => setFormData((prev) => ({ ...prev, type: e.target.value }))}
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-500 outline-none"
                                 >
                                     <option value="">-- Select Type --</option>
@@ -269,40 +249,21 @@ const BrandSection = () => {
                                     <option value="Contact Lenses">Contact Lenses</option>
                                 </select>
                             </div>
-
-                            {/* Brand Name Input */}
                             <div>
-                                <label className="block mb-1 font-medium text-gray-700">
-                                    Brand Name
-                                </label>
+                                <label className="block mb-1 font-medium text-gray-700">Brand Name</label>
                                 <input
                                     type="text"
                                     value={formData.brand}
-                                    onChange={(e) =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            brand: e.target.value,
-                                        }))
-                                    }
+                                    onChange={(e) => setFormData((prev) => ({ ...prev, brand: e.target.value }))}
                                     placeholder="Enter Brand Name"
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-500 outline-none"
                                 />
                             </div>
-
-                            {/* Image Upload */}
                             <div>
-                                <label className="block mb-1 font-medium text-gray-700">
-                                    Upload Image
-                                </label>
-
-                                {/* Image Preview */}
+                                <label className="block mb-1 font-medium text-gray-700">Upload Image</label>
                                 {imagePreview && (
                                     <div className="relative w-32 h-32 mb-2">
-                                        <img
-                                            src={imagePreview}
-                                            alt="Preview"
-                                            className="w-35 h-20 mb-2 rounded border"
-                                        />
+                                        <img src={imagePreview} alt="Preview" className="w-35 h-20 mb-2 rounded border" />
                                         <button
                                             type="button"
                                             onClick={handleRemoveImage}
@@ -312,8 +273,6 @@ const BrandSection = () => {
                                         </button>
                                     </div>
                                 )}
-
-                                {/* Upload Input */}
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -321,12 +280,11 @@ const BrandSection = () => {
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-500 outline-none"
                                 />
                             </div>
-
                             <div className="flex justify-between mt-4">
                                 <button
                                     onClick={() => {
                                         setShowModal(false);
-                                        setImagePreview(null);   // RESET preview here
+                                        setImagePreview(null);
                                         setFormData({ id: null, type: "", brand: "", image: null });
                                     }}
                                     className="bg-gray-500 text-white px-4 py-2 rounded hover:cursor-pointer"
@@ -334,11 +292,7 @@ const BrandSection = () => {
                                 >
                                     Cancel
                                 </button>
-
-                                <button
-                                    type="submit"
-                                    className="bg-green-600 text-white px-4 py-2 rounded hover:cursor-pointer"
-                                >
+                                <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded hover:cursor-pointer">
                                     {modalType === "add" ? "Submit" : "Update"}
                                 </button>
                             </div>

@@ -318,7 +318,7 @@ const VendorApprovalProduct = () => {
         setLoading(true);
         try {
             const params = status !== "All" ? { status } : {};
-            const res = await API.get("/admin/all-products", { params });
+            const res = await API.get("/getVendorApprovalProduct", { params });
             setProducts(res.data.products || []);
         } catch {
             Swal.fire({
