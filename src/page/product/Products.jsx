@@ -68,7 +68,11 @@ const Products = () => {
   const fetchProducts = async () => {
     try {
       const res = await API.get("/getAllProduct");
-      setProducts(res.data.products || []);
+      const adminProducts = (res.data.products || []).filter(
+        (p) => p.createdBy === "admin"
+      );
+
+      setProducts(adminProducts);
     } catch (err) {
       console.error(err);
     }
@@ -375,7 +379,7 @@ const Products = () => {
         "width",
         "height",
       ].forEach((field) => {
-        if (formData[field]) payload.append(field, formData[field]);
+        payload.append(field, formData[field] ?? "");
       });
 
       // payload.append("stockAvailability", isNaN(stockValue) ? 0 : stockValue);

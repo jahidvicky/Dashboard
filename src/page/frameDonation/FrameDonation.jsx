@@ -55,7 +55,7 @@ const FrameDonation = () => {
             )}
 
             <h1 className="text-2xl font-bold mb-4 text-[#f00000]">
-                Frame Donations (Our Community)
+                Frame Donations
             </h1>
 
             {/* LIST TABLE */}
@@ -115,7 +115,7 @@ const FrameDonation = () => {
                         <p><b>Phone:</b> {selected.phone}</p>
                         <p><b>Address:</b> {selected.address}</p>
                         <p><b>Frame Type:</b> {selected.frameType}</p>
-                
+
                         {/* MULTIPLE IMAGES */}
                         <div className="mt-4">
                             <b>Frame Images:</b>

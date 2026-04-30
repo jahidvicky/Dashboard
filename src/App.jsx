@@ -25,6 +25,7 @@ import ManifestViewer from "./component/ManifestViewer";
 import AdminReturnRequests from "./page/admin/AdminReturnRequests";
 import VendorSalesReport from "./page/vender/VendorSalesReport";
 import AdminVendorSalesReport from "./page/admin/AdminVendorSalesReport";
+import FreeEyeCheckup from "./page/freeEyeCheckup/FreeEyeCheckup";
 
 // ---------- lazy imports ----------
 const Login = lazy(() => import("./page/login/Login"));
@@ -131,6 +132,7 @@ function App() {
             <Route path="brand" element={<BrandSection />} />
             <Route path="supportChat" element={<SupportChatAdmin />} />
             <Route path="frameDonation" element={<FrameDonation />} />
+            <Route path="free-eye-checkup" element={<FreeEyeCheckup />} />
             <Route path="exchangeRequest" element={<ExchangeRequests />} />
             <Route path="vendor-sales" element={<AdminVendorSalesReport />} />
             <Route

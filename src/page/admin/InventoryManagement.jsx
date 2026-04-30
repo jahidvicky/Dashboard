@@ -305,8 +305,7 @@ const InventoryManagement = () => {
 
                 <td className="border p-2 text-center">
                   {(() => {
-                    const isGlasses =
-                      String(item.category).toLowerCase() === "glasses";
+                    const isGlasses = String(item.itemCode || "").toLowerCase().endsWith("-glasses");
 
                     if (!isGlasses) {
                       return (
@@ -316,7 +315,7 @@ const InventoryManagement = () => {
 
                     return (
                       <>
-                        {item.orderedStock > 0 && (
+                        {(item.orderedStock > 0 || item.rawStock > 0) && (
                           <button
                             onClick={() => moveToProcessing(item._id)}
                             className="bg-yellow-500 text-white px-2 py-1 rounded text-xs mr-2"
