@@ -20,6 +20,11 @@ const Login = () => {
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [otpSendLoading, setOtpSendLoading] = useState(false);
+  const [otpVerifyLoading, setOtpVerifyLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+
   const handleClick = () => setPasswordVisible(!passwordVisible);
 
   const Toast = Swal.mixin({
@@ -33,21 +38,27 @@ const Login = () => {
   // Login
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = await login(email.trim(), password);
+    setLoginLoading(true);
+    try {
+      const success = await login(email.trim(), password);
 
-    if (success) {
-      Toast.fire({ icon: "success", title: "Login successful!" });
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      if (storedUser?.role === "admin") navigate("/admin/home");
-      if (storedUser?.role === "vendor") navigate("/vendor/home");
-      if (storedUser?.role === "company") navigate("/company/home");
-    } else {
-      Toast.fire({ icon: "error", title: "Invalid email or password" });
+      if (success) {
+        Toast.fire({ icon: "success", title: "Login successful!" });
+        const storedUser = JSON.parse(localStorage.getItem("user"));
+        if (storedUser?.role === "admin") navigate("/admin/home");
+        if (storedUser?.role === "vendor") navigate("/vendor/home");
+        if (storedUser?.role === "company") navigate("/company/home");
+      } else {
+        Toast.fire({ icon: "error", title: "Invalid email or password" });
+      }
+    } finally {
+      setLoginLoading(false);
     }
   };
 
   // Step 1: Request OTP
   const sendOtp = async () => {
+    setOtpSendLoading(true);
     try {
       await API.post("/auth/send-otp", { email: resetEmail });
       Toast.fire({ icon: "success", title: "OTP sent to email!" });
@@ -57,22 +68,28 @@ const Login = () => {
         icon: "error",
         title: err.response?.data?.message || "Failed to send OTP",
       });
+    } finally {
+      setOtpSendLoading(false);
     }
   };
 
   // Step 2: Verify OTP
   const verifyOtp = async () => {
+    setOtpVerifyLoading(true);
     try {
       await API.post("/auth/verify-otp", { email: resetEmail, otp });
       Toast.fire({ icon: "success", title: "OTP verified!" });
       setStep(3); // Move to reset password
     } catch (err) {
       Toast.fire({ icon: "error", title: "Invalid OTP" });
+    } finally {
+      setOtpVerifyLoading(false);
     }
   };
 
   // Step 3: Reset Password
   const resetPassword = async () => {
+    setResetLoading(true);
     try {
       await API.post("/auth/reset-password", { email: resetEmail, newPassword });
       Toast.fire({ icon: "success", title: "Password reset successfully!" });
@@ -83,6 +100,8 @@ const Login = () => {
       setNewPassword("");
     } catch (err) {
       Toast.fire({ icon: "error", title: "Failed to reset password" });
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -136,10 +155,33 @@ const Login = () => {
 
                   <button
                     type="submit"
-                    className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 text-xl font-semibold mb-2"
+                    disabled={loginLoading}
+                    className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 text-xl font-semibold mb-2 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     onClick={handleSubmit}
                   >
-                    Login
+                    {loginLoading && (
+                      <svg
+                        className="animate-spin h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                        />
+                      </svg>
+                    )}
+                    {loginLoading ? "Logging in..." : "Login"}
                   </button>
 
                   <p
@@ -166,10 +208,33 @@ const Login = () => {
                       />
                       <button
                         type="button"
-                        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition mb-2"
+                        disabled={otpSendLoading}
+                        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition mb-2 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         onClick={sendOtp}
                       >
-                        Send OTP
+                        {otpSendLoading && (
+                          <svg
+                            className="animate-spin h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                            />
+                          </svg>
+                        )}
+                        {otpSendLoading ? "Sending..." : "Send OTP"}
                       </button>
                     </>
                   )}
@@ -186,10 +251,33 @@ const Login = () => {
                       />
                       <button
                         type="button"
-                        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition mb-2"
+                        disabled={otpVerifyLoading}
+                        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition mb-2 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         onClick={verifyOtp}
                       >
-                        Verify OTP
+                        {otpVerifyLoading && (
+                          <svg
+                            className="animate-spin h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                            />
+                          </svg>
+                        )}
+                        {otpVerifyLoading ? "Verifying..." : "Verify OTP"}
                       </button>
                     </>
                   )}
@@ -206,10 +294,33 @@ const Login = () => {
                       />
                       <button
                         type="button"
-                        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition mb-2"
+                        disabled={resetLoading}
+                        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition mb-2 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         onClick={resetPassword}
                       >
-                        Reset Password
+                        {resetLoading && (
+                          <svg
+                            className="animate-spin h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                            />
+                          </svg>
+                        )}
+                        {resetLoading ? "Resetting..." : "Reset Password"}
                       </button>
                     </>
                   )}

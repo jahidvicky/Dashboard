@@ -10,15 +10,16 @@ const DoctorSchedule = () => {
     const [modalType, setModalType] = useState("add");
     const [timeSlot, setTimeSlot] = useState([]);
     const [eyeExam, setEyeExam] = useState([])
+    const [clinics, setClinics] = useState([]);
+    const ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
     const [formData, setFormData] = useState({
         doctor_name: "",
         specialization: "",
         image: null,
         exam_section: "",
-        schedule: {
-            day: "",
-            times: []   // use array instead of single time
-        }
+        clinic: "",
+        workingDays: [] // empty = use all of the clinic's days
     });
 
     const [imagePreview, setImagePreview] = useState(null);
@@ -29,6 +30,15 @@ const DoctorSchedule = () => {
             ...formData,
             [e.target.name]: e.target.value
         });
+    };
+
+    const toggleWorkingDay = (day) => {
+        setFormData((prev) => ({
+            ...prev,
+            workingDays: prev.workingDays.includes(day)
+                ? prev.workingDays.filter((d) => d !== day)
+                : [...prev.workingDays, day]
+        }));
     };
 
     const fetchDoctor = async () => {
@@ -50,9 +60,19 @@ const DoctorSchedule = () => {
         }
     }
 
+    const fetchClinics = async () => {
+        try {
+            const res = await API.get("/getClinics");
+            setClinics(res.data.data);
+        } catch (error) {
+            console.error("Error fetching clinics:", error);
+        }
+    };
+
     useEffect(() => {
         fetchDoctor();
         fetchExam();
+        fetchClinics();
     }, []);
 
     const handleDelete = async (id) => {
@@ -82,15 +102,13 @@ const DoctorSchedule = () => {
         setModalType("update");
         setShowModal(true);
 
-        let firstDay = doctor.schedule?.[0]?.day || "";
-        let firstTimes = doctor.schedule?.[0]?.times || [];
-
         setFormData({
             id: doctor._id,
             doctor_name: doctor.doctor_name || "",
             specialization: doctor.specialization || "",
             exam_section: doctor.exam_section || "",
-            schedule: { day: firstDay, times: firstTimes },
+            clinic: doctor.clinic?._id || doctor.clinic || "",
+            workingDays: doctor.workingDays || [],
             image: null
         });
 
@@ -109,30 +127,6 @@ const DoctorSchedule = () => {
         setImagePreview(null);
     };
 
-
-    // add a new time input
-    const addTimeField = () => {
-        setFormData({
-            ...formData,
-            schedule: {
-                ...formData.schedule,
-                times: [...formData.schedule.times, ""]
-            }
-        });
-    };
-
-    // update a specific time input
-    const handleTimeChange = (value, index) => {
-        const updatedTimes = [...formData.schedule.times];
-        updatedTimes[index] = value;
-        setFormData({
-            ...formData,
-            schedule: {
-                ...formData.schedule,
-                times: updatedTimes
-            }
-        });
-    };
 
     // Handle file input
     const handleFileChange = (e) => {
@@ -153,18 +147,13 @@ const DoctorSchedule = () => {
         e.preventDefault();
 
         try {
-            const schedulePayload = [{
-                day: formData.schedule.day,
-                times: formData.schedule.times,
-                status: "Available"
-            }];
-
             // Create FormData for multipart/form-data
             const formDataToSend = new FormData();
             formDataToSend.append("doctor_name", formData.doctor_name);
             formDataToSend.append("specialization", formData.specialization);
             formDataToSend.append("exam_section", formData.exam_section);
-            formDataToSend.append("schedule", JSON.stringify(schedulePayload));
+            formDataToSend.append("clinic", formData.clinic);
+            formDataToSend.append("workingDays", JSON.stringify(formData.workingDays));
 
             // Only append image if selected
             if (formData.image) {
@@ -194,7 +183,8 @@ const DoctorSchedule = () => {
                 image: null,
                 specialization: "",
                 exam_section: "",
-                schedule: { day: "", times: [] },
+                clinic: "",
+                workingDays: [],
                 exams: []
             });
 
@@ -223,7 +213,8 @@ const DoctorSchedule = () => {
                             image: null,
                             specialization: "",
                             exam_section: "",
-                            schedule: { day: "", times: [] }
+                            clinic: "",
+                            workingDays: []
                         });
                     }}
                     className='bg-green-500 text-white px-3 py-1 text-xl font-semibold rounded-lg mb-4 hover:cursor-pointer flex items-center gap-2'>
@@ -238,8 +229,8 @@ const DoctorSchedule = () => {
                     <div className="text-lg">IMAGE</div>
                     <div className="text-lg">SPECIALIZATION</div>
                     <div className="text-lg">EXAM</div>
-                    <div className="text-lg">DAY</div>
-                    <div className="text-lg">TIMES</div>
+                    <div className="text-lg">CLINIC</div>
+                    <div className="text-lg">WORKING DAYS</div>
                     <div className="text-lg">ACTION</div>
                 </div>
 
@@ -266,11 +257,11 @@ const DoctorSchedule = () => {
                             {Array.isArray(data.exam_section) ? data.exam_section.join(", ") : data.exam_section}
                         </h1>
 
-                        <h1>{data.schedule?.[0]?.day || "N/A"}</h1>
+                        <h1>{data.clinic?.clinicName || "N/A"}</h1>
                         <h1>
-                            {data.schedule?.[0]?.times?.length > 0
-                                ? data.schedule[0].times.join(", ")
-                                : "N/A"}
+                            {data.workingDays?.length > 0
+                                ? data.workingDays.join(", ")
+                                : "All clinic days"}
                         </h1>
 
                         <div className="flex gap-2">
@@ -365,43 +356,39 @@ const DoctorSchedule = () => {
                             </select>
 
                             <select
+                                name="clinic"
+                                value={formData.clinic}
+                                onChange={(e) => setFormData({ ...formData, clinic: e.target.value })}
                                 className="border p-2 w-full rounded"
-                                value={formData.schedule.day}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        schedule: { ...formData.schedule, day: e.target.value },
-                                    })
-                                }
+                                required
                             >
-                                <option value="">Select Day</option>
-                                <option>Monday</option>
-                                <option>Tuesday</option>
-                                <option>Wednesday</option>
-                                <option>Thursday</option>
-                                <option>Friday</option>
-                                <option>Saturday</option>
-                                <option>Sunday</option>
+                                <option value="">Select Clinic</option>
+                                {clinics.map((c) => (
+                                    <option key={c._id} value={c._id}>
+                                        {c.clinicName}
+                                    </option>
+                                ))}
                             </select>
 
-                            <div className="space-y-2">
-                                {formData.schedule.times.map((time, index) => (
-                                    <input
-                                        key={index}
-                                        type="time"
-                                        value={time}
-                                        className="border p-2 w-full rounded"
-                                        onChange={(e) => handleTimeChange(e.target.value, index)}
-                                    />
-                                ))}
-
-                                <button
-                                    type="button"
-                                    className="bg-blue-500 text-white px-3 py-1 rounded hover:cursor-pointer"
-                                    onClick={addTimeField}
-                                >
-                                    + Add Time
-                                </button>
+                            <div>
+                                <label className="block text-gray-700 mb-1">
+                                    Working Days <span className="text-xs text-gray-400">(leave blank to use all clinic days)</span>
+                                </label>
+                                <div className="flex flex-wrap gap-2">
+                                    {ALL_DAYS.map((day) => (
+                                        <button
+                                            type="button"
+                                            key={day}
+                                            onClick={() => toggleWorkingDay(day)}
+                                            className={`px-3 py-1 rounded border text-sm ${formData.workingDays.includes(day)
+                                                ? "bg-green-500 text-white border-green-500"
+                                                : "bg-gray-100 border-gray-300"
+                                                }`}
+                                        >
+                                            {day}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
 
                             <div className="flex justify-between mt-4">

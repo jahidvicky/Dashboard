@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { io } from "socket.io-client";
-import { CHAT_API_URL, SOCKET_URL } from "../../API/Api";
-
-let socket = null;
+import { CHAT_API_URL } from "../../API/Api";
+import { getSupportSocket } from "../../utils/supportSocket";
 
 export default function SupportChatAdmin() {
+    const socketRef = useRef(null);
     const [chats, setChats] = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -34,12 +33,8 @@ export default function SupportChatAdmin() {
 
     /* ── Socket setup ── */
     useEffect(() => {
-        if (!socket) {
-            socket = io(SOCKET_URL, {
-                path: "/socket.io/",
-                transports: ["websocket"],
-            });
-        }
+        const socket = getSupportSocket();
+        socketRef.current = socket;
 
         /* New chat from any user */
         socket.on("newChat", (newChat) => {
@@ -112,7 +107,7 @@ export default function SupportChatAdmin() {
         // Clear unread badge
         setUnread((prev) => ({ ...prev, [chat._id]: 0 }));
 
-        socket.emit("admin:join", { chatId: chat._id });
+        socketRef.current?.emit("admin:join", { chatId: chat._id });
 
         const res = await fetch(`${CHAT_API_URL}/support/${chat._id}`);
         const data = await res.json();
@@ -164,7 +159,7 @@ export default function SupportChatAdmin() {
         e.preventDefault();
         if (!input.trim() || !selectedChat || selectedChat.status === "closed") return;
 
-        socket.emit("admin:sendMessage", {
+        socketRef.current?.emit("admin:sendMessage", {
             chatId: selectedChat._id,
             text: input.trim(),
             sender: "admin",
@@ -177,7 +172,7 @@ export default function SupportChatAdmin() {
     const handleInputChange = (e) => {
         setInput(e.target.value);
         if (selectedChat) {
-            socket.emit("admin:typing", { chatId: selectedChat._id });
+            socketRef.current?.emit("admin:typing", { chatId: selectedChat._id });
         }
     };
 

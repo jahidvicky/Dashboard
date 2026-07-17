@@ -33,6 +33,7 @@ export default function AdminDashboard() {
     { name: "Free Eye Checkup Requests", path: "/admin/free-eye-checkup" },
     { name: "Eye Exam", path: "/admin/eye-exam" },
     { name: "All Appointments", path: "/admin/appointments" },
+    { name: "Create Clinic", path: "/admin/createClinic" },
     { name: "Doctor Schedule", path: "/admin/doctor-schedule" },
     { name: "Chat", path: "/admin/chat" },
     { name: "Support Chat", path: "/admin/supportChat" },

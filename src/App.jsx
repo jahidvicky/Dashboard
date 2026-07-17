@@ -77,6 +77,7 @@ const AdminOrderUpdate = lazy(() =>
 );
 
 const AddPolicy = lazy(() => import("./page/insurance/AddPolicy"));
+const CreateClinic = lazy(() => import("./page/admin/AddClinic"));
 
 function App() {
   return (
@@ -123,6 +124,7 @@ function App() {
             <Route path="eye-services" element={<EyeService />} />
             <Route path="eye-exam" element={<EyeExam />} />
             <Route path="doctor-schedule" element={<DoctorSchedule />} />
+            <Route path="createClinic" element={<CreateClinic />} />
             <Route path="vendor-product" element={<VendorApprovalProduct />} />
             <Route path="admin-order" element={<AdminOrderUpdate />} />
             <Route path="chat" element={<Chat />} />

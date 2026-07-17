@@ -15,7 +15,11 @@ const FreeEyeCheckup = () => {
     const fetchCheckups = async () => {
         try {
             const res = await API.get("/getEyeCheckup");
-            setEyeChekup(res.data.data || []);
+            const data = res.data.data || [];
+            const sorted = [...data].sort(
+                (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+            );
+            setEyeChekup(sorted);
         } catch (error) {
             console.error("Failed to load eye checkup requests", error);
         }
@@ -37,8 +41,8 @@ const FreeEyeCheckup = () => {
             {/* SCROLLABLE TABLE */}
             <div
                 className={`border border-gray-300 ${currentData.length >= itemsPerPage
-                        ? "max-h-[400px] overflow-y-auto"
-                        : ""
+                    ? "max-h-[400px] overflow-y-auto"
+                    : ""
                     }`}
             >
                 <table className="w-full border-collapse">
@@ -47,14 +51,15 @@ const FreeEyeCheckup = () => {
                             <th className="border p-2">Name</th>
                             <th className="border p-2">Email</th>
                             <th className="border p-2">Phone</th>
-                            <th className="border p-2">Date</th>
+                            <th className="border p-2">Requested Date</th>
+                            <th className="border p-2">Booked On</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         {currentData.length === 0 && (
                             <tr>
-                                <td colSpan="4" className="text-center p-4">
+                                <td colSpan="5" className="text-center p-4">
                                     No Eye Checkup Request
                                 </td>
                             </tr>
@@ -63,9 +68,14 @@ const FreeEyeCheckup = () => {
                         {currentData.map((item) => (
                             <tr key={item._id} className="text-center">
                                 <td className="border p-2">{item.name}</td>
-                                <td className="border p-2">{item.email}</td>
+                                <td className="border p-2">{item.email || "-"}</td>
                                 <td className="border p-2">{item.phone}</td>
                                 <td className="border p-2">{item.date}</td>
+                                <td className="border p-2 text-xs text-gray-500">
+                                    {item.createdAt
+                                        ? new Date(item.createdAt).toLocaleString()
+                                        : "-"}
+                                </td>
                             </tr>
                         ))}
                     </tbody>
