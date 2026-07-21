@@ -810,26 +810,76 @@ const AdminOrderDetails = () => {
         </motion.div>
       )}
 
-      {/* Lens Details */}
       {lensItems.length > 0 && (
         <motion.div className="bg-white shadow-md rounded-lg p-6 border-l-4 border-orange-500" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
           <h2 className="text-2xl font-semibold mb-6 text-gray-700">Lens Details</h2>
           {lensItems.map((item, idx) => {
             const lens = item.lens;
-            const prescription = lens?.lens?.prescription;
-            const fileUrl = prescription?.fileURL?.startsWith("http") ? prescription.fileURL : `${IMAGE_URL}${prescription?.fileName}`;
+
+            // Eyeglasses shape: everything nested one level deeper under lens.lens
+            // Contacts shape: everything flat directly on lens
+            const isNested = !!lens?.lens;
+            const details = isNested ? lens.lens : lens;
+            const prescription = details?.prescription;
+
+            const prescriptionMethod = details?.prescriptionMethod || null;
+            const hasFile = !!(prescription?.fileURL || prescription?.fileName);
+            // Manual = explicitly labeled "manual", OR no file was uploaded but prescription data exists
+            const isManual = prescriptionMethod
+              ? prescriptionMethod.toLowerCase().includes("manual")
+              : !hasFile;
+
+            const fileUrl = prescription?.fileURL?.startsWith("http")
+              ? prescription.fileURL
+              : prescription?.fileName
+                ? `${IMAGE_URL}${prescription.fileName}`
+                : null;
+
             return (
               <motion.div key={idx} className="border rounded-lg p-4 mb-4 hover:shadow-lg transition" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * idx }}>
                 {lens?.selectedLens && <h3 className="text-lg font-bold text-gray-800 mb-3">{lens.selectedLens}</h3>}
                 <div className="grid grid-cols-2 gap-3 text-gray-700">
-                  {lens?.lens?.prescriptionMethod && <p><strong>Prescription Method:</strong> {lens.lens.prescriptionMethod}</p>}
-                  {lens?.lens?.lensType?.name && <p><strong>Lens Type:</strong> {lens.lens.lensType.name}</p>}
-                  {lens?.lens?.thickness?.name && <p><strong>Thickness:</strong> {lens.lens.thickness.name}</p>}
-                  {(lens?.lens?.tint?.name || lens?.lens?.tint) && <p><strong>Tint:</strong> {lens.lens.tint?.name || lens.lens.tint}</p>}
-                  {lens?.lens?.enhancement?.name && <p><strong>Enhancement:</strong> {lens.lens.enhancement.name}</p>}
-                  {lens?.totalPrice && <p><strong>Total Lens Price:</strong> {formatCurrency(lens.totalPrice)}</p>}
+                  {prescriptionMethod && <p><strong>Prescription Method:</strong> {prescriptionMethod}</p>}
+                  {details?.lensType?.name && <p><strong>Lens Type:</strong> {details.lensType.name}</p>}
+                  {details?.thickness?.name && <p><strong>Thickness:</strong> {details.thickness.name}</p>}
+                  {(details?.tint?.name || (typeof details?.tint === "string" && details.tint)) && (
+                    <p><strong>Tint:</strong> {details.tint?.name || details.tint}</p>
+                  )}
+                  {details?.enhancement?.name && <p><strong>Enhancement:</strong> {details.enhancement.name}</p>}
+                  {details?.purchase_type && <p><strong>Purchase Type:</strong> {details.purchase_type}</p>}
+                  {lens?.totalPrice != null && <p><strong>Total Lens Price:</strong> {formatCurrency(lens.totalPrice)}</p>}
                 </div>
-                {prescription && (
+
+                {/* Manually entered prescription — show the values, no file to view */}
+                {isManual && prescription && (
+                  <div className="mt-4 grid grid-cols-2 gap-3 text-gray-700 bg-gray-50 rounded-lg p-4 border border-gray-100">
+                    {prescription.doctorName && <p><strong>Doctor Name:</strong> {prescription.doctorName}</p>}
+                    {prescription.prescriptionDate && (
+                      <p><strong>Prescription Date:</strong> {new Date(prescription.prescriptionDate).toLocaleDateString()}</p>
+                    )}
+                    {prescription.pdLeft != null && <p><strong>PD (Left):</strong> {prescription.pdLeft}</p>}
+                    {prescription.pdRight != null && <p><strong>PD (Right):</strong> {prescription.pdRight}</p>}
+                    {prescription.od_selected && (
+                      <p>
+                        <strong>OD (Right):</strong> SPH {prescription.od_sphere || prescription.od_sph || "N/A"}
+                        {(prescription.od_cylinder || prescription.od_cyl) && `, CYL ${prescription.od_cylinder || prescription.od_cyl}`}
+                        {prescription.od_axis && `, Axis ${prescription.od_axis}`}
+                        {prescription.od_addition && `, Addition: ${prescription.od_addition}`}
+                      </p>
+                    )}
+                    {prescription.os_selected && (
+                      <p>
+                        <strong>OS (Left):</strong> SPH {prescription.os_sphere || prescription.os_sph || "N/A"}
+                        {(prescription.os_cylinder || prescription.os_cyl) && `, CYL ${prescription.os_cylinder || prescription.os_cyl}`}
+                        {prescription.os_axis && `, Axis ${prescription.os_axis}`}
+                        {prescription.os_addition && `, Addition: ${prescription.os_addition}`}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Uploaded prescription file — only when it's not manual */}
+                {!isManual && prescription && fileUrl && (
                   <div className="mt-4">
                     <strong>Prescription: </strong>
                     <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="inline-block px-3 py-1 font-bold text-sm text-white bg-blue-600 rounded hover:bg-blue-700 transition">View</a>
