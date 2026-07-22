@@ -20,9 +20,13 @@ export default function SupportChatAdmin() {
         selectedChatRef.current = selectedChat;
     }, [selectedChat]);
 
-    const scrollToBottom = () =>
+    const scrollToBottom = () => {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    useEffect(() => scrollToBottom(), [messages]);
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
 
     /* ── Load all chats ── */
     useEffect(() => {
