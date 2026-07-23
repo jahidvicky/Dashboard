@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import API, { IMAGE_URL } from "../../api/api"; // adjust path to match where this file actually lives
+import API, { IMAGE_URL } from "../../API/Api";
 import { toast } from "react-toastify"; // remove if you use a different toast lib
 
 const emptyForm = { title: "", address: "", mapQuery: "", image: null };
