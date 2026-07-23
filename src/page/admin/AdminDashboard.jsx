@@ -9,6 +9,7 @@ export default function AdminDashboard() {
     { name: "Category", path: "/admin/category" },
     { name: "Sub-Category", path: "/admin/subCategory" },
     { name: "Products", path: "/admin/product" },
+    { name: "Our Location", path: "/admin/location" },
     { name: "Inventory Management", path: "/admin/inventory" },
     { name: "Manage Order", path: "/admin/admin-order" },
     { name: "Exchange Requests", path: "/admin/exchangeRequest" },

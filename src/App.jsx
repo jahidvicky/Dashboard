@@ -72,6 +72,7 @@ const VendorApprovalProduct = lazy(() =>
 );
 const CouponCode = lazy(() => import("./page/coupons/CouponCode"));
 const EyeExam = lazy(() => import("./page/eyeExamPage/EyeExam"));
+const AtalLocation = lazy(() => import("./page/admin/AtalLocation"));
 const AdminOrderUpdate = lazy(() =>
   import("./page/ordderTracking/AdminOrderUpdate")
 );
@@ -106,6 +107,7 @@ function App() {
             <Route path="category" element={<Category />} />
             <Route path="subCategory" element={<Subcategory />} />
             <Route path="product" element={<Products />} />
+            <Route path="location" element={<AtalLocation />} />
             <Route path="coupons" element={<CouponCode />} />
             <Route path="review" element={<Review />} />
             <Route path="eyeCheck" element={<EyeCheck />} />
