@@ -23,7 +23,9 @@ const APPROVED_LOCKED_FIELDS = [
   "product_name", "product_description", "productStatus",
   "isResubmitted", "isSentForApproval", "brand_id", "brand_type",
   "isBestSeller", "isTrending", "product_size",
-  "frame_material", "frame_shape", "face_shape", "frame_color", "frame_fit",
+  "frame_material", "frame_shape",
+  //  "face_shape",
+    "frame_color", "frame_fit",
   "lens_width", "bridge_width", "lens_hieght", "temple_length",
   "lens_type", "material", "manufacturer", "water_content",
   "gender", "weight", "length", "width", "height",
@@ -43,7 +45,7 @@ const initialFormState = {
   product_description: "",
   frame_material: "",
   frame_shape: "",
-  face_shape: "",
+  // face_shape: "",
   frame_color: "",
   frame_fit: "",
   lens_width: "",
@@ -260,7 +262,7 @@ const VendorProducts = () => {
       gender: product.gender || "",
       frame_material: product.frame_material || "",
       frame_shape: product.frame_shape || "",
-      face_shape: product.face_shape || "",
+      // face_shape: product.face_shape || "",
       frame_color: product.frame_color || "",
       frame_fit: product.frame_fit || "",
       lens_width: product.lens_width || "",
@@ -434,7 +436,9 @@ const VendorProducts = () => {
         "cat_id", "cat_sec", "subCat_id", "subCategoryName",
         "product_name", "product_price", "product_sale_price",
         "product_description", "gender",
-        "frame_material", "frame_shape", "face_shape", "frame_color", "frame_fit",
+        "frame_material", "frame_shape",
+        //  "face_shape",
+          "frame_color", "frame_fit",
         "lens_width", "bridge_width", "lens_hieght", "temple_length",
         "lens_type", "material", "manufacturer", "water_content",
         "product_lens_title1", "product_lens_description1",
@@ -1099,7 +1103,7 @@ const VendorProducts = () => {
                         className="w-full border p-2 rounded"
                       />
                     </div>
-                    <div>
+                    {/* <div>
                       <label className="block text-gray-700 font-medium mb-2">
                         Face Shape
                       </label>
@@ -1111,7 +1115,7 @@ const VendorProducts = () => {
                         placeholder="e.g., Round, Square, Oval, Heart..."
                         className="w-full border p-2 rounded"
                       />
-                    </div>
+                    </div> */}
                     <div>
                       <label className="block text-gray-700 font-medium mb-2">
                         Frame Color

@@ -26,9 +26,14 @@ export default function VendorSalesReport() {
     const { user } = useAuth();
 
     const now = new Date();
-    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
-    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+    // monthYear is either "all" or a "YYYY-MM" string from the native month picker
+    const [monthYear, setMonthYear] = useState("all");
     const [loading, setLoading] = useState(true);
+
+    const selectedMonth = monthYear === "all" ? "all" : Number(monthYear.split("-")[1]) - 1;
+    const selectedYear = monthYear === "all" ? "all" : Number(monthYear.split("-")[0]);
+    const currentMonthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const periodLabel = monthYear === "all" ? "All Time" : `${MONTHS[selectedMonth]} ${selectedYear}`;
 
     const [report, setReport] = useState({
         totalRevenue: 0,
@@ -49,14 +54,12 @@ export default function VendorSalesReport() {
             const { data } = await API.get("/vendor-orders");
             const allOrders = data.orders || [];
 
-            // Filter for selected month & year
+            // Filter for selected month & year (or all-time if "all")
             const filtered = allOrders.filter((o) => {
                 const d = new Date(o.createdAt);
-                return (
-                    d.getMonth() === selectedMonth &&
-                    d.getFullYear() === selectedYear &&
-                    !["Cancelled", "Failed"].includes(o.orderStatus)
-                );
+                const monthMatch = selectedMonth === "all" || d.getMonth() === selectedMonth;
+                const yearMatch = selectedYear === "all" || d.getFullYear() === selectedYear;
+                return monthMatch && yearMatch && !["Cancelled", "Failed"].includes(o.orderStatus);
             });
 
             let totalRevenue = 0;
@@ -111,10 +114,7 @@ export default function VendorSalesReport() {
 
     useEffect(() => {
         fetchReport();
-    }, [selectedMonth, selectedYear]);
-
-    // Year options: current year and 2 years back
-    const yearOptions = [now.getFullYear(), now.getFullYear() - 1, now.getFullYear() - 2];
+    }, [monthYear]);
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -138,30 +138,25 @@ export default function VendorSalesReport() {
             </div>
 
             {/* Month / Year Selector */}
-            <div className="flex flex-wrap gap-3 mb-8">
-                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2 shadow-sm">
-                    <Calendar size={16} className="text-gray-400" />
-                    <select
-                        value={selectedMonth}
-                        onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                        className="text-sm font-medium text-gray-700 bg-transparent focus:outline-none"
-                    >
-                        {MONTHS.map((m, i) => (
-                            <option key={i} value={i}>{m}</option>
-                        ))}
-                    </select>
+            <div className="flex flex-wrap items-center gap-3 mb-8">
+                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2 shadow-sm w-fit">
+                    <Calendar size={16} className="text-gray-400 shrink-0" />
+                    <input
+                        type="month"
+                        value={monthYear === "all" ? currentMonthYear : monthYear}
+                        onChange={(e) => setMonthYear(e.target.value)}
+                        className="text-sm font-medium text-gray-700 bg-transparent focus:outline-none w-[140px]"
+                    />
                 </div>
-                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2 shadow-sm">
-                    <select
-                        value={selectedYear}
-                        onChange={(e) => setSelectedYear(Number(e.target.value))}
-                        className="text-sm font-medium text-gray-700 bg-transparent focus:outline-none"
-                    >
-                        {yearOptions.map((y) => (
-                            <option key={y} value={y}>{y}</option>
-                        ))}
-                    </select>
-                </div>
+                <button
+                    onClick={() => setMonthYear("all")}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium border shadow-sm transition-colors shrink-0 ${monthYear === "all"
+                        ? "bg-[#f00000] text-white border-[#f00000]"
+                        : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                        }`}
+                >
+                    All Time
+                </button>
             </div>
 
             {loading ? (
@@ -230,7 +225,7 @@ export default function VendorSalesReport() {
                     {/* Commission Breakdown */}
                     <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-8 shadow-sm">
                         <h3 className="font-bold text-gray-800 mb-4">
-                            Earnings Breakdown — {MONTHS[selectedMonth]} {selectedYear}
+                            Earnings Breakdown — {periodLabel}
                         </h3>
                         <div className="space-y-3">
                             <div className="flex items-center justify-between py-2 border-b border-gray-100">
@@ -393,7 +388,7 @@ export default function VendorSalesReport() {
                         <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm">
                             <ShoppingBag size={48} className="mx-auto mb-4 text-gray-300" />
                             <p className="text-lg font-semibold text-gray-500">
-                                No sales in {MONTHS[selectedMonth]} {selectedYear}
+                                No sales in {periodLabel}
                             </p>
                             <p className="text-sm text-gray-400 mt-1">
                                 Try selecting a different month or check if your products are approved.

@@ -38,7 +38,7 @@ const Products = () => {
     product_description: "",
     frame_material: "",
     frame_shape: "",
-    face_shape: "",
+    // face_shape: "",
     frame_color: "",
     frame_fit: "",
     lens_width: "",
@@ -221,7 +221,7 @@ const Products = () => {
       gender: product.gender || "",
       frame_material: product.frame_material || "",
       frame_shape: product.frame_shape || "",
-      face_shape: product.face_shape || "",
+      // face_shape: product.face_shape || "",
       frame_color: product.frame_color || "",
       frame_fit: product.frame_fit || "",
       lens_width: product.lens_width || "",
@@ -358,7 +358,7 @@ const Products = () => {
         "gender",
         "frame_material",
         "frame_shape",
-        "face_shape",
+        // "face_shape",
         "frame_color",
         "frame_fit",
         "lens_width",
@@ -956,7 +956,7 @@ const Products = () => {
                         className="w-full border p-2 rounded"
                       />
                     </div>
-                    <div>
+                    {/* <div>
                       <label className="block text-gray-700 font-medium mb-2">
                         Face Shape
                       </label>
@@ -968,7 +968,7 @@ const Products = () => {
                         placeholder="e.g., Round, Square, Oval, Heart..."
                         className="w-full border p-2 rounded"
                       />
-                    </div>
+                    </div> */}
                     <div>
                       <label className="block text-gray-700 font-medium mb-2">
                         Frame Color

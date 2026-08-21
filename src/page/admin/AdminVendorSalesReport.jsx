@@ -39,8 +39,8 @@ const vendorMatchId = (v) => toStr(v.userId || v._id);
 
 export default function AdminVendorSalesReport() {
     const now = new Date();
-    const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
-    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+    // monthYear is either "all" or a "YYYY-MM" string from the native month picker
+    const [monthYear, setMonthYear] = useState("all");
     const [selectedVendorId, setSelectedVendorId] = useState("all");
     const [vendors, setVendors] = useState([]);
     const [allOrders, setAllOrders] = useState([]);
@@ -52,7 +52,12 @@ export default function AdminVendorSalesReport() {
         productBreakdown: [], orderList: [], vendorSummary: [],
     });
 
-    const yearOptions = [now.getFullYear(), now.getFullYear() - 1, now.getFullYear() - 2];
+    const selectedMonth = monthYear === "all" ? "all" : Number(monthYear.split("-")[1]) - 1;
+    const selectedYear = monthYear === "all" ? "all" : Number(monthYear.split("-")[0]);
+    const currentMonthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+    const periodLabel =
+        monthYear === "all" ? "All Time" : `${MONTHS[selectedMonth]} ${selectedYear}`;
 
     // ── Fetch BOTH in parallel, set state only when both done ──
     useEffect(() => {
@@ -91,11 +96,9 @@ export default function AdminVendorSalesReport() {
 
         const monthFiltered = allOrders.filter((o) => {
             const d = new Date(o.createdAt);
-            return (
-                d.getMonth() === selectedMonth &&
-                d.getFullYear() === selectedYear &&
-                !["Cancelled", "Failed"].includes(o.orderStatus)
-            );
+            const monthMatch = selectedMonth === "all" || d.getMonth() === selectedMonth;
+            const yearMatch = selectedYear === "all" || d.getFullYear() === selectedYear;
+            return monthMatch && yearMatch && !["Cancelled", "Failed"].includes(o.orderStatus);
         });
 
         if (selectedVendorId === "all") {
@@ -168,7 +171,7 @@ export default function AdminVendorSalesReport() {
                 productBreakdown, orderList, vendorSummary: [],
             });
         }
-    }, [selectedMonth, selectedYear, selectedVendorId, allOrders, vendors]);
+    }, [monthYear, selectedVendorId, allOrders, vendors]);
 
     const selectedVendor = vendors.find((v) => vendorMatchId(v) === selectedVendorId);
     const selectedVendorName = vendorLabel(selectedVendor);
@@ -186,7 +189,7 @@ export default function AdminVendorSalesReport() {
             </div>
 
             {/* Filter Bar */}
-            <div className="flex flex-wrap gap-3 mb-8">
+            <div className="flex flex-wrap items-center gap-3 mb-8">
                 {/* Vendor Picker */}
                 <div className="relative">
                     <button
@@ -225,22 +228,27 @@ export default function AdminVendorSalesReport() {
                     )}
                 </div>
 
-                {/* Month */}
-                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2 shadow-sm">
-                    <Calendar size={15} className="text-gray-400" />
-                    <select value={selectedMonth} onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                        className="text-sm font-medium text-gray-700 bg-transparent focus:outline-none">
-                        {MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}
-                    </select>
+                {/* Month + Year picker */}
+                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2 shadow-sm w-fit">
+                    <Calendar size={15} className="text-gray-400 shrink-0" />
+                    <input
+                        type="month"
+                        value={monthYear === "all" ? currentMonthYear : monthYear}
+                        onChange={(e) => setMonthYear(e.target.value)}
+                        className="text-sm font-medium text-gray-700 bg-transparent focus:outline-none w-[140px]"
+                    />
                 </div>
 
-                {/* Year */}
-                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2 shadow-sm">
-                    <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))}
-                        className="text-sm font-medium text-gray-700 bg-transparent focus:outline-none">
-                        {yearOptions.map((y) => <option key={y} value={y}>{y}</option>)}
-                    </select>
-                </div>
+                {/* All Time toggle */}
+                <button
+                    onClick={() => setMonthYear("all")}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium border shadow-sm transition-colors shrink-0 ${monthYear === "all"
+                        ? "bg-[#f00000] text-white border-[#f00000]"
+                        : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                        }`}
+                >
+                    All Time
+                </button>
             </div>
 
             {loading ? (
@@ -300,7 +308,7 @@ export default function AdminVendorSalesReport() {
                     {selectedVendorId === "all" && report.vendorSummary.length > 0 && (
                         <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-8 shadow-sm">
                             <h3 className="font-bold text-gray-800 mb-1">
-                                Vendor Breakdown — {MONTHS[selectedMonth]} {selectedYear}
+                                Vendor Breakdown — {periodLabel}
                             </h3>
                             <p className="text-xs text-gray-400 mb-4">
                                 Platform collects {Math.round(COMMISSION_RATE * 100)}% from each vendor's revenue
@@ -365,7 +373,7 @@ export default function AdminVendorSalesReport() {
 
                             <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-8 shadow-sm">
                                 <h3 className="font-bold text-gray-800 mb-4">
-                                    Earnings Breakdown — {selectedVendorName} · {MONTHS[selectedMonth]} {selectedYear}
+                                    Earnings Breakdown — {selectedVendorName} · {periodLabel}
                                 </h3>
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
@@ -453,7 +461,7 @@ export default function AdminVendorSalesReport() {
                             {report.orderList.length === 0 && (
                                 <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm">
                                     <ShoppingBag size={48} className="mx-auto mb-4 text-gray-300" />
-                                    <p className="text-lg font-semibold text-gray-500">No sales in {MONTHS[selectedMonth]} {selectedYear}</p>
+                                    <p className="text-lg font-semibold text-gray-500">No sales in {periodLabel}</p>
                                     <p className="text-sm text-gray-400 mt-1">This vendor had no qualifying orders in this period.</p>
                                 </div>
                             )}
@@ -464,7 +472,7 @@ export default function AdminVendorSalesReport() {
                     {selectedVendorId === "all" && report.vendorSummary.length === 0 && (
                         <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm">
                             <Users size={48} className="mx-auto mb-4 text-gray-300" />
-                            <p className="text-lg font-semibold text-gray-500">No vendor sales in {MONTHS[selectedMonth]} {selectedYear}</p>
+                            <p className="text-lg font-semibold text-gray-500">No vendor sales in {periodLabel}</p>
                             <p className="text-sm text-gray-400 mt-1">
                                 No orders with vendor items were placed in this period.
                                 {allOrders.length > 0 && " (Admin-created orders are excluded from vendor reports.)"}
