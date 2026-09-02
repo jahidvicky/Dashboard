@@ -55,6 +55,7 @@ const menuItems = [
   { name: "Disclaimer", path: "/admin/disclaimer" },
   { name: "Inquiries", path: "/admin/inquiries" },
   { name: "Frame Donation Requests", path: "/admin/frameDonation" },
+  { name: "Manager Policy Pages", path: "/admin/policy-manager" },
   { name: "Chat", path: "/admin/chat" },
   { name: "Support Chat", path: "/admin/supportChat" },
 

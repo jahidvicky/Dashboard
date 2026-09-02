@@ -78,6 +78,9 @@ const AdminOrderUpdate = lazy(() =>
   import("./page/ordderTracking/AdminOrderUpdate")
 );
 
+const AdminPolicyManager = lazy(() => import("./page/admin/AdminPolicyManager"));
+const PolicyPageRenderer = lazy(() => import("./page/admin/PolicyPageRenderer"));
+
 const AddPolicy = lazy(() => import("./page/insurance/AddPolicy"));
 const CreateClinic = lazy(() => import("./page/admin/AddClinic"));
 
@@ -86,9 +89,18 @@ function App() {
     <Suspense fallback={<Loader />}>
       <Routes>
         {/* ---------- public routes ---------- */}
-        <Route path="/" element={<Navigate to="/loginNew" replace />} />
+       <Route path="/" element={<Navigate to="/loginNew" replace />} />
         <Route path="/loginNew" element={<Login />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
+
+        {/* ---------- public policy pages (DB-driven) ---------- */}
+        <Route path="/terms-and-conditions" element={<PolicyPageRenderer slug="terms-and-conditions" />} />
+        <Route path="/full-terms-and-conditions" element={<PolicyPageRenderer slug="full-terms-and-conditions" />} />
+        <Route path="/privacy-policy" element={<PolicyPageRenderer slug="privacy-policy" />} />
+        <Route path="/return-exchange" element={<PolicyPageRenderer slug="return-exchange" />} />
+        <Route path="/disclaimer" element={<PolicyPageRenderer slug="disclaimer" />} />
+        <Route path="/cookies-policy" element={<PolicyPageRenderer slug="cookies-policy" />} />
+        <Route path="/exchange-policy" element={<PolicyPageRenderer slug="exchange-policy" />} />
 
         {/* ---------- protected routes ---------- */}
         <Route element={<Layout />}>
@@ -130,6 +142,7 @@ function App() {
             <Route path="createClinic" element={<CreateClinic />} />
             <Route path="vendor-product" element={<VendorApprovalProduct />} />
             <Route path="admin-order" element={<AdminOrderUpdate />} />
+            <Route path="policy-manager" element={<AdminPolicyManager />} />
             <Route path="chat" element={<Chat />} />
             <Route path="privacy-policy" element={<AdminPrivacyPolicy />} />
             <Route path="appointments" element={<Appointment />} />
@@ -162,7 +175,7 @@ function App() {
             <Route path="home" element={<VendorHome />} />
             <Route path="product" element={<VendorProducts />} />
             <Route path="order" element={<VendorProductOrder />} />
-            <Route path="order-details" element={<VendorOrderDetails />} />
+            <Route path="order-details/:orderId" element={<VendorOrderDetails />} />
             <Route path="sales" element={<VendorSalesReport />} />
             <Route
               path="inventory"
