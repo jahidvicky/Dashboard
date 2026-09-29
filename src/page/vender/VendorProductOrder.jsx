@@ -38,6 +38,8 @@ const VendorProductOrder = () => {
 
     useEffect(() => {
         fetchOrders();
+        const interval = setInterval(fetchOrders, 60000);
+        return () => clearInterval(interval);
     }, []);
 
     // Filter by status
@@ -50,6 +52,10 @@ const VendorProductOrder = () => {
     const indexOfLast = currentPage * ordersPerPage;
     const indexOfFirst = indexOfLast - ordersPerPage;
     const currentOrders = filteredData.slice(indexOfFirst, indexOfLast);
+
+    const goToDetails = (order) => {
+        navigate(`/vendor/order-details/${order._id}`, { state: { order } });
+    };
 
     if (loading) {
         return (
@@ -101,12 +107,13 @@ const VendorProductOrder = () => {
             {/* Table */}
             <div className="hidden md:block relative overflow-y-auto max-h-[560px] w-full border rounded-xl bg-white shadow-sm">
                 {/* Header */}
-                <div className="grid grid-cols-6 text-center bg-gray-800 text-white font-semibold py-3 px-4 sticky top-0 z-10 text-sm rounded-t-xl">
+                <div className="grid grid-cols-7 text-center bg-gray-800 text-white font-semibold py-3 px-4 sticky top-0 z-10 text-sm rounded-t-xl">
                     <div>Order #</div>
                     <div>Product</div>
                     <div>Date</div>
                     <div>Total</div>
                     <div>Status</div>
+                    <div>Tracking</div>
                     <div>Action</div>
                 </div>
 
@@ -124,7 +131,7 @@ const VendorProductOrder = () => {
                     currentOrders.map((order, idx) => (
                         <div
                             key={order._id}
-                            className={`grid grid-cols-6 text-center items-center px-4 py-3 border-b border-gray-100 text-sm hover:bg-gray-50 transition ${idx % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+                            className={`grid grid-cols-7 text-center items-center px-4 py-3 border-b border-gray-100 text-sm hover:bg-gray-50 transition ${idx % 2 === 0 ? "bg-white" : "bg-gray-50/50"
                                 }`}
                         >
                             {/* Order Number */}
@@ -174,14 +181,36 @@ const VendorProductOrder = () => {
                                 </span>
                             </div>
 
+                            {/* Tracking */}
+                            <div className="flex flex-col items-center justify-center text-xs">
+                                {order.shippingInfo?.trackingNumber ? (
+                                    order.shippingInfo.voided ? (
+                                        <span className="text-red-500 font-semibold">Voided</span>
+                                    ) : (
+                                        <>
+                                            <span className="font-mono text-gray-600">
+                                                {order.shippingInfo.trackingNumber}
+                                            </span>
+                                            <a
+                                                href={`https://www.loomis-express.com/webtrack/track.html?trackingNumber=${order.shippingInfo.trackingNumber}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="text-blue-600 hover:underline mt-0.5"
+                                            >
+                                                Track ↗
+                                            </a>
+                                        </>
+                                    )
+                                ) : (
+                                    <span className="text-gray-300">—</span>
+                                )}
+                            </div>
+
                             {/* Action */}
                             <div className="flex justify-center">
                                 <button
-                                    onClick={() =>
-                                        navigate("/vendor/order-details", {
-                                            state: { order },
-                                        })
-                                    }
+                                    onClick={() => goToDetails(order)}
                                     className="bg-gray-800 text-white px-4 py-1.5 rounded-lg text-xs hover:bg-gray-700 transition"
                                 >
                                     View Details
@@ -224,6 +253,11 @@ const VendorProductOrder = () => {
                                     <p className="text-xs text-gray-400">
                                         {new Date(order.createdAt).toLocaleDateString()}
                                     </p>
+                                    {order.shippingInfo?.trackingNumber && !order.shippingInfo?.voided && (
+                                        <p className="text-xs font-mono text-blue-600 mt-1">
+                                            {order.shippingInfo.trackingNumber}
+                                        </p>
+                                    )}
                                 </div>
                                 <span
                                     className={`text-xs font-semibold px-2 py-1 rounded-full ${getStatusColor(
@@ -234,9 +268,7 @@ const VendorProductOrder = () => {
                                 </span>
                             </div>
                             <button
-                                onClick={() =>
-                                    navigate("/vendor/order-details", { state: { order } })
-                                }
+                                onClick={() => goToDetails(order)}
                                 className="w-full bg-gray-800 text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-700 transition"
                             >
                                 View Details

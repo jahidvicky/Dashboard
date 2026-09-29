@@ -1,6 +1,7 @@
-import { Link, useLocation } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { IMAGE_URL } from "../../API/Api";
+import API, { IMAGE_URL } from "../../API/Api";
 
 const formatCurrency = (val) =>
     val != null ? `$${Number(val).toFixed(2)}` : null;
@@ -19,7 +20,60 @@ const getStatusColor = (status) => {
 
 const VendorOrderDetails = () => {
     const location = useLocation();
-    const order = location.state?.order;
+    const { orderId } = useParams();
+
+    const [order, setOrder] = useState(location.state?.order || null);
+    const [loading, setLoading] = useState(!location.state?.order);
+    const [error, setError] = useState(null);
+
+    const fetchOrder = useCallback(async () => {
+        if (!orderId) return;
+        try {
+            const { data } = await API.get(`/vendor-orders/${orderId}`);
+            setOrder(data.order);
+            setError(null);
+        } catch (err) {
+            console.error("Failed to load order:", err);
+            if (!order) {
+                setError(
+                    err.response?.status === 403
+                        ? "You don't have permission to view this order."
+                        : "Failed to load order."
+                );
+            }
+        } finally {
+            setLoading(false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [orderId]);
+
+    useEffect(() => {
+        fetchOrder();
+        const interval = setInterval(fetchOrder, 60000); // keep status/tracking live
+        return () => clearInterval(interval);
+    }, [fetchOrder]);
+
+    if (loading && !order) {
+        return (
+            <div className="p-6 flex items-center justify-center min-h-[60vh]">
+                <span className="w-10 h-10 rounded-full border-4 border-gray-800 border-t-transparent animate-spin" />
+            </div>
+        );
+    }
+
+    if (error && !order) {
+        return (
+            <div className="p-6 flex flex-col items-center justify-center min-h-[60vh]">
+                <p className="text-[#f00000] text-lg font-semibold mb-4">{error}</p>
+                <Link
+                    to="/vendor/order"
+                    className="text-white bg-gray-800 px-6 py-2 rounded-lg hover:bg-gray-700 transition"
+                >
+                    ← Back to Orders
+                </Link>
+            </div>
+        );
+    }
 
     if (!order) {
         return (
@@ -70,10 +124,13 @@ const VendorOrderDetails = () => {
                 </Link>
             </div>
 
-            {/* Read-only notice */}
+                     {/* Read-only notice */}
             <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800">
                 ℹ️ This is a <strong>read-only</strong> view. Shipping and order status are
                 managed by the admin team. Contact admin via Chat for any issues.
+                <span className="block text-xs text-blue-500 mt-1">
+                    Status refreshes automatically every minute.
+                </span>
             </div>
 
             {/* Order Status + Summary */}
@@ -174,10 +231,15 @@ const VendorOrderDetails = () => {
                                 <p className="font-semibold">{order.shippingInfo.serviceName}</p>
                             </div>
                         )}
-                        {order.shippingInfo.voided && (
+                                            {order.shippingInfo.voided ? (
                             <div>
                                 <p className="text-xs text-red-400 uppercase tracking-wide mb-0.5">Status</p>
                                 <p className="font-semibold text-red-600">Shipment Voided</p>
+                            </div>
+                        ) : (
+                            <div>
+                                <p className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Status</p>
+                                <p className="font-semibold text-teal-600">Active</p>
                             </div>
                         )}
                     </div>

@@ -389,20 +389,82 @@ const AdminOrderDetails = () => {
       Swal.fire({ icon: "warning", title: "Shipment Voided", text: "Cannot generate a label for a voided shipment.", confirmButtonColor: "#7c3aed" });
       return;
     }
+
+    // Open the window SYNCHRONOUSLY, inside the click handler, before any await.
+    // Opening it after an await loses the "user gesture" and gets silently
+    // blocked by popup blockers in most browsers.
+    const printWindow = window.open("");
+    if (!printWindow) {
+      Swal.fire({
+        icon: "warning",
+        title: "Popup Blocked",
+        text: "Your browser blocked the label window. Please allow popups for this site and try again.",
+        confirmButtonColor: "#7c3aed",
+      });
+      return;
+    }
+    printWindow.document.write(`<html><head><title>Loading Label...</title></head><body style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#666;">Loading label...</body></html>`);
+
     try {
       setLabelLoading(true);
-      const response = await API.get(`shipping/label/${order.shippingInfo.labelId}`, { responseType: "blob", validateStatus: (s) => s < 500 });
+      const response = await API.get(`shipping/label/${order.shippingInfo.labelId}`, {
+        responseType: "blob",
+        validateStatus: (s) => s < 500,
+        params: { _: Date.now() },
+      });
+
       if (response.status === 410) {
         const json = JSON.parse(await response.data.text());
+        printWindow.close();
         Swal.fire({ icon: "warning", title: "Label Unavailable", text: json.message, confirmButtonColor: "#7c3aed" });
         return;
       }
+
+      // Guard against a tiny/empty response (stale cache or JSON error mistakenly
+      // returned as blob) before treating it as a real image.
+      if (!response.data || response.data.size < 500) {
+        printWindow.close();
+        Swal.fire({ icon: "error", title: "Label Failed", text: "Received an invalid label from the server. Please try again.", confirmButtonColor: "#7c3aed" });
+        return;
+      }
+
       const blob = new Blob([response.data], { type: "image/png" });
       const url = URL.createObjectURL(blob);
       setTimeout(() => URL.revokeObjectURL(url), 60000);
-      const printWindow = window.open("");
-      printWindow.document.write(`<html><head><title>Print Label</title><style>body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;}img{max-width:100%;max-height:100%;}</style></head><body><img src="${url}" onload="window.print();window.close();" onerror="document.body.innerHTML='<p style=color:red>Label failed to load.</p>';setTimeout(window.close,3000);" /></body></html>`);
+
+      printWindow.document.open();
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Print Label</title>
+            <style>
+              body { margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
+              img { max-width: 100%; max-height: 85vh; }
+              .toolbar { padding: 8px; }
+              button { padding: 6px 16px; font-size: 14px; cursor: pointer; }
+              /* Hide the on-screen toolbar from the actual printed page/PDF */
+              @media print {
+                .toolbar { display: none; }
+              }
+            </style>
+          </head>
+          <body>
+            <img id="labelImg" src="${url}"
+              onerror="document.body.innerHTML='<p style=color:red>Label failed to load.</p>'" />
+            <div class="toolbar">
+              <button onclick="window.print()">Print Label</button>
+            </div>
+            <script>
+              document.getElementById('labelImg').onload = function () {
+                window.print();
+              };
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
     } catch (err) {
+      printWindow.close();
       Swal.fire({ icon: "error", title: "Label Failed", text: "Failed to generate label.", confirmButtonColor: "#7c3aed" });
     } finally {
       setLabelLoading(false);

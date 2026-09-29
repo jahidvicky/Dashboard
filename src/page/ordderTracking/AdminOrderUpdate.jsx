@@ -166,9 +166,10 @@ const AdminOrderUpdate = () => {
 
             {/* Desktop Table */}
             <div className="hidden md:block relative overflow-y-auto max-h-[560px] w-full mt-6 border rounded-lg">
-                <div className="grid grid-cols-4 text-center bg-black text-white font-semibold py-3 px-4 sticky top-0 z-10">
+                <div className="grid grid-cols-5 text-center bg-black text-white font-semibold py-3 px-4 sticky top-0 z-10">
                     <div>ORDER NUMBER.</div>
                     <div>PRODUCT</div>
+                    <div>SOURCE</div>
                     <div>STATUS</div>
                     <div>ACTIONS</div>
                 </div>
@@ -178,35 +179,51 @@ const AdminOrderUpdate = () => {
                         No Orders Found
                     </div>
                 ) : (
-                    currentOrders.map((data, idx) => (
-                        <div
-                            key={idx}
-                            className={`grid grid-cols-4 text-center items-center px-4 py-3 border-b border-gray-200 text-sm hover:bg-gray-100 ${idx % 2 === 0 ? "bg-gray-50" : "bg-white"
-                                }`}
-                        >
-                            <div>{data.orderNumber}</div>
-                            <div className="flex justify-center">
-                                <img
-                                    src={
-                                        data.cartItems?.[0]?.image?.startsWith("http")
-                                            ? data.cartItems[0].image
-                                            : `${IMAGE_URL}/${data.cartItems[0].image}`
-                                    }
-                                    alt="ProductImage"
-                                    className="w-16 h-12 object-cover rounded-md border"
-                                />
+                    currentOrders.map((data, idx) => {
+                        const hasVendorItem = data.cartItems?.some(
+                            (item) => item.createdBy && item.createdBy !== "admin"
+                        );
+                        return (
+                            <div
+                                key={idx}
+                                className={`grid grid-cols-5 text-center items-center px-4 py-3 border-b border-gray-200 text-sm hover:bg-gray-100 ${idx % 2 === 0 ? "bg-gray-50" : "bg-white"
+                                    }`}
+                            >
+                                <div>{data.orderNumber}</div>
+                                <div className="flex justify-center">
+                                    <img
+                                        src={
+                                            data.cartItems?.[0]?.image?.startsWith("http")
+                                                ? data.cartItems[0].image
+                                                : `${IMAGE_URL}/${data.cartItems[0].image}`
+                                        }
+                                        alt="ProductImage"
+                                        className="w-16 h-12 object-cover rounded-md border"
+                                    />
+                                </div>
+                                <div>
+                                    {hasVendorItem ? (
+                                        <span className="text-xs font-semibold px-2 py-1 rounded-full bg-orange-100 text-orange-700">
+                                            Vendor
+                                        </span>
+                                    ) : (
+                                        <span className="text-xs font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                                            Admin
+                                        </span>
+                                    )}
+                                </div>
+                                <div>{data.orderStatus}</div>
+                                <div className="flex gap-2 justify-center">
+                                    <button
+                                        onClick={() => navigate(`/admin/order-details/${data._id}`)}
+                                        className="bg-green-600 px-4 py-2 rounded-xl text-white hover:bg-green-700 transition hover:cursor-pointer"
+                                    >
+                                        View Details
+                                    </button>
+                                </div>
                             </div>
-                            <div>{data.orderStatus}</div>
-                            <div className="flex gap-2 justify-center">
-                                <button
-                                    onClick={() => navigate(`/admin/order-details/${data._id}`)}
-                                    className="bg-green-600 px-4 py-2 rounded-xl text-white hover:bg-green-700 transition hover:cursor-pointer"
-                                >
-                                    View Details
-                                </button>
-                            </div>
-                        </div>
-                    ))
+                        );
+                    })
                 )}
             </div>
 
