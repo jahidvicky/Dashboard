@@ -11,13 +11,36 @@ dayjs.extend(customParseFormat);
 const BRAND_RED = "#f00000";
 
 const STATUS = {
-    PENDING: { label: "Not requested", cls: "bg-yellow-100 text-yellow-700" },
-    ARRANGED: { label: "Pickup scheduled", cls: "bg-blue-100 text-blue-700" },
-    PICKED_UP: { label: "Picked up", cls: "bg-green-100 text-green-700" },
-    CANCELLED: { label: "Cancelled", cls: "bg-red-100 text-red-700" },
-    FAILED: { label: "Pickup failed", cls: "bg-red-100 text-red-700" },
-};
+    PENDING: {
+        label: "Not requested",
+        cls: "bg-yellow-100 text-yellow-700",
+    },
 
+    ARRANGED: {
+        label: "Pickup scheduled",
+        cls: "bg-blue-100 text-blue-700",
+    },
+
+    PICKED_UP: {
+        label: "Picked up",
+        cls: "bg-green-100 text-green-700",
+    },
+
+    DELIVERED: {
+        label: "Delivered",
+        cls: "bg-purple-100 text-purple-700",
+    },
+
+    CANCELLED: {
+        label: "Cancelled",
+        cls: "bg-red-100 text-red-700",
+    },
+
+    FAILED: {
+        label: "Pickup failed",
+        cls: "bg-red-100 text-red-700",
+    },
+};
 const getStatus = (item) => STATUS[item?.pickupStatus] || STATUS.PENDING;
 
 const canArrange = (item) =>
@@ -204,7 +227,14 @@ const FrameDonation = () => {
             const res = await API.get(`/community/${item._id}/pickup-status`);
             await fetchDonations({ silent: true });
 
-            if (res.data.pickedUp) {
+            if (res.data.pickupStatus === "DELIVERED") {
+                await Swal.fire({
+                    icon: "success",
+                    title: "Parcel delivered",
+                    text: "Loomis has delivered the donated frames to the destination.",
+                    confirmButtonColor: BRAND_RED,
+                });
+            } else if (res.data.pickupStatus === "PICKED_UP") {
                 await Swal.fire({
                     icon: "success",
                     title: "Parcel picked up",
@@ -219,11 +249,21 @@ const FrameDonation = () => {
                     icon: "info",
                     title: "Not picked up yet",
                     html: `
-                        <div style="text-align:left;display:inline-block">
-                            <div>The driver hasn't collected the parcel yet.</div>
-                            <div style="margin-top:8px"><b>Scheduled:</b> ${formatPickupDate(item.pickupDate)}, ${formatPickupTime(item.pickupReadyTime)} to ${formatPickupTime(item.pickupCloseTime)}</div>
-                            <div><b>Confirmation ID:</b> ${res.data.confirmationId || "-"}</div>
-                        </div>`,
+            <div style="text-align:left;display:inline-block">
+                <div>The driver hasn't collected the parcel yet.</div>
+                <div style="margin-top:8px">
+                    <b>Scheduled:</b>
+                    ${formatPickupDate(item.pickupDate)},
+                    ${formatPickupTime(item.pickupReadyTime)}
+                    to
+                    ${formatPickupTime(item.pickupCloseTime)}
+                </div>
+                <div>
+                    <b>Confirmation ID:</b>
+                    ${res.data.confirmationId || "-"}
+                </div>
+            </div>
+        `,
                     confirmButtonColor: BRAND_RED,
                 });
             }
@@ -383,7 +423,7 @@ const FrameDonation = () => {
 
                                             {canArrange(item) && <ArrangeButton item={item} />}
 
-                                            {item.pickupStatus === "ARRANGED" && (
+                                            {["ARRANGED", "PICKED_UP"].includes(item.pickupStatus) && (
                                                 <CheckButton item={item} />
                                             )}
                                         </div>
@@ -494,21 +534,41 @@ const FrameDonation = () => {
                                             </DetailRow>
                                         )}
 
-                                        {selected.loomisConfirmationId && (
-                                            <DetailRow label="Loomis confirmation ID">
-                                                {selected.loomisConfirmationId}
+                                        {selected.loomisEReturnId && (
+                                            <DetailRow label="Loomis E-Return ID">
+                                                {selected.loomisEReturnId}
+                                            </DetailRow>
+                                        )}
+
+                                        {selected.loomisShipmentNumber && (
+                                            <DetailRow label="Loomis Shipment Number">
+                                                {selected.loomisShipmentNumber}
                                             </DetailRow>
                                         )}
 
                                         {selected.loomisTrackingNumber && (
-                                            <DetailRow label="Tracking number">
+                                            <DetailRow label="Loomis Tracking / PIN">
                                                 {selected.loomisTrackingNumber}
+                                            </DetailRow>
+                                        )}
+
+                                        {selected.loomisReference && (
+                                            <DetailRow label="Loomis Reference">
+                                                {selected.loomisReference}
                                             </DetailRow>
                                         )}
 
                                         {selected.pickedUpOn && (
                                             <DetailRow label="Picked up on">
                                                 {formatDateTime(selected.pickedUpOn)}
+                                            </DetailRow>
+                                        )}
+
+                                        {selected.pickupStatus === "DELIVERED" && (
+                                            <DetailRow label="Delivery status">
+                                                <span className="font-semibold text-purple-700">
+                                                    Delivered
+                                                </span>
                                             </DetailRow>
                                         )}
                                     </tbody>
@@ -523,7 +583,7 @@ const FrameDonation = () => {
                                     <ArrangeButton item={selected} className="px-5 py-2" />
                                 )}
 
-                                {selected.pickupStatus === "ARRANGED" && (
+                                {["ARRANGED", "PICKED_UP"].includes(selected.pickupStatus) && (
                                     <CheckButton item={selected} className="px-5 py-2" />
                                 )}
                             </div>
